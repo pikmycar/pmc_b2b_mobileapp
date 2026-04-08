@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import '../../../core/storage/secure_storage_service.dart';
+import 'create_pin_screen.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -69,16 +71,29 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         return false;
       },
       child: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthAuthenticated) {
-            if (state.isFirstLogin) {
-              _showBiometricPrompt(state.role);
-            } else {
-              final route = state.role == 'main_driver'
-                  ? '/main_driver_dashboard'
-                  : '/support_driver_dashboard';
-              Navigator.pushNamedAndRemoveUntil(context, route, (route) => false);
-            }
+        listener: (context, state) async {
+       if (state is AuthAuthenticated) {
+final storage = context.read<SecureStorageService>();
+
+await storage.setLoggedIn(true);
+
+// 🔥 ADD THIS
+await storage.setBiometricEnabled(true);
+  final pin = await storage.getPin();
+
+  if (!mounted) return;
+
+  if (pin == null) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const CreatePinScreen(),
+      ),
+    );
+  } else {
+    Navigator.pushReplacementNamed(context, '/pin_login');
+  }
+
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),

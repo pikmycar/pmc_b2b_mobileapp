@@ -119,27 +119,39 @@ class AppTheme {
           ),
         ),
       ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: AppColors.surface,
-        contentPadding: const EdgeInsets.all(16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.secondary, width: 2),
-        ),
-        hintStyle: AppTextStyles.caption,
-      ),
+    inputDecorationTheme: InputDecorationTheme(
+  filled: true,
+  fillColor: AppColors.surface,
+
+  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+
+  // ✅ TEXT COLORS FIX
+  hintStyle: const TextStyle(
+    color: Colors.black38,
+    fontSize: 14,
+  ),
+
+  // ✅ ADD THIS (VERY IMPORTANT)
+  labelStyle: const TextStyle(color: Colors.black),
+  
+  // ✅ CURSOR + TEXT FIX
+  floatingLabelStyle: const TextStyle(color: Colors.black),
+
+  border: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(10),
+    borderSide: BorderSide(color: Colors.grey.shade300),
+  ),
+  enabledBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(10),
+    borderSide: BorderSide(color: Colors.grey.shade300),
+  ),
+  focusedBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(10),
+    borderSide: const BorderSide(color: Colors.black, width: 1.5),
+  ),
+),
     );
   }
-
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,

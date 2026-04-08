@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../features/auth/screens/login_screen.dart';
+import '../features/auth/screens/pin_login_screen.dart';
 import '../features/auth/screens/thank_you_screen.dart';
+import '../features/auth/screens/create_pin_screen.dart';
 import '../features/common/widgets/splash_screen.dart';
 import 'main_wrapper.dart';
 
@@ -23,7 +25,11 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case '/thank_you':
         return MaterialPageRoute(builder: (_) => const ThankYouScreen());
-        
+        case '/create_pin':
+  return MaterialPageRoute(builder: (_) => const CreatePinScreen());
+
+case '/pin_login':
+  return MaterialPageRoute(builder: (_) => const PinLoginScreen());
       // SUPPORT DRIVER ROUTES
       case '/support_driver_dashboard':
         return MaterialPageRoute(builder: (_) => const MainWrapper(child: SupportDriverDashboard()));

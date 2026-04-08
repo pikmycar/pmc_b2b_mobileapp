@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/storage/secure_storage_service.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -37,7 +38,7 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen> {
       context,
       MaterialPageRoute(
           builder: (context) => OtpVerificationScreen(
-                email: "+971 ${widget.mobile}",
+                email: "+91 ${widget.mobile}",
               )),
     );
   }
@@ -45,22 +46,38 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthOtpRequired) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => OtpVerificationScreen(
-                email: "+971 ${widget.mobile}",
-              ),
-            ),
-          );
-        } else if (state is AuthError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
-        }
-      },
+  listener: (context, state) async {
+  if (state is AuthOtpRequired) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OtpVerificationScreen(
+          email: "+91 ${widget.mobile}",
+        ),
+      ),
+    );
+  } 
+  else if (state is AuthAuthenticated) {
+    // 🔥 ADD THIS BLOCK
+
+    final storage = context.read<SecureStorageService>();
+
+    final pin = await storage.getPin();
+
+    if (!mounted) return;
+
+    if (pin == null) {
+      Navigator.pushReplacementNamed(context, '/create_pin');
+    } else {
+      Navigator.pushReplacementNamed(context, '/pin_login');
+    }
+  } 
+  else if (state is AuthError) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(state.message)),
+    );
+  }
+},
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -89,7 +106,7 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "+971 ${widget.mobile}",
+                  "+91 ${widget.mobile}",
                   style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 32),
@@ -98,9 +115,7 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen> {
                 Container(
                   height: 56,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: Colors.grey.shade200),
-                    borderRadius: BorderRadius.circular(8),
+           
                   ),
                   child: TextField(
                     controller: _passwordController,

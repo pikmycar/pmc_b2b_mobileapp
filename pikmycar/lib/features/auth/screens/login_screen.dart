@@ -16,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   
   final _mobileController = TextEditingController();
   final _emailController = TextEditingController();
+  
 
   bool _isLoading = false;
 
@@ -139,15 +140,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 56,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border.all(color: Colors.grey.shade200),
-                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
-                          "+971  |",
+                          "+91 ",
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.black54,
@@ -176,16 +175,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   height: 56,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: Colors.grey.shade200),
-                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: TextField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16),
                       hintText: "Enter Email Address",
                       hintStyle: TextStyle(
                         color: Colors.black26,
