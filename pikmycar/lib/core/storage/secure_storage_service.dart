@@ -87,6 +87,22 @@ class SecureStorageService {
   }
 
   // ===============================
+  // 🔹 ROLE (NEW 🔥)
+  // ===============================
+
+  Future<void> setUserRole(String role) async {
+    await write(AuthConstants.userRole, role);
+  }
+
+  Future<String?> getUserRole() async {
+    return await read(AuthConstants.userRole);
+  }
+
+  Future<void> removeUserRole() async {
+    await delete(AuthConstants.userRole);
+  }
+
+  // ===============================
   // 🔹 FULL LOGOUT (IMPORTANT 🔥)
   // ===============================
 
@@ -94,6 +110,7 @@ class SecureStorageService {
     await removeAuthToken();
     await removePin();
     await removeBiometric();
+    await removeUserRole();
     await setLoggedIn(false);
   }
 }

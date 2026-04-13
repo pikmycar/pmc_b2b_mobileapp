@@ -5,6 +5,9 @@ import '../../common/widgets/custom_top_header_bar.dart';
 import '../../common/widgets/offline_screen_body.dart';
 import '../../common/widgets/app_drawer.dart';
 import '../../../app/main_wrapper.dart';
+import '../../common/widgets/role_based_popup.dart';
+import '../../../core/constants/mock_requests.dart';
+import 'dart:async';
 
 class MainDriverDashboard extends StatefulWidget {
   const MainDriverDashboard({super.key});
@@ -15,7 +18,9 @@ class MainDriverDashboard extends StatefulWidget {
 
 class _MainDriverDashboardState extends State<MainDriverDashboard> {
   bool _isOnline = true;
+  bool _showRequestPopup = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  Timer? _popupTimer;
 
   @override
   void initState() {
@@ -23,14 +28,32 @@ class _MainDriverDashboardState extends State<MainDriverDashboard> {
     // Sync initial state with wrapper
     WidgetsBinding.instance.addPostFrameCallback((_) {
       MainWrapper.isOnlineNotifier.value = _isOnline;
+      _startPopupTimer();
     });
+  }
+
+  void _startPopupTimer() {
+    _popupTimer?.cancel();
+    _popupTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted && _isOnline) {
+        setState(() => _showRequestPopup = true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _popupTimer?.cancel();
+    super.dispose();
   }
 
   void _toggleOnline(bool val) {
     setState(() {
       _isOnline = val;
+      if (!val) _showRequestPopup = false;
     });
     MainWrapper.isOnlineNotifier.value = val;
+    if (val) _startPopupTimer();
   }
 
   @override
@@ -191,13 +214,34 @@ class _MainDriverDashboardState extends State<MainDriverDashboard> {
           ),
         ),
 
-        // Invisible tap target for demo
+        // Invisible tap target for demo (now shows popup)
         Positioned.fill(
           child: GestureDetector(
-            onTap: () => Navigator.pushNamed(context, '/main_driver_pick_me_request'),
+            onTap: () => setState(() => _showRequestPopup = true),
             child: Container(color: Colors.transparent),
           ),
         ),
+
+        // Role-Based Popup Overlay
+        if (_showRequestPopup)
+          Positioned.fill(
+            child: Container(
+              color: Colors.black54,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 120),
+              child: Center(
+                child: RoleBasedPopup(
+                  request: MockData.mainDriverRequest,
+                  onAccept: () {
+                    setState(() => _showRequestPopup = false);
+                    Navigator.pushNamed(context, '/main_driver_transport');
+                  },
+                  onDecline: () {
+                    setState(() => _showRequestPopup = false);
+                  },
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }

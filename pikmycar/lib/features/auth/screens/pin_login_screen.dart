@@ -5,6 +5,7 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import '../../../core/services/biometric_service.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/models/user_role.dart';
 
 class PinLoginScreen extends StatefulWidget {
   const PinLoginScreen({super.key});
@@ -45,8 +46,14 @@ class _PinLoginScreenState extends State<PinLoginScreen> {
       if (!mounted) return;
 
       if (success) {
-        Navigator.pushReplacementNamed(
-            context, '/main_driver_dashboard');
+        final role = await storage.getUserRole();
+        if (!mounted) return;
+        
+        if (role == UserRole.supportDriver.toString()) {
+          Navigator.pushReplacementNamed(context, '/support_driver_dashboard');
+        } else {
+          Navigator.pushReplacementNamed(context, '/main_driver_dashboard');
+        }
       }
     } catch (e) {
       print("Biometric Error: $e");
@@ -67,8 +74,14 @@ class _PinLoginScreenState extends State<PinLoginScreen> {
     setState(() => _isLoading = false);
 
     if (_pin == savedPin) {
-      Navigator.pushReplacementNamed(
-          context, '/main_driver_dashboard');
+      final role = await storage.getUserRole();
+      if (!mounted) return;
+
+      if (role == UserRole.supportDriver.toString()) {
+        Navigator.pushReplacementNamed(context, '/support_driver_dashboard');
+      } else {
+        Navigator.pushReplacementNamed(context, '/main_driver_dashboard');
+      }
     } else {
       _pinController.clear();
       setState(() => _pin = '');

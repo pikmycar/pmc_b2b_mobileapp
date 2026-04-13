@@ -5,7 +5,9 @@ import '../../../app/main_wrapper.dart';
 import '../../common/widgets/biometric_dialog.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/models/user_role.dart';
 import '../../main_driver/dashboard/main_driver_dashboard.dart';
+import '../../support_driver/dashboard/support_driver_dashboard.dart';
 
 class CreatePinScreen extends StatefulWidget {
   const CreatePinScreen({super.key});
@@ -79,15 +81,21 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
       await Future.delayed(const Duration(milliseconds: 150));
 
       if (!mounted) return;
-Navigator.pushAndRemoveUntil(
-  context,
-  MaterialPageRoute(
-    builder: (_) => MainWrapper(
-      child: const MainDriverDashboard(),
-    ),
-  ),
-  (route) => false,
-);
+      final role = await storage.getUserRole();
+      
+      if (!mounted) return;
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MainWrapper(
+            child: role == UserRole.supportDriver.toString() 
+                ? const SupportDriverDashboard() 
+                : const MainDriverDashboard(),
+          ),
+        ),
+        (route) => false,
+      );
     } else {
       _confirmController.clear();
 

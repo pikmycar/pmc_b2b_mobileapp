@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/storage/secure_storage_service.dart';
+import '../../../core/models/user_role.dart';
+import 'package:provider/provider.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -29,34 +32,47 @@ class AppDrawer extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                const Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'John Driver',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Row(
+                Expanded(
+                  child: FutureBuilder<String?>(
+                    future: context.read<SecureStorageService>().getUserRole(),
+                    builder: (context, snapshot) {
+                      final roleStr = snapshot.data;
+                      String roleDisplay = 'Driver';
+                      if (roleStr == UserRole.mainDriver.toString()) {
+                        roleDisplay = 'Main Driver';
+                      } else if (roleStr == UserRole.supportDriver.toString()) {
+                        roleDisplay = 'Support Driver';
+                      }
+
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.star, color: AppColors.accent, size: 14),
-                          SizedBox(width: 4),
                           Text(
-                            '4.9 Rating',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
+                            roleDisplay,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
+                          const SizedBox(height: 4),
+                          const Row(
+                            children: [
+                              Icon(Icons.star, color: AppColors.accent, size: 14),
+                              SizedBox(width: 4),
+                              Text(
+                                '4.9 Rating',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
-                      ),
-                    ],
+                      );
+                    }
                   ),
                 ),
               ],
@@ -74,7 +90,7 @@ class AppDrawer extends StatelessWidget {
             title: const Text('My Trips'),
             onTap: () {
                Navigator.pop(context);
-               // Navigate to trips history if needed
+               Navigator.pushNamed(context, '/trip_history');
             },
           ),
           ListTile(
@@ -99,7 +115,11 @@ class AppDrawer extends StatelessWidget {
               'Logout',
               style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold),
             ),
-            onTap: () {
+            onTap: () async {
+              final storage = context.read<SecureStorageService>();
+              await storage.logout();
+              
+              if (!context.mounted) return;
               // Clear stack and go to login
               Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
             },

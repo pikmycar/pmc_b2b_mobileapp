@@ -3,6 +3,9 @@ import 'package:flutter/gestures.dart';
 import 'email_login_screen.dart';
 import 'mobile_password_screen.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/models/user_role.dart';
+import '../../../core/storage/secure_storage_service.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,9 +22,15 @@ class _LoginScreenState extends State<LoginScreen> {
   
 
   bool _isLoading = false;
+  UserRole _selectedRole = UserRole.mainDriver;
 
   void _onContinue() async {
     setState(() => _isLoading = true);
+    
+    // Save role to secure storage
+    final storage = context.read<SecureStorageService>();
+    await storage.setUserRole(_selectedRole.toString());
+
     await Future.delayed(const Duration(seconds: 1));
     setState(() => _isLoading = false);
 
@@ -60,6 +69,75 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 60),
+              const Center(
+                child: Text(
+                  "Choose Your Role",
+                  style: AppTextStyles.heading2,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedRole = UserRole.mainDriver),
+                      child: Container(
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: _selectedRole == UserRole.mainDriver ? AppColors.primary : Colors.white,
+                          border: Border.all(color: _selectedRole == UserRole.mainDriver ? AppColors.primary : Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: _selectedRole == UserRole.mainDriver ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.person, color: _selectedRole == UserRole.mainDriver ? Colors.white : Colors.black54),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Main Driver",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: _selectedRole == UserRole.mainDriver ? Colors.white : Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedRole = UserRole.supportDriver),
+                      child: Container(
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: _selectedRole == UserRole.supportDriver ? AppColors.secondary : Colors.white,
+                          border: Border.all(color: _selectedRole == UserRole.supportDriver ? AppColors.secondary : Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: _selectedRole == UserRole.supportDriver ? [BoxShadow(color: AppColors.secondary.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.support_agent, color: _selectedRole == UserRole.supportDriver ? Colors.white : Colors.black54),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Support Driver",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: _selectedRole == UserRole.supportDriver ? Colors.white : Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 48),
               const Center(
                 child: Text(
                   "Login or Sign Up",
