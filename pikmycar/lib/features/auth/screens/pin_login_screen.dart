@@ -15,17 +15,18 @@ class PinLoginScreen extends StatefulWidget {
 }
 
 class _PinLoginScreenState extends State<PinLoginScreen> {
-  final TextEditingController _pinController = TextEditingController();
+  late TextEditingController _pinController;
   String _pin = '';
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _pinController = TextEditingController();
 
     // ✅ Trigger biometric after UI loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _tryBiometric();
+      if (mounted) _tryBiometric();
     });
   }
 
@@ -48,12 +49,19 @@ class _PinLoginScreenState extends State<PinLoginScreen> {
       if (success) {
         final role = await storage.getUserRole();
         if (!mounted) return;
-        
-        if (role == UserRole.supportDriver.toString()) {
-          Navigator.pushReplacementNamed(context, '/support_driver_dashboard');
-        } else {
-          Navigator.pushReplacementNamed(context, '/main_driver_dashboard');
-        }
+
+        FocusScope.of(context).unfocus();
+
+        await Future.delayed(const Duration(milliseconds: 200));
+
+        if (!mounted) return;
+
+        Navigator.pushReplacementNamed(
+          context,
+          role == UserRole.supportDriver.toString()
+              ? '/support_driver_dashboard'
+              : '/main_driver_dashboard',
+        );
       }
     } catch (e) {
       print("Biometric Error: $e");
@@ -77,23 +85,44 @@ class _PinLoginScreenState extends State<PinLoginScreen> {
       final role = await storage.getUserRole();
       if (!mounted) return;
 
-      if (role == UserRole.supportDriver.toString()) {
-        Navigator.pushReplacementNamed(context, '/support_driver_dashboard');
-      } else {
-        Navigator.pushReplacementNamed(context, '/main_driver_dashboard');
-      }
-    } else {
-      _pinController.clear();
-      setState(() => _pin = '');
+      // ✅ STEP 1: remove focus (keyboard close)
+      FocusScope.of(context).unfocus();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Incorrect PIN")),
+      // ✅ STEP 2: wait for keyboard to close
+      await Future.delayed(const Duration(milliseconds: 200));
+
+      // ✅ STEP 3: clear controller safely
+      if (mounted) {
+        _pinController.clear();
+      }
+
+      // ✅ STEP 4: wait again (VERY IMPORTANT)
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      if (!mounted) return;
+
+      // ✅ STEP 5: navigate
+      Navigator.pushReplacementNamed(
+        context,
+        role == UserRole.supportDriver.toString()
+            ? '/support_driver_dashboard'
+            : '/main_driver_dashboard',
       );
+    } else {
+      if (mounted) {
+        _pinController.clear();
+        setState(() => _pin = '');
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Incorrect PIN")));
+      }
     }
   }
 
   @override
   void dispose() {
+    // Standard disposal
     _pinController.dispose();
     super.dispose();
   }
@@ -140,10 +169,11 @@ class _PinLoginScreenState extends State<PinLoginScreen> {
 
                     const SizedBox(height: 40),
 
-                    // 🔥 PIN FIELD
                     PinCodeTextField(
+                      key: const ValueKey('pin_field'),
                       appContext: context,
                       controller: _pinController,
+                      autoDisposeControllers: false,
                       length: 4,
                       keyboardType: TextInputType.number,
                       obscureText: true,
@@ -167,9 +197,8 @@ class _PinLoginScreenState extends State<PinLoginScreen> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: _pin.length == 4 && !_isLoading
-                            ? _verifyPin
-                            : null,
+                        onPressed:
+                            _pin.length == 4 && !_isLoading ? _verifyPin : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.accent,
                           foregroundColor: Colors.black,
@@ -177,11 +206,12 @@ class _PinLoginScreenState extends State<PinLoginScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        child: _isLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.black,
-                              )
-                            : const Text("Login"),
+                        child:
+                            _isLoading
+                                ? const CircularProgressIndicator(
+                                  color: Colors.black,
+                                )
+                                : const Text("Login"),
                       ),
                     ),
 

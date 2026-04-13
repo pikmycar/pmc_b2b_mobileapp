@@ -22,9 +22,15 @@ class AppColors {
   static const Color textInverseSecondary = Colors.white70;
   static const Color borderNeutral = Color(0xFFE2E8F0);
   
-  // Splash Screen Gradient Colors
-  static const Color splashGradientStart = Color(0xFF0C4A6E); // Deep Sky Blue (inspired by logo top)
-  static const Color splashGradientEnd = Color(0xFF082F49);   // Dark Navy (inspired by logo base)
+  // Dashboard Design Colors
+  static const Color designForestGreen = Color(0xFF1E6B3F);
+  static const Color designDarkGreen = Color(0xFF14532D);
+  static const Color designYellow = Color(0xFFFFCB21);
+  static const Color designSurface = Color(0xFFF8FAF9);
+
+  // Splash Screen Gradient Colors (Restored and Initialized)
+  static const Color splashGradientStart = Color(0xFF0C4A6E);
+  static const Color splashGradientEnd = Color(0xFF082F49);
 }
 
 class AppTextStyles {

@@ -17,9 +17,22 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _isMobileSelected = true;
   
-  final _mobileController = TextEditingController();
-  final _emailController = TextEditingController();
+  late TextEditingController _mobileController;
+  late TextEditingController _emailController;
   
+  @override
+  void initState() {
+    super.initState();
+    _mobileController = TextEditingController();
+    _emailController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _mobileController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
 
   bool _isLoading = false;
   UserRole _selectedRole = UserRole.mainDriver;

@@ -37,14 +37,19 @@ class _MainWrapperState extends State<MainWrapper> {
                     label: 'Home',
                   ),
                   NavigationDestination(
+                    icon: Icon(Icons.account_balance_wallet_outlined),
+                    selectedIcon: Icon(Icons.account_balance_wallet),
+                    label: 'Earnings',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.star_outline),
+                    selectedIcon: Icon(Icons.star),
+                    label: 'Ratings',
+                  ),
+                  NavigationDestination(
                     icon: Icon(Icons.history_outlined),
                     selectedIcon: Icon(Icons.history),
                     label: 'History',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.person_outline),
-                    selectedIcon: Icon(Icons.person),
-                    label: 'Profile',
                   ),
                 ],
               )

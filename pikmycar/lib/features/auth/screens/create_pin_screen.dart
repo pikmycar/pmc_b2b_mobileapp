@@ -17,23 +17,33 @@ class CreatePinScreen extends StatefulWidget {
 }
 
 class _CreatePinScreenState extends State<CreatePinScreen> {
-  final TextEditingController _pinController = TextEditingController();
-  final TextEditingController _confirmController = TextEditingController();
+  late TextEditingController _pinController;
 
   // ✅ FIX: Use separate, stable variables that don't get wiped on mismatch
-  String _firstPin = '';       // Locked in after step 1
-  String _currentInput = '';   // Tracks live input for current step
+  String _firstPin = ''; // Locked in after step 1
+  String _currentInput = ''; // Tracks live input for current step
   bool _isConfirm = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _pinController = TextEditingController();
+
+    // ✅ SAFE FOCUS (after build)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        FocusScope.of(context).requestFocus(FocusNode());
+      }
+    });
+  }
 
   @override
   void dispose() {
     _pinController.dispose();
-    _confirmController.dispose();
     super.dispose();
   }
 
   void _onChanged(String value) {
-    // ✅ FIX: Only update _currentInput, never touch _firstPin here
     setState(() {
       _currentInput = value;
     });
@@ -42,13 +52,10 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
   void _onSubmit() async {
     if (!_isConfirm) {
       if (_currentInput.length == 4) {
-        // ✅ FIX: Lock in the first PIN BEFORE clearing anything
         final lockedPin = _currentInput;
-
-        _pinController.clear();
-
+        if (mounted) _pinController.clear();
         setState(() {
-          _firstPin = lockedPin;   // Save it safely
+          _firstPin = lockedPin;
           _currentInput = '';
           _isConfirm = true;
         });
@@ -61,7 +68,6 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
   }
 
   Future<void> _validate() async {
-    // ✅ FIX: Compare _firstPin (locked) vs _currentInput (confirm entry)
     if (_firstPin == _currentInput) {
       final storage = context.read<SecureStorageService>();
 
@@ -82,35 +88,40 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
 
       if (!mounted) return;
       final role = await storage.getUserRole();
-      
+
       if (!mounted) return;
+
+      FocusManager.instance.primaryFocus?.unfocus();
+
+      await Future.delayed(const Duration(milliseconds: 100));
 
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder: (_) => MainWrapper(
-            child: role == UserRole.supportDriver.toString() 
-                ? const SupportDriverDashboard() 
-                : const MainDriverDashboard(),
-          ),
+          builder:
+              (_) => MainWrapper(
+                child:
+                    role == UserRole.supportDriver.toString()
+                        ? const SupportDriverDashboard()
+                        : const MainDriverDashboard(),
+              ),
         ),
         (route) => false,
       );
     } else {
-      _confirmController.clear();
+      if (mounted) {
+        _pinController.clear();
 
-      setState(() {
-        // ✅ FIX: Reset to step 1 cleanly — _firstPin cleared too
-        _firstPin = '';
-        _currentInput = '';
-        _isConfirm = false;
-      });
+        setState(() {
+          _firstPin = '';
+          _currentInput = '';
+          _isConfirm = false;
+        });
 
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("PIN mismatch. Please try again.")),
-      );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("PIN mismatch. Please try again.")),
+        );
+      }
     }
   }
 
@@ -118,9 +129,7 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(_isConfirm ? "Confirm PIN" : "Create PIN"),
-      ),
+      appBar: AppBar(title: Text(_isConfirm ? "Confirm PIN" : "Create PIN")),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -141,13 +150,14 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
               // Without this, the old controller's value leaks into
               // the new field and triggers a phantom onChanged("").
               PinCodeTextField(
-                key: ValueKey(_isConfirm), // 👈 CRITICAL
-                controller: _isConfirm ? _confirmController : _pinController,
+                key: ValueKey(_isConfirm),
+                controller: _pinController,
                 appContext: context,
                 length: 4,
+                autoDisposeControllers: false,
                 keyboardType: TextInputType.number,
                 obscureText: true,
-                autoFocus: true,
+                autoFocus: false,
                 animationType: AnimationType.fade,
                 beforeTextPaste: (text) => false,
                 onChanged: _onChanged,

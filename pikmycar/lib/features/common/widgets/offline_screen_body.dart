@@ -5,11 +5,13 @@ import '../../../core/theme/app_theme.dart';
 class OfflineScreenBody extends StatelessWidget {
   final String tripsCount;
   final String rating;
+  final VoidCallback? onToggleOnline;
 
   const OfflineScreenBody({
     super.key,
     required this.tripsCount,
     required this.rating,
+    this.onToggleOnline,
   });
 
   @override
@@ -78,13 +80,43 @@ class OfflineScreenBody extends StatelessWidget {
             style: AppTextStyles.heading2,
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Turn On "Go Online" To Receive Trip Assignments.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w400,
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              'Turn On "Go Online" To Receive Trip Assignments.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Go Online Button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: onToggleOnline != null ? () => onToggleOnline!() : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.designDarkGreen,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  "Go Online",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
           ),
           
