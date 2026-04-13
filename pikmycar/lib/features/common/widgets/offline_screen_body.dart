@@ -120,15 +120,15 @@ class OfflineScreenBody extends StatelessWidget {
             ),
           ),
           
-          const Spacer(flex: 2),
-
+          const Spacer(flex: 3),
           // Illustration
           SvgPicture.asset(
             'assets/Svg/HomepageIcons/TaxiBhaiMadeInDubai.svg',
             width: MediaQuery.of(context).size.width,
             fit: BoxFit.fitWidth,
             alignment: Alignment.bottomCenter,
-            placeholderBuilder: (context) => const SizedBox(height: 200),
+            placeholderBuilder: (context) => const SizedBox(height: 180),
+            // Added error builder fallback
           ),
         ],
       ),

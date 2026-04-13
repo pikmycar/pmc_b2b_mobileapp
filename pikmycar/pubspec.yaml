@@ -53,5 +53,10 @@ flutter:
 
   assets:
     - assets/Png/
+    - assets/Png/SplashBackground.png
+    - assets/Png/SplashLogo.png
+    - assets/Png/Bottomimage.png
     - assets/Svg/
     - assets/Svg/HomepageIcons/
+    - assets/Svg/HomepageIcons/TaxiBhaiMadeInDubai.svg
+    - assets/Svg/HomepageIcons/PinkTaxi.svg

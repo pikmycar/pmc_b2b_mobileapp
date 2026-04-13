@@ -253,7 +253,7 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard> {
   Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+      padding: const EdgeInsets.fromLTRB(24, 10, 24, 20),
       decoration: const BoxDecoration(
         color: AppColors.designForestGreen,
         borderRadius: BorderRadius.only(
@@ -397,7 +397,7 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard> {
         children: [
           Row(
             children: [
-              const Text("💵", style: TextStyle(fontSize: 24)),
+              const Icon(Icons.payments, color: Colors.white, size: 28),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -433,8 +433,8 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard> {
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              SizedBox(width: 4),
-              Icon(Icons.chevron_right, color: Colors.white54),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right, color: Colors.white54),
             ],
           ),
         ],
@@ -488,11 +488,7 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard> {
                 ),
                 if (showStar) ...[
                   const SizedBox(width: 4),
-                  const Icon(
-                    Icons.star,
-                    color: AppColors.designYellow,
-                    size: 28,
-                  ),
+                  const Icon(Icons.star, color: Colors.amber, size: 22),
                 ],
               ],
             ),
@@ -529,12 +525,8 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
-                            Icons.location_off,
-                            size: 48,
-                            color: Colors.grey,
-                          ),
-                          const SizedBox(height: 12),
+                        const Icon(Icons.location_off, size: 48, color: Colors.grey),
+                        const SizedBox(height: 12),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 24),
                             child: Text(

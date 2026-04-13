@@ -27,6 +27,8 @@ class AppColors {
   static const Color designDarkGreen = Color(0xFF14532D);
   static const Color designYellow = Color(0xFFFFCB21);
   static const Color designSurface = Color(0xFFF8FAF9);
+  static const Color designMint = Color(0xFFE1F5E1);
+  static const Color designPayoutBg = Color(0xFFE8F5E9);
 
   // Splash Screen Gradient Colors (Restored and Initialized)
   static const Color splashGradientStart = Color(0xFF0C4A6E);
