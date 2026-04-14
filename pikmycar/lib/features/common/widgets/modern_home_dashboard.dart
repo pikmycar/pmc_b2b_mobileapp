@@ -10,7 +10,6 @@ import '../../../core/models/user_role.dart';
 import '../screens/triprequest_screen.dart';
 import 'custom_top_header_bar.dart';
 import '../../support_driver/widgets/support_request_popup.dart';
-import '../../support_driver/active_trip/waiting_screen.dart';
 import '../../support_driver/screens/ticket_detail_screen.dart';
 
 class ModernHomeDashboard extends StatefulWidget {

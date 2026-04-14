@@ -8,7 +8,7 @@ import '../features/common/trip_history/trip_history_screen.dart';
 import 'main_wrapper.dart';
 
 import '../features/support_driver/dashboard/support_driver_dashboard.dart';
-import '../features/support_driver/active_trip/waiting_screen.dart';
+
 import '../features/support_driver/inspection/inspection_screen.dart';
 import '../features/support_driver/garage_delivery/garage_delivery_screen.dart';
 
@@ -35,10 +35,6 @@ class AppRouter {
       case '/support_driver_dashboard':
         return MaterialPageRoute(
           builder: (_) => const MainWrapper(child: SupportDriverDashboard()),
-        );
-      case '/support_driver_waiting':
-        return MaterialPageRoute(
-          builder: (_) => const SupportDriverWaitingScreen(),
         );
       case '/support_driver_inspection':
         return MaterialPageRoute(
