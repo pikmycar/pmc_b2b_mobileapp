@@ -9,6 +9,9 @@ import '../../../core/storage/secure_storage_service.dart';
 import '../../../core/models/user_role.dart';
 import '../screens/triprequest_screen.dart';
 import 'custom_top_header_bar.dart';
+import '../../support_driver/widgets/support_request_popup.dart';
+import '../../support_driver/active_trip/waiting_screen.dart';
+import '../../support_driver/screens/ticket_detail_screen.dart';
 
 class ModernHomeDashboard extends StatefulWidget {
   final bool isOnline;
@@ -40,6 +43,7 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
   Map<String, dynamic>? _tripData;
   Timer? _tripTimer;
   int _tripSeconds = 30;
+  bool _isExpandedRequest = false;
 
   /// 🔥 ANIMATION
   late AnimationController _pulseController;
@@ -116,13 +120,24 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
       if (!mounted || !widget.isOnline) return;
 
       setState(() {
-        _tripData = {
-          "pickup": "Triplicane",
-          "drop": "T Nagar",
-          "name": "Rahul",
-          "rating": "4.6",
-          "fare": "₹240"
-        };
+        _isExpandedRequest = false;
+        if (_role == UserRole.supportDriver) {
+          _tripData = {
+            "pickup": "Dubai Marina, Tower B",
+            "drop": "Al Quoz Auto Center",
+            "distance": "3.2km",
+            "eta": "12min",
+            "priority": "HIGH",
+          };
+        } else {
+          _tripData = {
+            "pickup": "Triplicane",
+            "drop": "T Nagar",
+            "name": "Rahul",
+            "rating": "4.6",
+            "fare": "₹240"
+          };
+        }
         _showTripPopup = true;
       });
 
@@ -137,11 +152,27 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
     _tripTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return;
 
-      setState(() => _tripSeconds--);
+      setState(() {
+        _tripSeconds--;
 
-      if (_tripSeconds <= 0) {
-        _closeTrip();
-      }
+        if (_tripSeconds <= 0) {
+          // If first phase (5km) is finished, expand to 10km phase
+          if (_role == UserRole.supportDriver && !_isExpandedRequest) {
+            _isExpandedRequest = true;
+            _tripSeconds = 30; // Reset timer for the expanded phase
+            _tripData = {
+              "pickup": "Jumeirah Beach Road, Villa 12",
+              "drop": "Al Quoz Auto Center",
+              "distance": "8.1km",
+              "eta": "22min",
+              "priority": "MED",
+            };
+          } else {
+            // If already expanded or not Support Driver, close the popup
+            _closeTrip();
+          }
+        }
+      });
     });
   }
 
@@ -149,9 +180,18 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
     _tripTimer?.cancel();
     _closeTrip();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Trip Accepted ✅")),
-    );
+    if (_role == UserRole.supportDriver) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const TicketDetailScreen(),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Trip Accepted ✅")),
+      );
+    }
   }
 
   void _rejectTrip() {
@@ -293,9 +333,18 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
     ),
   ),
 ),
-          /// 🔥 TRIP POPUP
+          /// 🔥 TRIP POPUPS
           if (_showTripPopup && _tripData != null)
-            _buildTripPopup(),
+             _role == UserRole.supportDriver 
+                ? SupportRequestPopup(
+                    tripData: _tripData!,
+                    secondsRemaining: _tripSeconds,
+                    totalSeconds: 30,
+                    isExpanded: _isExpandedRequest,
+                    onAccept: _acceptTrip,
+                    onDecline: _rejectTrip,
+                  )
+                : _buildTripPopup(),
         ],
       ),
     );

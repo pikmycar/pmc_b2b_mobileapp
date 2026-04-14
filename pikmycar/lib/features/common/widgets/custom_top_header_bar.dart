@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class CustomTopHeaderBar extends StatelessWidget implements PreferredSizeWidget {
+class CustomTopHeaderBar extends StatelessWidget
+    implements PreferredSizeWidget {
   final VoidCallback? onMenuTap;
   final VoidCallback? onNotificationTap;
   final ValueChanged<bool>? onOnlineStatusChanged;
@@ -38,15 +39,11 @@ class CustomTopHeaderBar extends StatelessWidget implements PreferredSizeWidget 
   Widget build(BuildContext context) {
     return AppBar(
       // 🔥 GREEN COLOR (instead of blue)
-      backgroundColor:
-          isOnline ? const Color(0xFF00C853) : Colors.white,
+      backgroundColor: isOnline ? const Color(0xFF00C853) : Colors.white,
       elevation: 0,
 
       leading: IconButton(
-        icon: Icon(
-          Icons.menu,
-          color: isOnline ? Colors.white : Colors.black,
-        ),
+        icon: Icon(Icons.menu, color: isOnline ? Colors.white : Colors.black),
         onPressed: onMenuTap,
       ),
 
@@ -82,48 +79,39 @@ class CustomTopHeaderBar extends StatelessWidget implements PreferredSizeWidget 
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         // 🔥 LIGHT GREEN BACKGROUND
-        color: isOnline
-            ? const Color(0xFF00C853).withOpacity(0.8)
-            : Colors.grey.shade100,
+        color:
+            isOnline
+                ? const Color(0xFF00C853).withOpacity(0.8)
+                : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(40),
 
-        border: isOnline
-            ? null
-            : Border.all(color: Colors.redAccent),
+        border: isOnline ? null : Border.all(color: Colors.redAccent),
       ),
       child: Stack(
         alignment: Alignment.center,
         children: [
           AnimatedAlign(
             duration: const Duration(milliseconds: 300),
-            alignment: isOnline
-                ? Alignment.center
-                : const Alignment(0.25, 0),
+            alignment: isOnline ? Alignment.center : const Alignment(0.25, 0),
             child: Text(
               isOnline ? "Online" : "Go Online",
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: isOnline
-                    ? Colors.white
-                    : const Color(0xFF131313),
+                color: isOnline ? Colors.white : const Color(0xFF131313),
               ),
             ),
           ),
 
           AnimatedAlign(
             duration: const Duration(milliseconds: 350),
-            alignment: isOnline
-                ? Alignment.centerRight
-                : Alignment.centerLeft,
+            alignment: isOnline ? Alignment.centerRight : Alignment.centerLeft,
             child: Container(
               width: 28,
               height: 28,
               decoration: BoxDecoration(
                 // 🔥 GREEN DOT
-                color: isOnline
-                    ? const Color(0xFF00E676)
-                    : Colors.redAccent,
+                color: isOnline ? const Color(0xFF00E676) : Colors.redAccent,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
