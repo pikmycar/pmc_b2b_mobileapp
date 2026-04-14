@@ -3,9 +3,12 @@ import 'package:provider/provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
+
 import '../../../core/theme/app_theme.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import '../../../core/models/user_role.dart';
+import '../screens/triprequest_screen.dart';
+import 'custom_top_header_bar.dart';
 
 class ModernHomeDashboard extends StatefulWidget {
   final bool isOnline;
@@ -23,420 +26,162 @@ class ModernHomeDashboard extends StatefulWidget {
   State<ModernHomeDashboard> createState() => _ModernHomeDashboardState();
 }
 
-class _ModernHomeDashboardState extends State<ModernHomeDashboard> {
+class _ModernHomeDashboardState extends State<ModernHomeDashboard>
+    with SingleTickerProviderStateMixin {
   UserRole? _role;
   GoogleMapController? _mapController;
   Position? _currentPosition;
   StreamSubscription<Position>? _positionStream;
-  final Set<Marker> _markers = {};
-  bool _hasLocationError = false;
-  String? _errorMessage;
 
-  final String _mapStyle = """
-  [
-    {"elementType": "geometry", "stylers": [{"color": "#f5f5f5"}]},
-    {"elementType": "labels.icon", "stylers": [{"visibility": "off"}]},
-    {"elementType": "labels.text.fill", "stylers": [{"color": "#616161"}]},
-    {"elementType": "labels.text.stroke", "stylers": [{"color": "#f5f5f5"}]},
-    {"featureType": "road", "elementType": "geometry", "stylers": [{"color": "#ffffff"}]},
-    {"featureType": "water", "elementType": "geometry", "stylers": [{"color": "#c9c9c9"}]}
-  ]
-  """;
+  final Set<Marker> _markers = {};
+
+  /// 🔥 TRIP POPUP
+  bool _showTripPopup = false;
+  Map<String, dynamic>? _tripData;
+  Timer? _tripTimer;
+  int _tripSeconds = 30;
+
+  /// 🔥 ANIMATION
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
+
+    _pulseAnimation =
+        Tween(begin: 0.9, end: 1.15).animate(_pulseController);
+
     _loadRole();
 
-    // 📍 Start location tracking immediately if we are born in 'Online' state (e.g. from toggle)
     if (widget.isOnline) {
       _initLocation();
+      _simulateIncomingTrip(); // 🔥 AUTO RIDE
     }
   }
 
   @override
   void dispose() {
+    _pulseController.dispose();
     _positionStream?.cancel();
     _mapController?.dispose();
+    _tripTimer?.cancel();
     super.dispose();
   }
 
-  /// Starts location tracking and returns true if authorized/successful
-  Future<bool> _initLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+  /// ================= LOCATION =================
 
-    if (!mounted) return false;
-    setState(() => _hasLocationError = false);
+  Future<void> _initLocation() async {
+    final permission = await Geolocator.requestPermission();
 
-    try {
-      print("📍 GPS: Checking services...");
-      serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        print("📍 GPS: Location services disabled.");
-        _showLocationError("GPS is disabled. Please turn it on.");
-        return false;
-      }
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) return;
 
-      permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        print("📍 GPS: Requesting permissions...");
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          print("📍 GPS: Permission denied.");
-          _showLocationError("Location permission denied.");
-          return false;
-        }
-      }
+    _positionStream = Geolocator.getPositionStream().listen((position) {
+      if (!mounted) return;
 
-      if (permission == LocationPermission.deniedForever) {
-        print("📍 GPS: Permission blocked forever.");
-        _showLocationError("Location blocked. Please enable in Settings.");
-        return false;
-      }
-
-      print("📍 GPS: Authorized. Starting track...");
-      _errorMessage = null;
-
-      // 🔄 START STREAM IMMEDIATELY
-      _positionStream = Geolocator.getPositionStream(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.best,
-          distanceFilter: 5,
-        ),
-      ).listen(
-        (Position position) {
-          print(
-            "📍 GPS: Live fix: ${position.latitude}, ${position.longitude}",
-          );
-          if (mounted) {
-            bool isFirstFix = _currentPosition == null;
-            setState(() {
-              _currentPosition = position;
-              _hasLocationError = false;
-              _updateMarker(LatLng(position.latitude, position.longitude));
-            });
-
-            if (isFirstFix) {
-              _mapController?.animateCamera(
-                CameraUpdate.newLatLngZoom(
-                  LatLng(position.latitude, position.longitude),
-                  15,
-                ),
-              );
-            }
-          }
-        },
-        onError: (e) {
-          print("📍 GPS: Stream error: $e");
-          if (mounted) setState(() => _hasLocationError = true);
-        },
-      );
-
-      // Also try a quick one-time fetch to speed things up
-      final fastPosition = await Geolocator.getLastKnownPosition();
-      if (fastPosition != null && mounted && _currentPosition == null) {
-        setState(() {
-          _currentPosition = fastPosition;
-          _updateMarker(LatLng(fastPosition.latitude, fastPosition.longitude));
-        });
-      }
-      return true;
-    } catch (e) {
-      print("📍 GPS: Error: $e");
-      return false;
-    }
-  }
-
-  /// High-level handler for toggling online status with permission checks
-  Future<void> _handleToggleOnline(bool targetOnline) async {
-    if (targetOnline) {
-      // 📍 GOING ONLINE: We need GPS
-      final success = await _initLocation();
-      if (success) {
-        widget.onToggleOnline(true);
-      }
-    } else {
-      // 📍 GOING OFFLINE: Stop tracking
-      await _positionStream?.cancel();
-      _positionStream = null;
-      if (mounted) {
-        setState(() {
-          _currentPosition = null;
-          _hasLocationError = false;
-        });
-      }
-      widget.onToggleOnline(false);
-    }
-  }
-
-  void _showLocationError(String message) {
-    if (!mounted) return;
-    setState(() {
-      _hasLocationError = true;
-      _errorMessage = message;
-    });
-    // ✅ Only show Snackbar if user is actively Online
-    if (widget.isOnline) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          duration: const Duration(seconds: 2),
-          action: SnackBarAction(
-            label: "Fix",
-            onPressed: () async {
-              await Geolocator.openLocationSettings();
-              _initLocation();
-            },
+      setState(() {
+        _currentPosition = position;
+        _markers.clear();
+        _markers.add(
+          Marker(
+            markerId: const MarkerId('driver'),
+            position: LatLng(position.latitude, position.longitude),
           ),
-        ),
-      );
-    }
-  }
-
-  void _setFallbackLocation() {
-    // 🔥 NO LONGER USING SILENT FALLBACK TO DUBAI
-    // Map will show a loading indicator or 'Enable GPS' prompt instead
-  }
-
-  void _updateMarker(LatLng position) {
-    _markers.clear();
-    _markers.add(
-      Marker(
-        markerId: const MarkerId('driver_car'),
-        position: position,
-        infoWindow: const InfoWindow(title: 'My Location'),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-      ),
-    );
+        );
+      });
+    });
   }
 
   Future<void> _loadRole() async {
     final storage = context.read<SecureStorageService>();
     final roleStr = await storage.getUserRole();
-    if (mounted) {
-      setState(() {
-        if (roleStr == UserRole.supportDriver.toString()) {
-          _role = UserRole.supportDriver;
-        } else {
-          _role = UserRole.mainDriver;
-        }
-      });
-    }
+
+    setState(() {
+      _role = roleStr == UserRole.supportDriver.toString()
+          ? UserRole.supportDriver
+          : UserRole.mainDriver;
+    });
   }
+
+  /// ================= TRIP =================
+
+  void _simulateIncomingTrip() {
+    Future.delayed(const Duration(seconds: 5), () {
+      if (!mounted || !widget.isOnline) return;
+
+      setState(() {
+        _tripData = {
+          "pickup": "Triplicane",
+          "drop": "T Nagar",
+          "name": "Rahul",
+          "rating": "4.6",
+          "fare": "₹240"
+        };
+        _showTripPopup = true;
+      });
+
+      _startTripTimer();
+    });
+  }
+
+  void _startTripTimer() {
+    _tripTimer?.cancel();
+    _tripSeconds = 30;
+
+    _tripTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+
+      setState(() => _tripSeconds--);
+
+      if (_tripSeconds <= 0) {
+        _closeTrip();
+      }
+    });
+  }
+
+  void _acceptTrip() {
+    _tripTimer?.cancel();
+    _closeTrip();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Trip Accepted ✅")),
+    );
+  }
+
+  void _rejectTrip() {
+    _tripTimer?.cancel();
+    _closeTrip();
+  }
+
+  void _closeTrip() {
+    setState(() {
+      _showTripPopup = false;
+      _tripData = null;
+    });
+  }
+
+  /// ================= UI =================
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _buildHeader(context),
-        Expanded(
-          child: Container(
-            color: AppColors.designSurface,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  const SizedBox(height: 24),
-                  _buildStatsRow(),
-                  const SizedBox(height: 24),
-                  _buildMapSection(),
-                  const SizedBox(height: 24),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 10, 24, 20),
-      decoration: const BoxDecoration(
-        color: AppColors.designForestGreen,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(0),
-          bottomRight: Radius.circular(0),
-        ),
+    return Scaffold(
+      appBar: CustomTopHeaderBar(
+        isOnline: widget.isOnline,
+        onMenuTap: widget.onMenuTap,
+        onOnlineStatusChanged: widget.onToggleOnline,
       ),
-      child: Column(
+      body: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Avatar
-              GestureDetector(
-                onTap: widget.onMenuTap,
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: const BoxDecoration(
-                    color: AppColors.designYellow,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Center(
-                    child: Text(
-                      "AR",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // User Info (Expanded to take available space)
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Hello,",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const Text(
-                      "Abdul",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        children: [
-                          const Text("👋 ", style: TextStyle(fontSize: 16)),
-                          Container(
-                            width: 10,
-                            height: 10,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF4ADE80),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            widget.isOnline ? "Online •" : "Offline",
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                          ),
-                          if (widget.isOnline) ...[
-                            const SizedBox(width: 4),
-                            const Text(
-                              "Ready to accept",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Toggle Button
-              GestureDetector(
-                onTap: () => _handleToggleOnline(!widget.isOnline),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 22,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(40),
-                    border: Border.all(color: Colors.white.withOpacity(0.3)),
-                  ),
-                  child: Text(
-                    widget.isOnline ? "Go Offline" : "Go Online",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-          _buildEarningsCard(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEarningsCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.designDarkGreen,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.payments, color: Colors.white, size: 28),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    "Today's",
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                  Text(
-                    "Earnings",
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          Row(
-            children: const [
-              Text(
-                "AED",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(width: 8),
-              Text(
-                "320",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 36,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(width: 4),
-              const Icon(Icons.chevron_right, color: Colors.white54),
-            ],
-          ),
+          const SizedBox(height: 12),
+          _buildStatsRow(),
+          const SizedBox(height: 12),
+          Expanded(child: _buildMapSection()),
         ],
       ),
     );
@@ -444,63 +189,34 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard> {
 
   Widget _buildStatsRow() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          _buildStatCard("8", "Today"),
+          _card("₹820", "Today"),
           const SizedBox(width: 8),
-          _buildStatCard("31", "This Week"),
+          _card("31", "Trips"),
           const SizedBox(width: 8),
-          _buildStatCard("4.9", "Rating", showStar: true),
+          _card("4.9", "Rating"),
         ],
       ),
     );
   }
 
-  Widget _buildStatCard(String value, String label, {bool showStar = false}) {
+  Widget _card(String value, String label) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey.shade100),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.designDarkGreen,
-                  ),
-                ),
-                if (showStar) ...[
-                  const SizedBox(width: 4),
-                  const Icon(Icons.star, color: Colors.amber, size: 22),
-                ],
-              ],
-            ),
-            const SizedBox(height: 4),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                label,
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
-                maxLines: 1,
-              ),
-            ),
+            Text(value,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(label,
+                style: const TextStyle(color: Colors.grey, fontSize: 12)),
           ],
         ),
       ),
@@ -509,121 +225,159 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard> {
 
   Widget _buildMapSection() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      height: 250,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFE5E7EB),
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(25),
       ),
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(30),
-            child:
-                _hasLocationError
-                    ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                        const Icon(Icons.location_off, size: 48, color: Colors.grey),
-                        const SizedBox(height: 12),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Text(
-                              _errorMessage ?? "Location access required",
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _initLocation,
-                            child: const Text("Retry GPS"),
-                          ),
-                        ],
+            borderRadius: BorderRadius.circular(25),
+            child: _currentPosition == null
+                ? const Center(child: CircularProgressIndicator())
+                : GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(
+                        _currentPosition!.latitude,
+                        _currentPosition!.longitude,
                       ),
-                    )
-                    : _currentPosition == null
-                    ? const Center(child: CircularProgressIndicator())
-                    : GoogleMap(
-                      key: const ValueKey('google_map_dashboard'),
-                      initialCameraPosition: CameraPosition(
-                        target: LatLng(
-                          _currentPosition!.latitude,
-                          _currentPosition!.longitude,
-                        ),
-                        zoom: 15,
-                      ),
-                      onMapCreated: (controller) {
-                        print("🗺️ Map Created Successfully");
-                        _mapController = controller;
-                        _mapController!.setMapStyle(_mapStyle);
-                      },
-                      markers: _markers,
-                      myLocationEnabled: true,
-                      myLocationButtonEnabled: false,
-                      zoomControlsEnabled: false,
-                      mapToolbarEnabled: false,
+                      zoom: 15,
                     ),
+                    markers: _markers,
+                    myLocationEnabled: true,
+                  ),
           ),
-          // You're here label (Keep overlay)
-          Positioned(
-            top: 40,
-            left: 30,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: const [
-                  BoxShadow(color: Colors.black12, blurRadius: 4),
-                ],
-              ),
-              child: const Text(
-                "You're here",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-              ),
-            ),
-          ),
-          // Search Badge
+
+          /// 🔥 SEARCH BAR
           if (widget.isOnline)
-            Positioned(
-              bottom: 20,
-              left: 20,
-              right: 20,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: const [
-                    BoxShadow(color: Colors.black12, blurRadius: 10),
+          Positioned(
+  bottom: 15,
+  left: 15,
+  right: 15,
+  child: Material(
+    borderRadius: BorderRadius.circular(20),
+    elevation: 4,
+
+    /// 🔥 ADD CLICK HERE
+    child: InkWell(
+      borderRadius: BorderRadius.circular(20),
+
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const TripRequestScreen(),
+          ),
+        );
+      },
+
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            ScaleTransition(
+              scale: _pulseAnimation,
+              child: const Text("🎯"),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text(
+                "Searching for trips...",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, size: 14),
+          ],
+        ),
+      ),
+    ),
+  ),
+),
+          /// 🔥 TRIP POPUP
+          if (_showTripPopup && _tripData != null)
+            _buildTripPopup(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTripPopup() {
+    return Positioned(
+      left: 16,
+      right: 16,
+      bottom: 20,
+      child: TweenAnimationBuilder(
+        duration: const Duration(milliseconds: 400),
+        tween: Tween(begin: 100.0, end: 0.0),
+        builder: (context, value, child) {
+          return Transform.translate(
+            offset: Offset(0, value),
+            child: child,
+          );
+        },
+        child: Material(
+          borderRadius: BorderRadius.circular(24),
+          elevation: 8,
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("New Ride Request",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text("$_tripSeconds s",
+                        style: const TextStyle(color: Colors.red)),
                   ],
                 ),
-                child: Row(
+                const SizedBox(height: 10),
+
+                Text(_tripData!["pickup"]),
+                Text(_tripData!["drop"]),
+
+                const SizedBox(height: 10),
+
+                Text(_tripData!["name"]),
+                Text("⭐ ${_tripData!["rating"]}"),
+
+                Text(_tripData!["fare"],
+                    style: TextStyle(
+                        color: AppColors.designForestGreen,
+                        fontWeight: FontWeight.bold)),
+
+                const SizedBox(height: 10),
+
+                Row(
                   children: [
-                    const Text("🎯", style: TextStyle(fontSize: 20)),
-                    const SizedBox(width: 12),
                     Expanded(
-                      child: Text(
-                        _role == UserRole.mainDriver
-                            ? "Searching for Support Driver requests..."
-                            : "Searching for customer trips...",
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                      child: OutlinedButton(
+                        onPressed: _rejectTrip,
+                        child: const Text("Reject"),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _acceptTrip,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              AppColors.designForestGreen,
                         ),
+                        child: const Text("Accept"),
                       ),
                     ),
                   ],
-                ),
-              ),
+                )
+              ],
             ),
-        ],
+          ),
+        ),
       ),
     );
   }

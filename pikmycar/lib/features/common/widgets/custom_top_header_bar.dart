@@ -30,7 +30,6 @@ class CustomTopHeaderBar extends StatelessWidget implements PreferredSizeWidget 
   }
 
   Future<void> _toggleOnlineStatus(BuildContext context) async {
-    // Stripped location and GraphQL API requirements for the demo
     bool newStatus = !isOnline;
     onOnlineStatusChanged?.call(newStatus);
   }
@@ -38,9 +37,11 @@ class CustomTopHeaderBar extends StatelessWidget implements PreferredSizeWidget 
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      // 🔥 GREEN COLOR (instead of blue)
       backgroundColor:
-          isOnline ? Theme.of(context).colorScheme.secondary : Theme.of(context).scaffoldBackgroundColor,
+          isOnline ? const Color(0xFF00C853) : Colors.white,
       elevation: 0,
+
       leading: IconButton(
         icon: Icon(
           Icons.menu,
@@ -48,6 +49,9 @@ class CustomTopHeaderBar extends StatelessWidget implements PreferredSizeWidget 
         ),
         onPressed: onMenuTap,
       ),
+
+      centerTitle: true,
+
       title: GestureDetector(
         onTap: () async {
           if (canGoOffline || !isOnline) {
@@ -58,7 +62,7 @@ class CustomTopHeaderBar extends StatelessWidget implements PreferredSizeWidget 
         },
         child: _buildStatusToggle(context),
       ),
-      centerTitle: true,
+
       actions: [
         IconButton(
           icon: Icon(
@@ -77,11 +81,15 @@ class CustomTopHeaderBar extends StatelessWidget implements PreferredSizeWidget 
       height: 38,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: isOnline ? Theme.of(context).colorScheme.secondary.withOpacity(0.8) : Theme.of(context).scaffoldBackgroundColor,
+        // 🔥 LIGHT GREEN BACKGROUND
+        color: isOnline
+            ? const Color(0xFF00C853).withOpacity(0.8)
+            : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(40),
+
         border: isOnline
             ? null
-            : Border.all(color: Theme.of(context).colorScheme.error),
+            : Border.all(color: Colors.redAccent),
       ),
       child: Stack(
         alignment: Alignment.center,
@@ -102,6 +110,7 @@ class CustomTopHeaderBar extends StatelessWidget implements PreferredSizeWidget 
               ),
             ),
           ),
+
           AnimatedAlign(
             duration: const Duration(milliseconds: 350),
             alignment: isOnline
@@ -111,9 +120,10 @@ class CustomTopHeaderBar extends StatelessWidget implements PreferredSizeWidget 
               width: 28,
               height: 28,
               decoration: BoxDecoration(
+                // 🔥 GREEN DOT
                 color: isOnline
-                    ? Theme.of(context).colorScheme.secondary
-                    : Theme.of(context).colorScheme.error,
+                    ? const Color(0xFF00E676)
+                    : Colors.redAccent,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(

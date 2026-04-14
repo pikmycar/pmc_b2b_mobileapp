@@ -14,17 +14,15 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
 
   final List<Map<String, dynamic>> _allTrips = [
     {
-      'dateHeader': 'YESTERDAY, FEB 26',
+      'dateHeader': 'YESTERDAY',
       'trips': [
         {
           'vehicle': 'Mercedes C300',
           'plate': 'A11222',
           'route': 'DIFC ➡️ Motor City',
           'time': '2:00 PM',
-          'amount': '+AED 110',
+          'amount': '+₹110',
           'status': 'Completed',
-          'emoji': '🚙',
-          'bgColor': Color(0xFFFEF4ED),
         },
         {
           'vehicle': 'Nissan Patrol',
@@ -33,55 +31,52 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
           'time': '4:45 PM',
           'amount': '',
           'status': 'Cancelled',
-          'emoji': '🚫',
-          'bgColor': Color(0xFFFEEDED),
         },
       ]
     },
-    {
-      'dateHeader': 'FEB 25',
-      'trips': [
-        {
-          'vehicle': 'BMW 5 Series',
-          'plate': 'D12345',
-          'route': 'JBR ➡️ Al Barsha',
-          'time': '11:15 AM',
-          'amount': '+AED 70',
-          'status': 'Completed',
-          'emoji': '🚗',
-          'bgColor': Color(0xFFF0F9FF),
-        },
-      ]
-    }
   ];
 
   List<Map<String, dynamic>> get _filteredGroups {
     if (_selectedFilter == 'All') return _allTrips;
-    
+
     List<Map<String, dynamic>> filtered = [];
+
     for (var group in _allTrips) {
-      final matchingTrips = (group['trips'] as List).where((t) => t['status'] == _selectedFilter).toList();
-      if (matchingTrips.isNotEmpty) {
+      final trips = (group['trips'] as List)
+          .where((t) => t['status'] == _selectedFilter)
+          .toList();
+
+      if (trips.isNotEmpty) {
         filtered.add({
           'dateHeader': group['dateHeader'],
-          'trips': matchingTrips,
+          'trips': trips,
         });
       }
     }
+
     return filtered;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.designSurface,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            _buildHeader(),
-            _buildFilters(),
-            Expanded(
-              child: _buildTripList(),
+            _headerBg(),
+
+            Column(
+              children: [
+                _header(),
+
+                const SizedBox(height: 30),
+
+                // 🔥 FLOATING FILTER CARD
+                _filterContainer(),
+
+                Expanded(child: _tripList()),
+              ],
             ),
           ],
         ),
@@ -89,201 +84,258 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
     );
   }
 
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  // 🔥 HEADER BACKGROUND
+  Widget _headerBg() {
+    return Container(
+      height: 180,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary,
+            AppColors.designDarkGreen,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+    );
+  }
+
+  // 🔥 HEADER
+  Widget _header() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 16),
+      child: Column(
         children: [
-           const Icon(Icons.arrow_back, color: Colors.black, size: 24),
-           const Text(
+          Text(
             "Trip History",
             style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
             ),
           ),
-          const Icon(Icons.settings, color: Colors.grey, size: 24),
+          SizedBox(height: 4),
+          Text(
+            "Your completed & cancelled rides",
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 13,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildFilters() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+  // 🔥 FILTER CONTAINER (NEW PREMIUM)
+  Widget _filterContainer() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+          )
+        ],
+      ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildFilterChip('All'),
-          const SizedBox(width: 12),
-          _buildFilterChip('Completed'),
-          const SizedBox(width: 12),
-          _buildFilterChip('Cancelled'),
+          _chip('All'),
+          _chip('Completed'),
+          _chip('Cancelled'),
         ],
       ),
     );
   }
 
-  Widget _buildFilterChip(String label) {
-    bool isSelected = _selectedFilter == label;
+  Widget _chip(String label) {
+    bool selected = _selectedFilter == label;
+
     return GestureDetector(
       onTap: () => setState(() => _selectedFilter = label),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.black : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? Colors.black : Colors.grey.shade300),
+          color: selected ? Colors.black : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey.shade600,
-            fontWeight: FontWeight.bold,
+            color: selected ? Colors.white : Colors.black87,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTripList() {
+  // 🔥 LIST
+  Widget _tripList() {
     final groups = _filteredGroups;
+
     if (groups.isEmpty) {
-      return const Center(child: Text("No trips found", style: TextStyle(color: Colors.grey)));
+      return const Center(child: Text("No trips"));
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
       itemCount: groups.length,
       itemBuilder: (context, index) {
         final group = groups[index];
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 24),
-            Text(
-              group['dateHeader'],
-              style: const TextStyle(
-                color: Colors.grey,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                letterSpacing: 0.5,
+            // 🔥 DATE HEADER (IMPROVED)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Text(
+                group['dateHeader'],
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: Colors.grey,
+                  fontSize: 12,
+                  letterSpacing: 1,
+                ),
               ),
             ),
-            const SizedBox(height: 16),
-            ... (group['trips'] as List).map((trip) => _buildTripCard(trip)).toList(),
+
+            ...group['trips']
+                .map<Widget>((trip) => _tripCard(trip))
+                .toList(),
           ],
         );
       },
     );
   }
 
-  Widget _buildTripCard(Map<String, dynamic> trip) {
+  // 🔥 PREMIUM CARD
+  Widget _tripCard(Map trip) {
     bool isCompleted = trip['status'] == 'Completed';
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+          )
+        ],
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Icon Container
+          // ICON
           Container(
-            width: 56,
-            height: 56,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: trip['bgColor'],
-              borderRadius: BorderRadius.circular(16),
+              color: isCompleted
+                  ? Colors.green.withOpacity(0.1)
+                  : Colors.red.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Center(
-              child: Icon(
-                trip['status'] == 'Completed' ? Icons.directions_car : Icons.cancel_outlined,
-                color: isCompleted ? Colors.blue.shade700 : Colors.red.shade700,
-                size: 28,
-              ),
+            child: Icon(
+              isCompleted ? Icons.check : Icons.close,
+              color: isCompleted ? Colors.green : Colors.red,
             ),
           ),
-          const SizedBox(width: 16),
-          // Info Section
+
+          const SizedBox(width: 12),
+
+          // DETAILS
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  trip['vehicle'],
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
-                ),
-                Text(
-                  trip['plate'],
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
-                ),
+                Text(trip['vehicle'],
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700)),
+                Text(trip['plate'],
+                    style: const TextStyle(fontSize: 12)),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Text(
-                      trip['route'].toString().split('➡️')[0].trim(),
-                      style: const TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.w500),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.arrow_right_alt, color: Colors.grey, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      trip['route'].toString().split('➡️')[1].trim(),
-                      style: const TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.w500),
-                    ),
-                  ],
-                ),
-                Text(
-                  trip['time'],
-                  style: const TextStyle(color: Colors.grey, fontSize: 13),
-                ),
+                Text(trip['route'],
+                    style: const TextStyle(
+                        color: Colors.grey, fontSize: 12)),
+                Text(trip['time'],
+                    style: const TextStyle(
+                        color: Colors.grey, fontSize: 12)),
               ],
             ),
           ),
-          // Status/Amount Section
+
+          // RIGHT SIDE
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              if (isCompleted) ...[
+              // STATUS BADGE
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isCompleted
+                      ? Colors.green.withOpacity(0.1)
+                      : Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  trip['status'],
+                  style: TextStyle(
+                    color:
+                        isCompleted ? Colors.green : Colors.red,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 6),
+
+              if (isCompleted)
                 Text(
                   trip['amount'],
                   style: const TextStyle(
-                    color: Color(0xFF1E6B3F),
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
                   ),
                 ),
-                Row(
-                  children: const [
-                    Text("✓ Done", style: TextStyle(color: Color(0xFF1E6B3F), fontSize: 13, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ],
-              if (isCompleted) ...[
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () {
+
+              const SizedBox(height: 6),
+
+              if (isCompleted)
+                GestureDetector(
+                  onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const RateExperienceScreen()),
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const RateExperienceScreen(),
+                      ),
                     );
                   },
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.grey.shade50,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
                   child: const Text(
                     "Rate",
-                    style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-              ],
+                )
             ],
-          ),
+          )
         ],
       ),
     );

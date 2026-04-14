@@ -15,60 +15,16 @@ class ProfileScreen extends StatelessWidget {
         child: Column(
           children: [
             _buildProfileHeader(),
-            const SizedBox(height: 20),
             Expanded(
               child: Container(
-                width: double.infinity,
+                margin: const EdgeInsets.only(top: 12),
                 decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
+                  color: Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(24),
                   ),
                 ),
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  children: [
-                    _buildMenuItem(
-                      icon: Icons.notifications_none_outlined,
-                      title: "Notifications",
-                      badge: _buildBadge("3", Colors.red),
-                    ),
-                    _buildMenuItem(
-                      icon: Icons.person_outline,
-                      title: "My Profile",
-                      showChevron: true,
-                    ),
-                    _buildMenuItem(
-                      icon: Icons.description_outlined,
-                      title: "Documents",
-                      badge: _buildBadge("VERIFIED", const Color(0xFF1E6B3F), isText: true),
-                    ),
-                    _buildMenuItem(
-                      icon: Icons.account_balance_outlined,
-                      title: "Bank Account",
-                      showChevron: true,
-                    ),
-                    _buildMenuItem(
-                      icon: Icons.settings_outlined,
-                      title: "Settings",
-                      showChevron: true,
-                    ),
-                    _buildMenuItem(
-                      icon: Icons.help_outline,
-                      title: "Help & Support",
-                      showChevron: true,
-                    ),
-                    _buildMenuItem(
-                      icon: Icons.logout,
-                      title: "Logout",
-                      textColor: Colors.redAccent,
-                      iconColor: Colors.redAccent,
-                      showChevron: true,
-                      onTap: () => _handleLogout(context),
-                    ),
-                  ],
-                ),
+                child: _buildMenuList(context),
               ),
             ),
           ],
@@ -77,31 +33,17 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _handleLogout(BuildContext context) async {
-    final storage = context.read<SecureStorageService>();
-    await storage.logout();
-    
-    if (!context.mounted) return;
-    
-    // Clear stack and go to login
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-      (route) => false,
-    );
-  }
-
+  // 🔹 HEADER
   Widget _buildProfileHeader() {
     return Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(20),
       child: Column(
         children: [
           Row(
             children: [
-              // Avatar
               Container(
-                width: 100,
-                height: 100,
+                width: 70,
+                height: 70,
                 decoration: const BoxDecoration(
                   color: AppColors.designYellow,
                   shape: BoxShape.circle,
@@ -110,15 +52,15 @@ class ProfileScreen extends StatelessWidget {
                   child: Text(
                     "AR",
                     style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 20),
-              // User Details
+              const SizedBox(width: 16),
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,34 +69,39 @@ class ProfileScreen extends StatelessWidget {
                       "Abdul Rahman",
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
+                    const SizedBox(height: 4),
                     const Text(
                       "Support Driver",
                       style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
+                        color: Colors.white60,
+                        fontSize: 14,
                       ),
                     ),
                     const SizedBox(height: 8),
+
+                    // VERIFIED TAG
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1E6B3F),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Icon(Icons.check, color: Colors.white, size: 14),
+                        children: [
+                          Icon(Icons.check,
+                              color: Colors.white, size: 12),
                           SizedBox(width: 4),
                           Text(
                             "VERIFIED",
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -166,10 +113,12 @@ class ProfileScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 40),
-          // Stats Row
+
+          const SizedBox(height: 20),
+
+          // 🔹 STATS
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildStatItem("340", "Trips"),
               _buildStatItem("4.9★", "Rating"),
@@ -188,21 +137,101 @@ class ProfileScreen extends StatelessWidget {
           value,
           style: const TextStyle(
             color: AppColors.designYellow,
-            fontSize: 28,
-            fontWeight: FontWeight.w900,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
         ),
+        const SizedBox(height: 2),
         Text(
           label,
           style: const TextStyle(
             color: Colors.white54,
-            fontSize: 14,
+            fontSize: 12,
           ),
         ),
       ],
     );
   }
 
+  // 🔹 MENU LIST
+  Widget _buildMenuList(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              _buildMenuItem(
+                icon: Icons.notifications_none,
+                title: "Notifications",
+                badge: _buildBadge("3", Colors.red),
+              ),
+              _divider(),
+
+              _buildMenuItem(
+                icon: Icons.person_outline,
+                title: "My Profile",
+                showChevron: true,
+              ),
+              _divider(),
+
+              _buildMenuItem(
+                icon: Icons.description_outlined,
+                title: "Documents",
+                badge: _buildBadge(
+                  "VERIFIED",
+                  const Color(0xFF1E6B3F),
+                  isText: true,
+                ),
+              ),
+              _divider(),
+
+              _buildMenuItem(
+                icon: Icons.account_balance_outlined,
+                title: "Bank Account",
+                showChevron: true,
+              ),
+              _divider(),
+
+              _buildMenuItem(
+                icon: Icons.settings_outlined,
+                title: "Settings",
+                showChevron: true,
+              ),
+              _divider(),
+
+              _buildMenuItem(
+                icon: Icons.help_outline,
+                title: "Help & Support",
+                showChevron: true,
+              ),
+              _divider(),
+
+              _buildMenuItem(
+                icon: Icons.logout,
+                title: "Logout",
+                textColor: Colors.red,
+                iconColor: Colors.red,
+                onTap: () => _handleLogout(context),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 🔹 MENU ITEM
   Widget _buildMenuItem({
     required IconData icon,
     required String title,
@@ -212,41 +241,44 @@ class ProfileScreen extends StatelessWidget {
     Color? iconColor,
     VoidCallback? onTap,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
+    return ListTile(
+      dense: true,
+      onTap: onTap,
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Icon(icon, size: 22, color: iconColor ?? Colors.black54),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: textColor ?? Colors.black87,
+        ),
       ),
-      child: ListTile(
-        onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        leading: Icon(icon, color: iconColor ?? Colors.black54, size: 28),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: textColor ?? Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (badge != null) badge,
-            if (showChevron) ...[
-              const SizedBox(width: 8),
-              const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
-            ],
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (badge != null) badge,
+          if (showChevron) ...[
+            const SizedBox(width: 6),
+            const Icon(Icons.chevron_right,
+                size: 18, color: Colors.grey),
           ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildBadge(String text, Color color, {bool isText = false}) {
+  Widget _divider() {
+    return Divider(height: 1, color: Colors.grey.shade200);
+  }
+
+  Widget _buildBadge(String text, Color color,
+      {bool isText = false}) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: isText ? 12 : 8,
-        vertical: 4,
+        horizontal: isText ? 10 : 6,
+        vertical: 3,
       ),
       decoration: BoxDecoration(
         color: color,
@@ -256,10 +288,24 @@ class ProfileScreen extends StatelessWidget {
         text,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 12,
+          fontSize: 10,
           fontWeight: FontWeight.bold,
         ),
       ),
+    );
+  }
+
+  // 🔹 LOGOUT
+  void _handleLogout(BuildContext context) async {
+    final storage = context.read<SecureStorageService>();
+    await storage.logout();
+
+    if (!context.mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
     );
   }
 }
