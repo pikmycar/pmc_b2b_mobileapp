@@ -100,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: _selectedRole == UserRole.mainDriver ? AppColors.primary : Colors.white,
                           border: Border.all(color: _selectedRole == UserRole.mainDriver ? AppColors.primary : Colors.grey.shade300),
                           borderRadius: BorderRadius.circular(12),
-                          boxShadow: _selectedRole == UserRole.mainDriver ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
+                          boxShadow: _selectedRole == UserRole.mainDriver ? [BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -129,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: _selectedRole == UserRole.supportDriver ? AppColors.secondary : Colors.white,
                           border: Border.all(color: _selectedRole == UserRole.supportDriver ? AppColors.secondary : Colors.grey.shade300),
                           borderRadius: BorderRadius.circular(12),
-                          boxShadow: _selectedRole == UserRole.supportDriver ? [BoxShadow(color: AppColors.secondary.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
+                          boxShadow: _selectedRole == UserRole.supportDriver ? [BoxShadow(color: AppColors.secondary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -168,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Container(
                         height: 48,
                         decoration: BoxDecoration(
-                          color: _isMobileSelected ? AppColors.accent.withValues(alpha: 0.1) : Colors.white,
+                          color: _isMobileSelected ? AppColors.accent.withOpacity(0.1) : Colors.white,
                           border: Border.all(color: _isMobileSelected ? AppColors.accent : Colors.grey.shade200),
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -190,7 +190,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Container(
                         height: 48,
                         decoration: BoxDecoration(
-                          color: !_isMobileSelected ? AppColors.accent.withValues(alpha: 0.1) : Colors.white,
+                          color: !_isMobileSelected ? AppColors.accent.withOpacity(0.1) : Colors.white,
                           border: Border.all(color: !_isMobileSelected ? AppColors.accent : Colors.grey.shade200),
                           borderRadius: BorderRadius.circular(8),
                         ),

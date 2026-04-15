@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
@@ -7,10 +7,14 @@ import 'dart:async';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import '../../../core/models/user_role.dart';
-import '../screens/triprequest_screen.dart';
 import 'custom_top_header_bar.dart';
+import '../../main_driver/transport_trip/bloc/trip_bloc.dart';
+import '../../main_driver/transport_trip/bloc/trip_event.dart';
+import '../../main_driver/transport_trip/bloc/trip_state.dart';
+import '../../../core/models/trip_models.dart';
 import '../../support_driver/widgets/support_request_popup.dart';
 import '../../support_driver/screens/ticket_detail_screen.dart';
+import '../../main_driver/widgets/main_driver_request_popup.dart';
 
 class ModernHomeDashboard extends StatefulWidget {
   final bool isOnline;
@@ -37,14 +41,12 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
 
   final Set<Marker> _markers = {};
 
-  /// 🔥 TRIP POPUP
   bool _showTripPopup = false;
   Map<String, dynamic>? _tripData;
   Timer? _tripTimer;
   int _tripSeconds = 30;
   bool _isExpandedRequest = false;
 
-  /// 🔥 ANIMATION
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -57,15 +59,25 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
 
-    _pulseAnimation =
-        Tween(begin: 0.9, end: 1.15).animate(_pulseController);
+    _pulseAnimation = Tween(begin: 0.9, end: 1.15).animate(_pulseController);
 
     _loadRole();
 
     if (widget.isOnline) {
       _initLocation();
-      _simulateIncomingTrip(); // 🔥 AUTO RIDE
     }
+  }
+
+  void _loadSimulation() {
+     if (_role == UserRole.mainDriver) {
+        Future.delayed(const Duration(seconds: 5), () {
+          if (mounted && context.read<TripBloc>().state.status == TripStatus.searching) {
+            context.read<TripBloc>().add(SimulateRequest());
+          }
+        });
+      } else {
+        _simulateIncomingTrip();
+      }
   }
 
   @override
@@ -77,69 +89,46 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
     super.dispose();
   }
 
-  /// ================= LOCATION =================
-
   Future<void> _initLocation() async {
     final permission = await Geolocator.requestPermission();
-
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) return;
+    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) return;
 
     _positionStream = Geolocator.getPositionStream().listen((position) {
       if (!mounted) return;
-
       setState(() {
         _currentPosition = position;
         _markers.clear();
-        _markers.add(
-          Marker(
-            markerId: const MarkerId('driver'),
-            position: LatLng(position.latitude, position.longitude),
-          ),
-        );
+        _markers.add(Marker(markerId: const MarkerId('driver'), position: LatLng(position.latitude, position.longitude)));
       });
     });
   }
 
-  Future<void> _loadRole() async {
-    final storage = context.read<SecureStorageService>();
-    final roleStr = await storage.getUserRole();
+Future<void> _loadRole() async {
+  final storage = context.read<SecureStorageService>();
+  final roleStr = await storage.getUserRole();
 
-    setState(() {
-      _role = roleStr == UserRole.supportDriver.toString()
-          ? UserRole.supportDriver
-          : UserRole.mainDriver;
-    });
-  }
+  setState(() {
+    _role = roleStr == UserRole.supportDriver.toString()
+        ? UserRole.supportDriver
+        : UserRole.mainDriver;
 
-  /// ================= TRIP =================
-
+    if (widget.isOnline) _loadSimulation(); // ✅ CORRECT PLACE
+  });
+}
   void _simulateIncomingTrip() {
     Future.delayed(const Duration(seconds: 5), () {
       if (!mounted || !widget.isOnline) return;
-
       setState(() {
         _isExpandedRequest = false;
-        if (_role == UserRole.supportDriver) {
-          _tripData = {
-            "pickup": "Dubai Marina, Tower B",
-            "drop": "Al Quoz Auto Center",
-            "distance": "3.2km",
-            "eta": "12min",
-            "priority": "HIGH",
-          };
-        } else {
-          _tripData = {
-            "pickup": "Triplicane",
-            "drop": "T Nagar",
-            "name": "Rahul",
-            "rating": "4.6",
-            "fare": "₹240"
-          };
-        }
+        _tripData = {
+          "pickup": "Dubai Marina, Tower B",
+          "drop": "Al Quoz Auto Center",
+          "distance": "3.2km",
+          "eta": "12min",
+          "priority": "HIGH",
+        };
         _showTripPopup = true;
       });
-
       _startTripTimer();
     });
   }
@@ -147,55 +136,13 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
   void _startTripTimer() {
     _tripTimer?.cancel();
     _tripSeconds = 30;
-
     _tripTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return;
-
       setState(() {
         _tripSeconds--;
-
-        if (_tripSeconds <= 0) {
-          // If first phase (5km) is finished, expand to 10km phase
-          if (_role == UserRole.supportDriver && !_isExpandedRequest) {
-            _isExpandedRequest = true;
-            _tripSeconds = 30; // Reset timer for the expanded phase
-            _tripData = {
-              "pickup": "Jumeirah Beach Road, Villa 12",
-              "drop": "Al Quoz Auto Center",
-              "distance": "8.1km",
-              "eta": "22min",
-              "priority": "MED",
-            };
-          } else {
-            // If already expanded or not Support Driver, close the popup
-            _closeTrip();
-          }
-        }
+        if (_tripSeconds <= 0) _closeTrip();
       });
     });
-  }
-
-  void _acceptTrip() {
-    _tripTimer?.cancel();
-    _closeTrip();
-
-    if (_role == UserRole.supportDriver) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const TicketDetailScreen(),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Trip Accepted ✅")),
-      );
-    }
-  }
-
-  void _rejectTrip() {
-    _tripTimer?.cancel();
-    _closeTrip();
   }
 
   void _closeTrip() {
@@ -204,8 +151,6 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
       _tripData = null;
     });
   }
-
-  /// ================= UI =================
 
   @override
   Widget build(BuildContext context) {
@@ -242,20 +187,20 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
   }
 
   Widget _card(String value, String label) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
         ),
         child: Column(
           children: [
-            Text(value,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text(label,
-                style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            Text(value, style: theme.textTheme.titleLarge?.copyWith(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(label, style: theme.textTheme.bodyMedium),
           ],
         ),
       ),
@@ -263,170 +208,266 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
   }
 
   Widget _buildMapSection() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
       ),
       child: Stack(
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(25),
-            child: _currentPosition == null
-                ? const Center(child: CircularProgressIndicator())
-                : GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: LatLng(
-                        _currentPosition!.latitude,
-                        _currentPosition!.longitude,
-                      ),
-                      zoom: 15,
-                    ),
-                    markers: _markers,
-                    myLocationEnabled: true,
-                  ),
+            child: _currentPosition == null 
+              ? const Center(child: CircularProgressIndicator()) 
+              : GoogleMap(
+                  style: isDark ? _darkMapStyle : null,
+                  initialCameraPosition: CameraPosition(target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude), zoom: 15),
+                  markers: _markers,
+                  myLocationEnabled: true,
+                  zoomControlsEnabled: false,
+                  mapToolbarEnabled: false,
+                ),
           ),
-
-          /// 🔥 SEARCH BAR
-          if (widget.isOnline)
+          /// 🔥 SEARCH STATUS (FOR MAIN DRIVER)
+          if (widget.isOnline && _role == UserRole.mainDriver)
           Positioned(
-  bottom: 15,
-  left: 15,
-  right: 15,
-  child: Material(
-    borderRadius: BorderRadius.circular(20),
-    elevation: 4,
-
-    /// 🔥 ADD CLICK HERE
-    child: InkWell(
-      borderRadius: BorderRadius.circular(20),
-
-      onTap: () async {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const TripRequestScreen(),
+            bottom: 15,
+            left: 15,
+            right: 15,
+            child: BlocBuilder<TripBloc, TripState>(
+              builder: (context, state) {
+                return Material(
+                  color: (isDark ? Colors.black : Colors.white).withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(20),
+                  elevation: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      children: [
+                        ScaleTransition(scale: _pulseAnimation, child: const Text("🎯")),
+                        const SizedBox(width: 10),
+                        Text(state.status == TripStatus.searching ? "Searching for trips..." : "Trip in progress...", 
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black, 
+                            fontWeight: FontWeight.bold,
+                          )),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
-        );
-      },
-
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            ScaleTransition(
-              scale: _pulseAnimation,
-              child: const Text("🎯"),
-            ),
-            const SizedBox(width: 10),
-            const Expanded(
-              child: Text(
-                "Searching for trips...",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            const Icon(Icons.arrow_forward_ios, size: 14),
-          ],
-        ),
-      ),
-    ),
-  ),
-),
           /// 🔥 TRIP POPUPS
-          if (_showTripPopup && _tripData != null)
-             _role == UserRole.supportDriver 
-                ? SupportRequestPopup(
-                    tripData: _tripData!,
-                    secondsRemaining: _tripSeconds,
-                    totalSeconds: 30,
-                    isExpanded: _isExpandedRequest,
-                    onAccept: _acceptTrip,
-                    onDecline: _rejectTrip,
-                  )
-                : _buildTripPopup(),
+          BlocConsumer<TripBloc, TripState>(
+            listener: (context, state) {
+              if (state.status == TripStatus.accepted || 
+                  state.status == TripStatus.navigatingToPickup ||
+                  state.status == TripStatus.pickupReached ||
+                  state.status == TripStatus.inTrip) {
+                Navigator.pushReplacementNamed(context, '/main_driver_transport');
+              }
+            },
+            builder: (context, state) {
+              print("DEBUG: [Dashboard] Rendering BLoC Builder. Status: ${state.status}, Role: ${_role}, Trip: ${state.activeTrip != null ? 'Present' : 'Null'}");
+              
+              if (state.status == TripStatus.requestReceived && state.activeTrip != null && _role == UserRole.mainDriver) {
+                final driversCount = state.activeTrip!.supportDrivers.length;
+                print("DEBUG: [Dashboard] Showing MainDriverRequestPopup. Drivers visible: $driversCount");
+                
+                if (driversCount > 0) {
+                  return MainDriverRequestPopup(trip: state.activeTrip!);
+                } else {
+                  print("DEBUG: [Dashboard] Warning: Active trip has zero support drivers.");
+                }
+              }
+              // Support driver specific popup
+              if (_showTripPopup && _tripData != null && _role == UserRole.supportDriver) {
+                 return SupportRequestPopup(
+                   tripData: _tripData!,
+                   secondsRemaining: _tripSeconds,
+                   totalSeconds: 30,
+                   isExpanded: _isExpandedRequest,
+                   onAccept: () {
+                     _closeTrip();
+                     Navigator.push(context, MaterialPageRoute(builder: (_) => const TicketDetailScreen()));
+                   },
+                   onDecline: _closeTrip,
+                 );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildTripPopup() {
-    return Positioned(
-      left: 16,
-      right: 16,
-      bottom: 20,
-      child: TweenAnimationBuilder(
-        duration: const Duration(milliseconds: 400),
-        tween: Tween(begin: 100.0, end: 0.0),
-        builder: (context, value, child) {
-          return Transform.translate(
-            offset: Offset(0, value),
-            child: child,
-          );
-        },
-        child: Material(
-          borderRadius: BorderRadius.circular(24),
-          elevation: 8,
-          child: Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("New Ride Request",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text("$_tripSeconds s",
-                        style: const TextStyle(color: Colors.red)),
-                  ],
-                ),
-                const SizedBox(height: 10),
-
-                Text(_tripData!["pickup"]),
-                Text(_tripData!["drop"]),
-
-                const SizedBox(height: 10),
-
-                Text(_tripData!["name"]),
-                Text("⭐ ${_tripData!["rating"]}"),
-
-                Text(_tripData!["fare"],
-                    style: TextStyle(
-                        color: AppColors.designForestGreen,
-                        fontWeight: FontWeight.bold)),
-
-                const SizedBox(height: 10),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _rejectTrip,
-                        child: const Text("Reject"),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _acceptTrip,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              AppColors.designForestGreen,
-                        ),
-                        child: const Text("Accept"),
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+  static const String _darkMapStyle = '''
+[
+  {
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#242f3e"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#746855"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#242f3e"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.locality",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#d59563"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#d59563"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#263c3f"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#6b9a76"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#38414e"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#212a37"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#9ca5b3"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#746855"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#1f2835"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#f3d19c"
+      }
+    ]
+  },
+  {
+    "featureType": "transit",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#2f3948"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.station",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#d59563"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#17263c"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#515c6d"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#17263c"
+      }
+    ]
   }
+]
+''';
+
 }

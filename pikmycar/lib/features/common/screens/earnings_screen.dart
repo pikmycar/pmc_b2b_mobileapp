@@ -285,21 +285,25 @@ class EarningsScreen extends StatelessWidget {
               ),
             ),
 
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text(
-                "Withdraw",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            )
+            GestureDetector(
+  onTap: () {
+    Navigator.pushNamed(context, '/withdraw');
+  },
+  child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+    decoration: BoxDecoration(
+      color: Colors.black,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: const Text(
+      "Withdraw",
+      style: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  ),
+)
           ],
         ),
       ),

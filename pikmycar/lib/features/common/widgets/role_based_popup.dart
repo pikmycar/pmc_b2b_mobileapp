@@ -19,7 +19,7 @@ class RoleBasedPopup extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24.0),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.95),
+        color: AppColors.primary.withOpacity(0.95),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
@@ -36,7 +36,7 @@ class RoleBasedPopup extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
+                    color: Colors.black.withOpacity(0.2),
                     blurRadius: 20,
                     spreadRadius: 5,
                   )

@@ -1,0 +1,146 @@
+﻿Analyzing pikmycar...                                           
+
+   info - Parameter 'key' could be a super parameter - lib\app\app.dart:15:9 - use_super_parameters
+warning - Unused import: '../features/common/screens/placeholder_screens.dart' - lib\app\main_wrapper.dart:4:8 - unused_import
+   info - Parameter 'key' could be a super parameter - lib\app\main_wrapper.dart:12:9 - use_super_parameters
+   info - The constant name 'REQUESTED' isn't a lowerCamelCase identifier - lib\core\models\trip_models.dart:4:3 - constant_identifier_names
+   info - The constant name 'ACCEPTED' isn't a lowerCamelCase identifier - lib\core\models\trip_models.dart:5:3 - constant_identifier_names
+   info - The constant name 'PICKUP_IN_PROGRESS' isn't a lowerCamelCase identifier - lib\core\models\trip_models.dart:6:3 - constant_identifier_names
+   info - The constant name 'PICKUP_REACHED' isn't a lowerCamelCase identifier - lib\core\models\trip_models.dart:7:3 - constant_identifier_names
+   info - The constant name 'PICKED' isn't a lowerCamelCase identifier - lib\core\models\trip_models.dart:8:3 - constant_identifier_names
+   info - The constant name 'DROP_IN_PROGRESS' isn't a lowerCamelCase identifier - lib\core\models\trip_models.dart:9:3 - constant_identifier_names
+   info - The constant name 'DROPPED' isn't a lowerCamelCase identifier - lib\core\models\trip_models.dart:10:3 - constant_identifier_names
+   info - Don't invoke 'print' in production code - lib\core\services\notification_service.dart:8:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\notification_service.dart:12:5 - avoid_print
+   info - Don't use 'BuildContext's across async gaps - lib\features\auth\screens\create_pin_screen.dart:99:9 - use_build_context_synchronously
+warning - The value of the field '_isOtpComplete' isn't used - lib\features\auth\screens\email_login_screen.dart:23:8 - unused_field
+   info - The imported package 'provider' isn't a dependency of the importing package - lib\features\auth\screens\login_screen.dart:8:8 - depend_on_referenced_packages
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\auth\screens\login_screen.dart:103:113 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\auth\screens\login_screen.dart:132:118 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\auth\screens\login_screen.dart:171:71 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\auth\screens\login_screen.dart:193:72 - deprecated_member_use
+warning - Unused import: 'thank_you_screen.dart' - lib\features\auth\screens\mobile_password_screen.dart:8:8 - unused_import
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\auth\screens\mobile_password_screen.dart:70:38 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\auth\screens\mobile_password_screen.dart:72:38 - use_build_context_synchronously
+warning - Unused import: 'package:google_fonts/google_fonts.dart' - lib\features\auth\screens\otp_verification_screen.dart:4:8 - unused_import
+warning - The declaration '_showBiometricPrompt' isn't referenced - lib\features\auth\screens\otp_verification_screen.dart:51:8 - unused_element
+   info - 'WillPopScope' is deprecated and shouldn't be used. Use PopScope instead. The Android predictive back feature will not work with WillPopScope. This feature was deprecated after v3.12.0-1.0.pre - lib\features\auth\screens\otp_verification_screen.dart:68:12 - deprecated_member_use
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\auth\screens\otp_verification_screen.dart:88:7 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check - lib\features\auth\screens\otp_verification_screen.dart:94:36 - use_build_context_synchronously
+   info - Don't invoke 'print' in production code - lib\features\auth\screens\pin_login_screen.dart:39:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\screens\pin_login_screen.dart:45:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\screens\pin_login_screen.dart:67:7 - avoid_print
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\screens\earnings_screen.dart:86:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\screens\earnings_screen.dart:186:33 - deprecated_member_use
+   info - The imported package 'provider' isn't a dependency of the importing package - lib\features\common\screens\profile_screen.dart:2:8 - depend_on_referenced_packages
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\screens\profile_screen.dart:167:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\screens\ratings_screen.dart:157:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\screens\triprequest_screen.dart:185:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\trip_history\trip_history_screen.dart:141:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\trip_history\trip_history_screen.dart:233:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\trip_history\trip_history_screen.dart:246:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\trip_history\trip_history_screen.dart:247:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\trip_history\trip_history_screen.dart:289:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\trip_history\trip_history_screen.dart:290:36 - deprecated_member_use
+   info - The file name 'BiometricService.dart' isn't a lower_case_with_underscores identifier - lib\features\common\widgets\BiometricService.dart:1:1 - file_names
+   info - Don't invoke 'print' in production code - lib\features\common\widgets\BiometricService.dart:17:7 - avoid_print
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\widgets\app_drawer.dart:32:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\widgets\app_drawer.dart:179:49 - deprecated_member_use
+   info - Parameter 'key' could be a super parameter - lib\features\common\widgets\biometric_dialog.dart:7:9 - use_super_parameters
+   info - Don't use 'BuildContext's across async gaps - lib\features\common\widgets\biometric_dialog.dart:30:17 - use_build_context_synchronously
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\widgets\custom_bottom_navigation_bar.dart:22:33 - deprecated_member_use
+   info - Parameter 'key' could be a super parameter - lib\features\common\widgets\custom_button.dart:7:9 - use_super_parameters
+warning - Unused import: 'package:google_fonts/google_fonts.dart' - lib\features\common\widgets\custom_top_header_bar.dart:2:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\widgets\custom_top_header_bar.dart:84:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\widgets\custom_top_header_bar.dart:118:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\widgets\modern_home_dashboard.dart:239:65 - deprecated_member_use
+   info - Parameter 'key' could be a super parameter - lib\features\common\widgets\role_based_popup.dart:10:9 - use_super_parameters
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\widgets\role_based_popup.dart:22:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\common\widgets\role_based_popup.dart:39:41 - deprecated_member_use
+   info - Don't invoke 'print' in production code - lib\features\common\widgets\splash_screen.dart:45:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\common\widgets\splash_screen.dart:55:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\common\widgets\splash_screen.dart:63:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\common\widgets\splash_screen.dart:64:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\common\widgets\splash_screen.dart:65:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\common\widgets\splash_screen.dart:73:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\common\widgets\splash_screen.dart:80:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\common\widgets\splash_screen.dart:86:5 - avoid_print
+   info - The import of 'package:provider/provider.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter_bloc/flutter_bloc.dart' - lib\features\main_driver\dashboard\main_driver_dashboard.dart:3:8 - unnecessary_import
+   info - The imported package 'provider' isn't a dependency of the importing package - lib\features\main_driver\dashboard\main_driver_dashboard.dart:3:8 - depend_on_referenced_packages
+warning - Unused import: '../../../core/theme/app_theme.dart' - lib\features\main_driver\dashboard\main_driver_dashboard.dart:4:8 - unused_import
+warning - Unused import: 'package:google_maps_flutter/google_maps_flutter.dart' - lib\features\main_driver\dashboard\main_driver_dashboard.dart:9:8 - unused_import
+warning - Unused import: 'dart:async' - lib\features\main_driver\dashboard\main_driver_dashboard.dart:15:8 - unused_import
+warning - Unused import: '../transport_trip/bloc/trip_event.dart' - lib\features\main_driver\pick_me_requests\pick_me_request_screen.dart:5:8 - unused_import
+   info - Parameter 'key' could be a super parameter - lib\features\main_driver\pick_me_requests\pick_me_request_screen.dart:10:9 - use_super_parameters
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\main_driver\pick_me_requests\pick_me_request_screen.dart:26:44 - deprecated_member_use
+warning - Unused import: '../../../../core/models/trip_models.dart' - lib\features\main_driver\transport_trip\bloc\trip_event.dart:2:8 - unused_import
+warning - Unused import: 'dart:async' - lib\features\main_driver\transport_trip\transport_trip_screen.dart:1:8 - unused_import
+   info - Parameter 'key' could be a super parameter - lib\features\main_driver\transport_trip\transport_trip_screen.dart:13:9 - use_super_parameters
+warning - The value of the local variable 'isDark' isn't used - lib\features\main_driver\transport_trip\transport_trip_screen.dart:49:15 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\main_driver\transport_trip\transport_trip_screen.dart:128:26 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\main_driver\transport_trip\transport_trip_screen.dart:129:26 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\main_driver\transport_trip\transport_trip_screen.dart:177:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\main_driver\transport_trip\transport_trip_screen.dart:220:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\main_driver\transport_trip\transport_trip_screen.dart:249:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\main_driver\transport_trip\transport_trip_screen.dart:254:52 - deprecated_member_use
+warning - The value of the field '_darkMapStyle' isn't used - lib\features\main_driver\transport_trip\transport_trip_screen.dart:435:23 - unused_field
+   info - Parameter 'key' could be a super parameter - lib\features\main_driver\transport_trip\trip_completion_screen.dart:8:9 - use_super_parameters
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\main_driver\transport_trip\trip_completion_screen.dart:40:58 - deprecated_member_use
+   info - Parameter 'key' could be a super parameter - lib\features\main_driver\transport_trip\widgets\trip_request_bottom_sheet.dart:13:9 - use_super_parameters
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\main_driver\transport_trip\widgets\trip_request_bottom_sheet.dart:74:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\main_driver\transport_trip\widgets\trip_request_bottom_sheet.dart:108:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\main_driver\transport_trip\widgets\trip_request_bottom_sheet.dart:135:52 - deprecated_member_use
+  error - Target of URI doesn't exist: '../../transport_trip/bloc/trip_bloc.dart' - lib\features\main_driver\widgets\main_driver_request_popup.dart:3:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../../transport_trip/bloc/trip_event.dart' - lib\features\main_driver\widgets\main_driver_request_popup.dart:4:8 - uri_does_not_exist
+   info - Parameter 'key' could be a super parameter - lib\features\main_driver\widgets\main_driver_request_popup.dart:11:9 - use_super_parameters
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\main_driver\widgets\main_driver_request_popup.dart:30:35 - deprecated_member_use
+  error - The name 'TripBloc' isn't a type, so it can't be used as a type argument - lib\features\main_driver\widgets\main_driver_request_popup.dart:163:51 - non_type_as_type_argument
+  error - The method 'DeclineRequest' isn't defined for the type 'MainDriverRequestPopup' - lib\features\main_driver\widgets\main_driver_request_popup.dart:163:67 - undefined_method
+  error - The name 'TripBloc' isn't a type, so it can't be used as a type argument - lib\features\main_driver\widgets\main_driver_request_popup.dart:189:51 - non_type_as_type_argument
+  error - The method 'AcceptRequest' isn't defined for the type 'MainDriverRequestPopup' - lib\features\main_driver\widgets\main_driver_request_popup.dart:189:67 - undefined_method
+warning - Unused import: 'package:google_maps_flutter/google_maps_flutter.dart' - lib\features\support_driver\dashboard\support_driver_dashboard.dart:3:8 - unused_import
+warning - The value of the field '_showRequestPopup' isn't used - lib\features\support_driver\dashboard\support_driver_dashboard.dart:20:8 - unused_field
+   info - Parameter 'key' could be a super parameter - lib\features\support_driver\garage_delivery\garage_delivery_screen.dart:5:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\features\support_driver\inspection\inspection_screen.dart:7:9 - use_super_parameters
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\inspection\inspection_screen.dart:127:45 - deprecated_member_use
+   info - Parameter 'key' could be a super parameter - lib\features\support_driver\pickup_requests\pickup_request_screen.dart:5:9 - use_super_parameters
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\pickup_requests\pickup_request_screen.dart:10:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\pickup_requests\pickup_request_screen.dart:27:70 - deprecated_member_use
+   info - Parameter 'key' could be a super parameter - lib\features\support_driver\screens\driver_accepted_screen.dart:7:9 - use_super_parameters
+   info - Parameter 'key' could be a super parameter - lib\features\support_driver\screens\driver_on_way_screen.dart:8:9 - use_super_parameters
+warning - The value of the field '_mapController' isn't used - lib\features\support_driver\screens\driver_on_way_screen.dart:15:24 - unused_field
+   info - Parameter 'key' could be a super parameter - lib\features\support_driver\screens\searching_main_driver_screen.dart:7:9 - use_super_parameters
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\screens\searching_main_driver_screen.dart:89:61 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\screens\searching_main_driver_screen.dart:240:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\screens\searching_main_driver_screen.dart:289:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\screens\ticket_detail_screen.dart:192:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\screens\ticket_detail_screen.dart:255:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\screens\ticket_detail_screen.dart:361:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\screens\ticket_detail_screen.dart:383:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\widgets\support_request_popup.dart:45:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\widgets\support_request_popup.dart:153:51 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\widgets\support_request_popup.dart:192:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\widgets\support_request_popup.dart:218:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\widgets\support_request_popup.dart:250:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\widgets\support_request_popup.dart:284:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\widgets\support_request_popup.dart:286:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\support_driver\widgets\support_request_popup.dart:323:62 - deprecated_member_use
+
+flutter : 125 issues 
+found. (ran in 6.2s)
+At line:1 char:1
++ flutter analyze > 
+analysis_results.txt 
+2>&1
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (125 issues fo   
+ und. (ran in 6.2s)    
+:String) [], Remot    
+eException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 

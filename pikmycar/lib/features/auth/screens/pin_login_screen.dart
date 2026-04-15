@@ -14,61 +14,60 @@ class PinLoginScreen extends StatefulWidget {
   State<PinLoginScreen> createState() => _PinLoginScreenState();
 }
 
-class _PinLoginScreenState extends State<PinLoginScreen> {
+class _PinLoginScreenState extends State<PinLoginScreen>
+    with SingleTickerProviderStateMixin {
   late TextEditingController _pinController;
   String _pin = '';
   bool _isLoading = false;
 
+  late AnimationController _shakeController;
+  late Animation<double> _shakeAnimation;
+
   @override
   void initState() {
     super.initState();
+
     _pinController = TextEditingController();
 
-    // ✅ Trigger biometric after UI loads
+    /// 🔥 SHAKE ANIMATION
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    _shakeAnimation =
+        Tween<double>(begin: 0, end: 12).chain(CurveTween(curve: Curves.elasticIn))
+            .animate(_shakeController);
+
+    /// 🔥 AUTO BIOMETRIC
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _tryBiometric();
+      _tryBiometric();
     });
   }
 
-  // 🔥 BIOMETRIC LOGIN (FIXED)
   Future<void> _tryBiometric() async {
     final storage = context.read<SecureStorageService>();
     final biometricService = context.read<BiometricService>();
 
     final enabled = await storage.isBiometricEnabled();
-    print("Biometric Enabled: $enabled");
-
     if (!enabled) return;
 
-    try {
-      final success = await biometricService.authenticate();
-      print("Biometric Success: $success");
+    final success = await biometricService.authenticate();
 
-      if (!mounted) return;
+    if (!mounted) return;
 
-      if (success) {
-        final role = await storage.getUserRole();
-        if (!mounted) return;
+    if (success) {
+      final role = await storage.getUserRole();
 
-        FocusScope.of(context).unfocus();
-
-        await Future.delayed(const Duration(milliseconds: 200));
-
-        if (!mounted) return;
-
-        Navigator.pushReplacementNamed(
-          context,
-          role == UserRole.supportDriver.toString()
-              ? '/support_driver_dashboard'
-              : '/main_driver_dashboard',
-        );
-      }
-    } catch (e) {
-      print("Biometric Error: $e");
+      Navigator.pushReplacementNamed(
+        context,
+        role == UserRole.supportDriver.toString()
+            ? '/support_driver_dashboard'
+            : '/main_driver_dashboard',
+      );
     }
   }
 
-  // 🔥 PIN VERIFY
   Future<void> _verifyPin() async {
     setState(() => _isLoading = true);
 
@@ -83,25 +82,7 @@ class _PinLoginScreenState extends State<PinLoginScreen> {
 
     if (_pin == savedPin) {
       final role = await storage.getUserRole();
-      if (!mounted) return;
 
-      // ✅ STEP 1: remove focus (keyboard close)
-      FocusScope.of(context).unfocus();
-
-      // ✅ STEP 2: wait for keyboard to close
-      await Future.delayed(const Duration(milliseconds: 200));
-
-      // ✅ STEP 3: clear controller safely
-      if (mounted) {
-        _pinController.clear();
-      }
-
-      // ✅ STEP 4: wait again (VERY IMPORTANT)
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      if (!mounted) return;
-
-      // ✅ STEP 5: navigate
       Navigator.pushReplacementNamed(
         context,
         role == UserRole.supportDriver.toString()
@@ -109,145 +90,194 @@ class _PinLoginScreenState extends State<PinLoginScreen> {
             : '/main_driver_dashboard',
       );
     } else {
-      if (mounted) {
-        _pinController.clear();
-        setState(() => _pin = '');
+      /// ❌ SHAKE EFFECT
+      _shakeController.forward(from: 0);
 
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Incorrect PIN")));
-      }
+      _pinController.clear();
+      setState(() => _pin = '');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Incorrect PIN")),
+      );
     }
   }
 
   @override
   void dispose() {
-    // Standard disposal
     _pinController.dispose();
+    _shakeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true,
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height,
-              ),
-              child: IntrinsicHeight(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 60),
-
-                    const Center(
-                      child: Text(
-                        "Welcome Back",
-                        style: AppTextStyles.heading2,
-                      ),
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    Text(
-                      "Login securely",
-                      style: AppTextStyles.heading1.copyWith(fontSize: 26),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    const Text(
-                      "Use Biometric or enter your PIN",
-                      style: AppTextStyles.caption,
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    PinCodeTextField(
-                      key: const ValueKey('pin_field'),
-                      appContext: context,
-                      controller: _pinController,
-                      autoDisposeControllers: false,
-                      length: 4,
-                      keyboardType: TextInputType.number,
-                      obscureText: true,
-                      animationType: AnimationType.fade,
-                      onChanged: (val) => setState(() => _pin = val),
-                      pinTheme: PinTheme(
-                        shape: PinCodeFieldShape.box,
-                        borderRadius: BorderRadius.circular(10),
-                        fieldHeight: 60,
-                        fieldWidth: 60,
-                        inactiveColor: Colors.grey.shade300,
-                        selectedColor: AppColors.accent,
-                        activeColor: AppColors.accent,
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    // 🔥 LOGIN BUTTON
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed:
-                            _pin.length == 4 && !_isLoading ? _verifyPin : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accent,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child:
-                            _isLoading
-                                ? const CircularProgressIndicator(
-                                  color: Colors.black,
-                                )
-                                : const Text("Login"),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // 🔥 BIOMETRIC BUTTON
-                    Center(
-                      child: TextButton.icon(
-                        onPressed: _tryBiometric,
-                        icon: const Icon(Icons.fingerprint),
-                        label: const Text("Use Biometric"),
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    // 🔁 PASSWORD OPTION
-                    Center(
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.pushReplacementNamed(context, '/login');
-                        },
-                        child: const Text(
-                          "Use Password Instead",
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ),
-                    ),
-
-                    const Spacer(),
-                  ],
-                ),
+      body: Stack(
+        children: [
+          /// 🌈 PREMIUM GRADIENT BACKGROUND
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFFF8FAFF),
+                  Color(0xFFEFF3FF),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
             ),
           ),
-        ),
+
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 60),
+
+                  /// 🔥 TITLE
+                  const Center(
+                    child: Text(
+                      "Welcome Back",
+                      style: AppTextStyles.heading2,
+                    ),
+                  ),
+
+                  const SizedBox(height: 48),
+
+                  /// 🔥 HEADING
+                  Text(
+                    "Enter your PIN",
+                    style: AppTextStyles.heading1.copyWith(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  const Text(
+                    "Fast & secure access to your driver account",
+                    style: AppTextStyles.caption,
+                  ),
+
+                  const SizedBox(height: 50),
+
+                  /// 🔥 PIN WITH SHAKE
+                  AnimatedBuilder(
+                    animation: _shakeAnimation,
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset: Offset(_shakeAnimation.value, 0),
+                        child: child,
+                      );
+                    },
+                    child: Center(
+                      child: PinCodeTextField(
+                        appContext: context,
+                        controller: _pinController,
+                        length: 4,
+                        obscureText: true,
+                        animationType: AnimationType.fade,
+                        onChanged: (val) => setState(() => _pin = val),
+                        pinTheme: PinTheme(
+                          shape: PinCodeFieldShape.box,
+                          borderRadius: BorderRadius.circular(12),
+                          fieldHeight: 65,
+                          fieldWidth: 65,
+                          inactiveColor: Colors.grey.shade200,
+                          selectedColor: AppColors.accent,
+                          activeColor: AppColors.accent,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 50),
+
+                  /// 🔥 PREMIUM BUTTON
+                  SizedBox(
+                    width: double.infinity,
+                    height: 58,
+                    child: ElevatedButton(
+                      onPressed:
+                          _pin.length == 4 && !_isLoading ? _verifyPin : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: Colors.black,
+                        elevation: 8,
+                        shadowColor: AppColors.accent.withOpacity(0.4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(
+                              color: Colors.black,
+                            )
+                          : const Text(
+                              "Login",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  /// 🔐 BIOMETRIC
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: _tryBiometric,
+                      icon: Icon(Icons.fingerprint,
+                          color: AppColors.accent),
+                      label: Text(
+                        "Use Biometric",
+                        style: TextStyle(
+                          color: AppColors.accent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  /// 🔁 PASSWORD SWITCH
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/login');
+                      },
+                      child: const Text(
+                        "Use Password Instead",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  /// 💬 FOOTER
+                  const Center(
+                    child: Text(
+                      "Your data is securely encrypted 🔒",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

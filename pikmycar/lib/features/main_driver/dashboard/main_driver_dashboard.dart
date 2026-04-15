@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../transport_trip/bloc/trip_bloc.dart';
+import '../transport_trip/bloc/trip_event.dart';
+import '../transport_trip/bloc/trip_state.dart';
+import '../../../core/models/trip_models.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../common/widgets/app_drawer.dart';
 import '../../../app/main_wrapper.dart';
@@ -16,76 +22,80 @@ class MainDriverDashboard extends StatefulWidget {
 }
 
 class _MainDriverDashboardState extends State<MainDriverDashboard> {
-  bool _isOnline = false;
-  bool _showRequestPopup = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  Timer? _popupTimer;
 
   @override
   void initState() {
     super.initState();
-    // Sync initial state with wrapper
+    // Auto Go Online on login
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      MainWrapper.isOnlineNotifier.value = _isOnline;
-      _startPopupTimer();
-    });
-  }
-
-  void _startPopupTimer() {
-    _popupTimer?.cancel();
-    _popupTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted && _isOnline) {
-        setState(() => _showRequestPopup = true);
+      final state = context.read<TripBloc>().state;
+      if (state.status == TripStatus.accepted || 
+          state.status == TripStatus.navigatingToPickup ||
+          state.status == TripStatus.pickupReached ||
+          state.status == TripStatus.inTrip) {
+        Navigator.pushReplacementNamed(context, '/main_driver_transport');
+      } else {
+        context.read<TripBloc>().add(GoOnline());
       }
     });
   }
 
-  @override
-  void dispose() {
-    _popupTimer?.cancel();
-    super.dispose();
-  }
-
   void _toggleOnline(bool val) {
-    setState(() {
-      _isOnline = val;
-      if (!val) _showRequestPopup = false;
-    });
-    MainWrapper.isOnlineNotifier.value = val;
-    if (val) _startPopupTimer();
+    if (val) {
+      context.read<TripBloc>().add(GoOnline());
+    } else {
+      context.read<TripBloc>().add(GoOffline());
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: AppColors.designForestGreen,
-      drawer: const AppDrawer(),
-      body: SafeArea(
-        bottom: false,
-        child: _isOnline
-            ? ModernHomeDashboard(
-                isOnline: _isOnline,
-                onToggleOnline: _toggleOnline,
-                onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
-              )
-            : Column(
-                children: [
-                  CustomTopHeaderBar(
-                    isOnline: _isOnline,
-                    onOnlineStatusChanged: _toggleOnline,
+    return BlocConsumer<TripBloc, TripState>(
+      listener: (context, state) {
+        MainWrapper.isOnlineNotifier.value = state.status != TripStatus.offline;
+        
+        // 🔥 REDIRECT IF TRIP ACTIVE
+        if (state.status == TripStatus.accepted || 
+            state.status == TripStatus.navigatingToPickup ||
+            state.status == TripStatus.pickupReached ||
+            state.status == TripStatus.inTrip) {
+          Navigator.pushReplacementNamed(context, '/main_driver_transport');
+        }
+      },
+      builder: (context, state) {
+        final isOnline = state.status != TripStatus.offline;
+        return Scaffold(
+          key: _scaffoldKey,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          drawer: const AppDrawer(),
+          body: SafeArea(
+            bottom: false,
+            child: isOnline
+                ? ModernHomeDashboard(
+                    isOnline: isOnline,
+                    onToggleOnline: _toggleOnline,
                     onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+                  )
+                : Column(
+                    children: [
+                      CustomTopHeaderBar(
+                        isOnline: isOnline,
+                        onOnlineStatusChanged: _toggleOnline,
+                        onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+                      ),
+                      Expanded(
+                        child: OfflineScreenBody(
+                          tripsCount: "20",
+                          rating: "4.8",
+                          onToggleOnline: () => _toggleOnline(true),
+                        ),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: OfflineScreenBody(
-                      tripsCount: "20",
-                      rating: "4.8",
-                      onToggleOnline: () => _toggleOnline(true),
-                    ),
-                  ),
-                ],
-              ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

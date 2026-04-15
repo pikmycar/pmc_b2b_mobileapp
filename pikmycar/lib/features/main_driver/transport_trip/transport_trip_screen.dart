@@ -1,5 +1,18 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'bloc/trip_bloc.dart';
+import 'bloc/trip_event.dart';
+import 'bloc/trip_state.dart';
+import '../../../core/models/trip_models.dart';
 import '../../../core/theme/app_theme.dart';
+import 'widgets/trip_request_bottom_sheet.dart';
+
+import 'widgets/transport_map_widget.dart';
+import 'widgets/transport_header_widget.dart';
+import 'widgets/transport_metrics_widget.dart';
+import 'widgets/transport_bottom_ui_widget.dart';
 
 class MainDriverTransportScreen extends StatefulWidget {
   const MainDriverTransportScreen({Key? key}) : super(key: key);
@@ -9,148 +22,411 @@ class MainDriverTransportScreen extends StatefulWidget {
 }
 
 class _MainDriverTransportScreenState extends State<MainDriverTransportScreen> {
-  bool _supportDriverPickedUp = false;
-
-  void _completeTrip() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Transport Completed'),
-        content: const Text('Support Driver has been successfully dropped off at the customer location.'),
-        actions: [
-          TextButton(
-             onPressed: () {
-              // Return to Dashboard and clear stack
-              Navigator.of(context).pushNamedAndRemoveUntil('/main_driver_dashboard', (route) => false);
-            },
-            child: const Text('Back to Home'),
-          )
-        ],
-      ),
-    );
-  }
+  GoogleMapController? _mapController;
+  final Set<Marker> _markers = {};
+  final Set<Polyline> _polylines = {};
+  bool _isRequestSheetShown = false;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(_supportDriverPickedUp ? 'Navigating to Customer' : 'Navigating to Support Driver')),
-      body: Stack(
-        children: [
-          // Simulated Map Background
-          Container(
-            color: Colors.grey[200],
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                    const Icon(Icons.directions, size: 100, color: AppColors.infoBlue),
-                    const SizedBox(height: 16),
-                    Text('Live Map Navigation Simulation', style: AppTextStyles.heading4.copyWith(color: AppColors.infoBlue)),
-                ],
+    return BlocConsumer<TripBloc, TripState>(
+      listener: (context, state) {
+        if (state.status == TripStatus.completed) {
+          Navigator.pushReplacementNamed(context, '/main_driver_trip_completion');
+        }
+
+        if (state.status == TripStatus.requestReceived && !_isRequestSheetShown) {
+          _showTripRequestSheet(context, state.activeTrip!);
+        }
+        
+        if (state.status != TripStatus.requestReceived && _isRequestSheetShown) {
+          Navigator.pop(context);
+          _isRequestSheetShown = false;
+        }
+
+        if (state.activeTrip != null) {
+          _updateMapMarkers(state);
+        }
+      },
+      builder: (context, state) {
+        final trip = state.activeTrip;
+
+        return Scaffold(
+          body: Stack(
+            children: [
+              // Google Map
+              TransportMapWidget(
+                markers: _markers,
+                polylines: _polylines,
+                initialPosition: _getInitialPosition(state),
+                onMapCreated: (controller) => _mapController = controller,
               ),
-            ),
-          ),
-          
-          // Trip Info Bottom Sheet
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              padding: const EdgeInsets.all(24.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
+
+              // Header Overlay
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: TransportHeaderWidget(
+                  title: _getTitle(state.status),
+                  subtitle: state.status == TripStatus.searching ? "Online & Ready" : null,
+                  onBackTap: () => Navigator.pop(context),
                 ),
-                boxShadow: const [
-                  BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 2),
-                ],
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _supportDriverPickedUp ? 'Driving Support to Customer' : 'Picking up Support Driver',
-                    style: AppTextStyles.heading3,
+
+              // Metrics Overlay (Floating)
+              if (state.status == TripStatus.navigatingToPickup || state.status == TripStatus.inTrip)
+                const Positioned(
+                  top: 120,
+                  left: 16,
+                  right: 16,
+                  child: TransportMetricsWidget(
+                    distance: "2.1 km",
+                    eta: "6 mins",
+                    speed: "58 km/h",
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      const CircleAvatar(
-                        radius: 30,
-                        backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11'),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Alex (Support)', style: AppTextStyles.subtitle),
-                            Text(_supportDriverPickedUp ? 'Destination: 789 Suburbia Lane' : 'Pickup: 456 Uptown Blvd', style: AppTextStyles.labelSmall),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.infoBlue.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.message, color: AppColors.infoBlue),
-                          onPressed: () {},
-                        ),
-                      )
-                    ],
+                ),
+
+              // Bottom UI
+              if (state.status != TripStatus.requestReceived && trip != null)
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: TransportBottomUIWidget(
+                    driverName: _getCurrentTarget(trip).name,
+                    driverPhoto: _getCurrentTarget(trip).photo ?? "",
+                    locationLabel: state.status == TripStatus.inTrip ? "Dropping at" : "Pickup from",
+                    locationAddress: state.status == TripStatus.inTrip ? _getCurrentTarget(trip).dropLocation : _getCurrentTarget(trip).pickupLocation,
+                    buttonText: _getActionText(state.status),
+                    onActionPressed: () => _handleMainAction(context, state, _getCurrentTarget(trip)),
                   ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('ETA', style: AppTextStyles.labelSmall),
-                            Text(_supportDriverPickedUp ? '20 mins' : '5 mins', style: AppTextStyles.heading4),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            const Text('Distance', style: AppTextStyles.labelSmall),
-                            Text(_supportDriverPickedUp ? '7.0 miles' : '1.5 miles', style: AppTextStyles.heading4),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _supportDriverPickedUp ? AppColors.success : Theme.of(context).colorScheme.primary,
-                      ),
-                      onPressed: () {
-                        if (!_supportDriverPickedUp) {
-                          setState(() {
-                            _supportDriverPickedUp = true;
-                          });
-                        } else {
-                          _completeTrip();
-                        }
-                      },
-                      child: Text(_supportDriverPickedUp ? 'Arrived at Drop-off - Complete Trip' : 'Support Driver Picked Up - Start Trip'),
-                    ),
-                  )
-                ],
-              ),
-            ),
-          )
-        ],
-      ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
+
+  SupportDriver _getCurrentTarget(Trip trip) {
+    return trip.supportDrivers.firstWhere(
+      (d) => d.id == trip.currentTargetDriverId,
+      orElse: () => trip.supportDrivers.first,
+    );
+  }
+
+  String _getTitle(TripStatus status) {
+    if (status == TripStatus.navigatingToPickup) return "Navigating to Pickup";
+    if (status == TripStatus.pickupReached) return "Wait for Support Driver";
+    if (status == TripStatus.inTrip) return "In Trip";
+    return "Searching for trips...";
+  }
+
+  void _handleMainAction(BuildContext context, TripState state, SupportDriver driver) {
+    if (state.status == TripStatus.navigatingToPickup) {
+      context.read<TripBloc>().add(MarkArrivedAtPickup());
+    } else if (state.status == TripStatus.pickupReached) {
+      context.read<TripBloc>().add(StartTripToCustomer());
+    } else if (state.status == TripStatus.inTrip) {
+      context.read<TripBloc>().add(MarkDropComplete(driver.id));
+    }
+  }
+
+  String _getActionText(TripStatus status) {
+    switch (status) {
+      case TripStatus.navigatingToPickup:
+        return "Arrived at Pickup";
+      case TripStatus.pickupReached:
+        return "Start Trip";
+      case TripStatus.inTrip:
+        return "Complete Trip";
+      default:
+        return "Accept Trip";
+    }
+  }
+
+  LatLng _getInitialPosition(TripState state) {
+    LatLng initialPosition = const LatLng(25.1972, 55.2744); // Burj Khalifa
+    if (state.activeTrip != null) {
+       final currentTarget = state.activeTrip!.supportDrivers.firstWhere(
+        (d) => d.id == state.activeTrip!.currentTargetDriverId,
+        orElse: () => state.activeTrip!.supportDrivers.first,
+      );
+      initialPosition = LatLng(currentTarget.pickupLat ?? initialPosition.latitude, 
+                               currentTarget.pickupLng ?? initialPosition.longitude);
+    }
+    return initialPosition;
+  }
+
+  void _showTripRequestSheet(BuildContext context, Trip trip) {
+    _isRequestSheetShown = true;
+    final currentTarget = trip.supportDrivers.firstWhere(
+      (d) => d.id == trip.currentTargetDriverId,
+      orElse: () => trip.supportDrivers.first,
+    );
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false,
+      enableDrag: false,
+      builder: (_) => TripRequestBottomSheet(
+        customerName: currentTarget.name,
+        pickupLocation: currentTarget.pickupLocation,
+        destinationLocation: currentTarget.dropLocation,
+        fare: trip.totalEarnings,
+        onAccept: () {
+          context.read<TripBloc>().add(AcceptRequest());
+        },
+        onReject: () {
+          context.read<TripBloc>().add(DeclineRequest());
+        },
+      ),
+    ).then((_) => _isRequestSheetShown = false);
+  }
+
+  void _updateMapMarkers(TripState state) async {
+    final trip = state.activeTrip!;
+    final currentTarget = trip.supportDrivers.firstWhere(
+      (d) => d.id == trip.currentTargetDriverId,
+      orElse: () => trip.supportDrivers.first,
+    );
+
+    final Set<Marker> newMarkers = {};
+    final Set<Polyline> newPolylines = {};
+
+    if (currentTarget.pickupLat != null && currentTarget.pickupLng != null) {
+      newMarkers.add(
+        Marker(
+          markerId: const MarkerId('pickup'),
+          position: LatLng(currentTarget.pickupLat!, currentTarget.pickupLng!),
+          infoWindow: const InfoWindow(title: 'Pickup Location'),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueCyan),
+        ),
+      );
+    }
+
+    if (currentTarget.dropLat != null && currentTarget.dropLng != null) {
+      newMarkers.add(
+        Marker(
+          markerId: const MarkerId('drop'),
+          position: LatLng(currentTarget.dropLat!, currentTarget.dropLng!),
+          infoWindow: const InfoWindow(title: 'Drop-off Location'),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        ),
+      );
+    }
+
+    // Add polyline between pickup and drop
+    if (currentTarget.pickupLat != null && currentTarget.dropLat != null) {
+      newPolylines.add(
+        Polyline(
+          polylineId: const PolylineId('route'),
+          points: [
+            LatLng(currentTarget.pickupLat!, currentTarget.pickupLng!),
+            LatLng(currentTarget.dropLat!, currentTarget.dropLng!),
+          ],
+          color: AppColors.primary,
+          width: 5,
+          geodesic: true,
+        ),
+      );
+    }
+
+    setState(() {
+      _markers.clear();
+      _markers.addAll(newMarkers);
+      _polylines.clear();
+      _polylines.addAll(newPolylines);
+    });
+
+    // Zoom to fit bounds
+    if (_mapController != null && newMarkers.isNotEmpty) {
+      final bounds = _calculateBounds(newMarkers);
+      _mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 100));
+    }
+  }
+
+  LatLngBounds _calculateBounds(Set<Marker> markers) {
+    double minLat = markers.first.position.latitude;
+    double maxLat = markers.first.position.latitude;
+    double minLng = markers.first.position.longitude;
+    double maxLng = markers.first.position.longitude;
+
+    for (var marker in markers) {
+      if (marker.position.latitude < minLat) minLat = marker.position.latitude;
+      if (marker.position.latitude > maxLat) maxLat = marker.position.latitude;
+      if (marker.position.longitude < minLng) minLng = marker.position.longitude;
+      if (marker.position.longitude > maxLng) maxLng = marker.position.longitude;
+    }
+
+    return LatLngBounds(
+      southwest: LatLng(minLat, minLng),
+      northeast: LatLng(maxLat, maxLng),
+    );
+  }
+
+  static const String _darkMapStyle = '''
+[
+  {
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#242f3e"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#746855"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#242f3e"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.locality",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#d59563"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#d59563"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#263c3f"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#6b9a76"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#38414e"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#212a37"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#9ca5b3"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#746855"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#1f2835"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#f3d19c"
+      }
+    ]
+  },
+  {
+    "featureType": "transit",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#2f3948"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.station",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#d59563"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#17263c"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#515c6d"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#17263c"
+      }
+    ]
+  }
+]
+''';
 }

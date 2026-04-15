@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 
 class CustomTopHeaderBar extends StatelessWidget
     implements PreferredSizeWidget {
   final VoidCallback? onMenuTap;
-  final VoidCallback? onNotificationTap;
   final ValueChanged<bool>? onOnlineStatusChanged;
   final bool isOnline;
   final bool canGoOffline;
@@ -12,7 +12,6 @@ class CustomTopHeaderBar extends StatelessWidget
   const CustomTopHeaderBar({
     super.key,
     this.onMenuTap,
-    this.onNotificationTap,
     this.onOnlineStatusChanged,
     required this.isOnline,
     this.canGoOffline = true,
@@ -25,7 +24,6 @@ class CustomTopHeaderBar extends StatelessWidget
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("You cannot go offline during an active trip."),
-        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -35,20 +33,26 @@ class CustomTopHeaderBar extends StatelessWidget
     onOnlineStatusChanged?.call(newStatus);
   }
 
+  /// 🔔 NOTIFICATION CLICK
+  void _handleNotificationTap(BuildContext context) {
+    Navigator.pushNamed(context, '/notifications');
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      // 🔥 GREEN COLOR (instead of blue)
       backgroundColor: isOnline ? const Color(0xFF00C853) : Colors.white,
       elevation: 0,
 
       leading: IconButton(
-        icon: Icon(Icons.menu, color: isOnline ? Colors.white : Colors.black),
+        icon: Icon(Icons.menu,
+            color: isOnline ? Colors.white : Colors.black),
         onPressed: onMenuTap,
       ),
 
       centerTitle: true,
 
+      /// 🔥 ONLINE TOGGLE
       title: GestureDetector(
         onTap: () async {
           if (canGoOffline || !isOnline) {
@@ -57,34 +61,32 @@ class CustomTopHeaderBar extends StatelessWidget
             _showOfflineSnackBar(context);
           }
         },
-        child: _buildStatusToggle(context),
+        child: _buildStatusToggle(),
       ),
 
+      /// 🔔 NOTIFICATION ICON
       actions: [
         IconButton(
           icon: Icon(
             Icons.notifications_none,
             color: isOnline ? Colors.white : Colors.black,
           ),
-          onPressed: onNotificationTap,
+          onPressed: () => _handleNotificationTap(context),
         ),
       ],
     );
   }
 
-  Widget _buildStatusToggle(BuildContext context) {
+  Widget _buildStatusToggle() {
     return Container(
       width: 130,
       height: 38,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        // 🔥 LIGHT GREEN BACKGROUND
-        color:
-            isOnline
-                ? const Color(0xFF00C853).withOpacity(0.8)
-                : Colors.grey.shade100,
+        color: isOnline
+            ? const Color(0xFF00C853).withOpacity(0.8)
+            : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(40),
-
         border: isOnline ? null : Border.all(color: Colors.redAccent),
       ),
       child: Stack(
@@ -92,34 +94,31 @@ class CustomTopHeaderBar extends StatelessWidget
         children: [
           AnimatedAlign(
             duration: const Duration(milliseconds: 300),
-            alignment: isOnline ? Alignment.center : const Alignment(0.25, 0),
+            alignment:
+                isOnline ? Alignment.center : const Alignment(0.25, 0),
             child: Text(
               isOnline ? "Online" : "Go Online",
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: isOnline ? Colors.white : const Color(0xFF131313),
+                color:
+                    isOnline ? Colors.white : const Color(0xFF131313),
               ),
             ),
           ),
-
           AnimatedAlign(
             duration: const Duration(milliseconds: 350),
-            alignment: isOnline ? Alignment.centerRight : Alignment.centerLeft,
+            alignment: isOnline
+                ? Alignment.centerRight
+                : Alignment.centerLeft,
             child: Container(
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                // 🔥 GREEN DOT
-                color: isOnline ? const Color(0xFF00E676) : Colors.redAccent,
+                color: isOnline
+                    ? const Color(0xFF00E676)
+                    : Colors.redAccent,
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 3,
-                    offset: const Offset(1, 2),
-                  ),
-                ],
               ),
               child: Icon(
                 isOnline ? Icons.wifi : Icons.wifi_off,

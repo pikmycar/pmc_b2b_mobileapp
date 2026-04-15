@@ -7,7 +7,7 @@ class SupportDriverPickupRequestScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary.withValues(alpha: 0.87), // Dark overlay feel for incoming requests
+      backgroundColor: AppColors.primary.withOpacity(0.87), // Dark overlay feel for incoming requests
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -24,7 +24,7 @@ class SupportDriverPickupRequestScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.5),
+                      color: Theme.of(context).colorScheme.secondary.withOpacity(0.5),
                       blurRadius: 30,
                       spreadRadius: 10,
                     )

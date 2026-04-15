@@ -14,9 +14,23 @@ import '../features/support_driver/garage_delivery/garage_delivery_screen.dart';
 
 import '../features/main_driver/dashboard/main_driver_dashboard.dart';
 import '../features/main_driver/transport_trip/transport_trip_screen.dart';
+import '../features/main_driver/transport_trip/trip_completion_screen.dart';
+import '../features/main_driver/home/driver_home_screen.dart';
+import '../features/main_driver/transport_trip/screens/navigate_to_pickup_screen.dart';
+import '../features/main_driver/transport_trip/screens/pickup_reached_screen.dart';
+import '../features/main_driver/transport_trip/screens/in_trip_screen.dart';
+import '../features/main_driver/settings/screens/settings_screen.dart';
+import '../features/main_driver/settings/screens/profile_screen.dart';
+import '../features/main_driver/settings/screens/documents_screen.dart';
+import '../features/main_driver/settings/screens/bank_screen.dart';
+import '../features/main_driver/settings/screens/withdraw_screen.dart';
+import '../features/main_driver/settings/screens/support_screen.dart';
+import '../features/main_driver/settings/screens/reset_pin_screen.dart';
+import '../features/main_driver/settings/screens/notifications_screen.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
+    print("DEBUG: [Router] Navigating to: ${settings.name}");
     switch (settings.name) {
       case '/':
         return MaterialPageRoute(builder: (_) => const SplashScreen());
@@ -50,9 +64,62 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const MainWrapper(child: MainDriverDashboard()),
         );
+      case '/driver_home':
+        return MaterialPageRoute(
+          builder: (_) => const MainWrapper(child: DriverHomeScreen()),
+        );
       case '/main_driver_transport':
         return MaterialPageRoute(
           builder: (_) => const MainDriverTransportScreen(),
+        );
+      case '/navigate_to_pickup':
+        return MaterialPageRoute(
+          builder: (_) => const NavigateToPickupScreen(),
+        );
+      case '/pickup_reached':
+        return MaterialPageRoute(
+          builder: (_) => const PickupReachedScreen(),
+        );
+      case '/in_trip':
+        return MaterialPageRoute(
+          builder: (_) => const InTripScreen(),
+        );
+      case '/settings':
+        return MaterialPageRoute(
+          builder: (_) => const SettingsScreen(),
+        );
+      case '/profile_details':
+        return MaterialPageRoute(
+          builder: (_) => const ProfileDetailsScreen(),
+        );
+      case '/documents':
+        return MaterialPageRoute(
+          builder: (_) => const DocumentsScreen(),
+        );
+      case '/bank_account':
+        return MaterialPageRoute(
+          builder: (_) => const BankAccountScreen(),
+        );
+      case '/withdraw':
+        return MaterialPageRoute(
+          builder: (_) => const WithdrawScreen(),
+        );
+      case '/support':
+        return MaterialPageRoute(
+          builder: (_) => const SupportScreen(),
+        );
+      case '/reset_pin':
+        return MaterialPageRoute(
+          builder: (_) => const ResetPinScreen(),
+        );
+      case '/notifications':
+        return MaterialPageRoute(
+          builder: (_) => const NotificationsScreen(),
+        );
+      case '/main_driver_trip_completion':
+      case '/trip_completed':
+        return MaterialPageRoute(
+          builder: (_) => const TripCompletionScreen(), // 🔥 RESTORED
         );
       default:
         return MaterialPageRoute(

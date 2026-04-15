@@ -83,7 +83,6 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
 
-                    // VERIFIED TAG
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
@@ -116,7 +115,6 @@ class ProfileScreen extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // 🔹 STATS
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -171,10 +169,15 @@ class ProfileScreen extends StatelessWidget {
           ),
           child: Column(
             children: [
+
               _buildMenuItem(
                 icon: Icons.notifications_none,
                 title: "Notifications",
                 badge: _buildBadge("3", Colors.red),
+                showChevron: true,
+                onTap: () {
+                  Navigator.pushNamed(context, '/notifications');
+                },
               ),
               _divider(),
 
@@ -182,17 +185,20 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.person_outline,
                 title: "My Profile",
                 showChevron: true,
+                onTap: () {
+                  Navigator.pushNamed(context, '/profile_details');
+                },
               ),
               _divider(),
 
               _buildMenuItem(
                 icon: Icons.description_outlined,
                 title: "Documents",
-                badge: _buildBadge(
-                  "VERIFIED",
-                  const Color(0xFF1E6B3F),
-                  isText: true,
-                ),
+                badge: _buildBadge("VERIFIED",
+                    const Color(0xFF1E6B3F), isText: true),
+                onTap: () {
+                  Navigator.pushNamed(context, '/documents');
+                },
               ),
               _divider(),
 
@@ -200,6 +206,9 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.account_balance_outlined,
                 title: "Bank Account",
                 showChevron: true,
+                onTap: () {
+                  Navigator.pushNamed(context, '/bank_account');
+                },
               ),
               _divider(),
 
@@ -207,6 +216,9 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.settings_outlined,
                 title: "Settings",
                 showChevron: true,
+                onTap: () {
+                  Navigator.pushNamed(context, '/settings');
+                },
               ),
               _divider(),
 
@@ -214,6 +226,9 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.help_outline,
                 title: "Help & Support",
                 showChevron: true,
+                onTap: () {
+                  Navigator.pushNamed(context, '/support');
+                },
               ),
               _divider(),
 
