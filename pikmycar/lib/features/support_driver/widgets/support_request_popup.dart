@@ -210,7 +210,6 @@ class SupportRequestPopup extends StatelessWidget {
 
   Widget _buildExpansionMessage() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFFEFCE8),

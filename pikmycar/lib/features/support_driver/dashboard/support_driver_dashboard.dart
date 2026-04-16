@@ -16,7 +16,7 @@ class SupportDriverDashboard extends StatefulWidget {
 }
 
 class _SupportDriverDashboardState extends State<SupportDriverDashboard> {
-  bool _isOnline = false;
+  bool _isOnline = MainWrapper.isOnlineNotifier.value;
   bool _showRequestPopup = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   Timer? _popupTimer;

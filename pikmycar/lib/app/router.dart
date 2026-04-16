@@ -10,7 +10,15 @@ import 'main_wrapper.dart';
 import '../features/support_driver/dashboard/support_driver_dashboard.dart';
 
 import '../features/support_driver/inspection/inspection_screen.dart';
+import '../features/support_driver/handover/handover_screen.dart';
+import '../features/support_driver/screens/drive_to_garage_screen.dart';
+import '../features/support_driver/screens/arrived_at_garage_screen.dart';
+import '../features/support_driver/screens/garage_handover_screen.dart';
+import '../features/support_driver/screens/ride_summary_screen.dart';
 import '../features/support_driver/garage_delivery/garage_delivery_screen.dart';
+import '../features/support_driver/screens/driver_arrived_screen.dart';
+import '../features/support_driver/screens/ride_to_customer_screen.dart';
+import '../features/support_driver/screens/arrived_at_pickup_screen.dart';
 
 import '../features/main_driver/dashboard/main_driver_dashboard.dart';
 import '../features/main_driver/transport_trip/transport_trip_screen.dart';
@@ -57,6 +65,38 @@ class AppRouter {
       case '/support_driver_garage_delivery':
         return MaterialPageRoute(
           builder: (_) => const SupportDriverGarageDeliveryScreen(),
+        );
+      case '/support_driver_arrived':
+        return MaterialPageRoute(
+          builder: (_) => const DriverArrivedScreen(),
+        );
+      case '/support_driver_ride_to_customer':
+        return MaterialPageRoute(
+          builder: (_) => const RideToCustomerScreen(),
+        );
+      case '/support_driver_arrived_at_pickup':
+        return MaterialPageRoute(
+          builder: (_) => const ArrivedAtPickupScreen(),
+        );
+      case '/support_driver_handover':
+        return MaterialPageRoute(
+          builder: (_) => const HandoverScreen(),
+        );
+      case '/support_driver_drive_to_garage':
+        return MaterialPageRoute(
+          builder: (_) => const DriveToGarageScreen(),
+        );
+      case '/support_driver_arrived_at_garage':
+        return MaterialPageRoute(
+          builder: (_) => const ArrivedAtGarageScreen(),
+        );
+      case '/support_driver_garage_handover':
+        return MaterialPageRoute(
+          builder: (_) => const GarageHandoverScreen(),
+        );
+      case '/support_driver_ride_summary':
+        return MaterialPageRoute(
+          builder: (_) => const RideSummaryScreen(),
         );
 
       // MAIN DRIVER ROUTES

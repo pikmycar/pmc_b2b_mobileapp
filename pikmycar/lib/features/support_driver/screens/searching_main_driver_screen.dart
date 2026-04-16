@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 import '../../../core/theme/app_theme.dart';
 import 'driver_accepted_screen.dart';
@@ -14,6 +16,9 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
     with TickerProviderStateMixin {
   late AnimationController _radarController;
   Timer? _searchTimer;
+  GoogleMapController? _mapController;
+  Position? _currentPosition;
+  final Set<Marker> _markers = {};
 
   @override
   void initState() {
@@ -23,6 +28,8 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
       vsync: this,
       duration: const Duration(seconds: 3),
     )..repeat();
+
+    _initLocationTracking();
 
     // Auto-navigate to DriverAcceptedScreen after 8 seconds (Simulated search)
     _searchTimer = Timer(const Duration(seconds: 8), () {
@@ -39,7 +46,39 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
   void dispose() {
     _radarController.dispose();
     _searchTimer?.cancel();
+    _mapController?.dispose();
     super.dispose();
+  }
+
+  Future<void> _initLocationTracking() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) return;
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) return;
+    }
+
+    if (permission == LocationPermission.deniedForever) return;
+
+    final position = await Geolocator.getCurrentPosition();
+    if (!mounted) return;
+
+    setState(() {
+      _currentPosition = position;
+      _markers.clear();
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('user_location'),
+          position: LatLng(position.latitude, position.longitude),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow),
+        ),
+      );
+    });
   }
 
   @override
@@ -67,44 +106,86 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Radar Section
+            // Radar Section (NOW WITH LIVE MAP)
             Container(
-              height: 300,
+              height: 350,
               width: double.infinity,
-              color: const Color(0xFFF1F5F9),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+              ),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  ...List.generate(3, (index) {
-                    return AnimatedBuilder(
-                      animation: _radarController,
-                      builder: (context, child) {
-                        double progress = (_radarController.value + index / 3) % 1.0;
-                        return Container(
-                          width: progress * 400,
-                          height: progress * 400,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.designYellow.withOpacity(1 - progress),
-                              width: 2,
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  }),
+                  // LIVE MAP BACKGROUND
+                  if (_currentPosition != null)
+                    GoogleMap(
+                      initialCameraPosition: CameraPosition(
+                        target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                        zoom: 15,
+                      ),
+                      markers: _markers,
+                      onMapCreated: (controller) => _mapController = controller,
+                      myLocationEnabled: true,
+                      zoomControlsEnabled: false,
+                      mapToolbarEnabled: false,
+                      myLocationButtonEnabled: false,
+                    )
+                  else
+                    const Center(child: CircularProgressIndicator()),
+
+                  // RADAR RIPPLE OVERLAY
+                  IgnorePointer(
+                    child: Container(
+                      color: Colors.black.withOpacity(0.1), // Subtle map dimming
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          ...List.generate(3, (index) {
+                            return AnimatedBuilder(
+                              animation: _radarController,
+                              builder: (context, child) {
+                                double progress = (_radarController.value + index / 3) % 1.0;
+                                return Container(
+                                  width: progress * 600,
+                                  height: progress * 600,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: AppColors.designYellow.withOpacity((1 - progress) * 0.5),
+                                      width: 2,
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Pulse Center
                   Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: const BoxDecoration(
-                      color: AppColors.designYellow,
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.designYellow.withOpacity(0.3),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.my_location, color: Colors.black, size: 30),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: AppColors.designYellow,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.my_location, color: Colors.black, size: 24),
+                    ),
                   ),
-                  _buildMockCarIcon(100, -80),
-                  _buildMockCarIcon(-130, 60),
-                  _buildMockCarIcon(150, 40),
+                  
+                  // Mock Car Echoes
+                  _buildMockCarIcon(120, -100),
+                  _buildMockCarIcon(-140, 80),
+                  _buildMockCarIcon(100, 110),
                 ],
               ),
             ),

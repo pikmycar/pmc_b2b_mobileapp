@@ -15,11 +15,26 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
   GoogleMapController? _mapController;
   Position? _currentPosition;
   final Set<Marker> _markers = {};
+  final Set<Polyline> _polylines = {};
+  Timer? _navigationTimer;
 
   @override
   void initState() {
     super.initState();
     _initLocationTracking();
+    
+    // Start 30-second timer to navigate to Arrived screen
+    _navigationTimer = Timer(const Duration(seconds: 30), () {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/support_driver_arrived');
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _navigationTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _initLocationTracking() async {
@@ -48,12 +63,16 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
 
   void _updateMarkers(Position position) {
     _markers.clear();
+    _polylines.clear();
     
+    final userLatLng = LatLng(position.latitude, position.longitude);
+    final driverLatLng = LatLng(position.latitude + 0.005, position.longitude + 0.005);
+
     // User Marker
     _markers.add(
       Marker(
         markerId: const MarkerId('user_location'),
-        position: LatLng(position.latitude, position.longitude),
+        position: userLatLng,
         infoWindow: const InfoWindow(title: 'You are here'),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
       ),
@@ -63,9 +82,20 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
     _markers.add(
       Marker(
         markerId: const MarkerId('driver_location'),
-        position: LatLng(position.latitude + 0.005, position.longitude + 0.005),
+        position: driverLatLng,
         infoWindow: const InfoWindow(title: 'Khalid Al-Ameri'),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+      ),
+    );
+
+    // Mock Polyline between User and Driver
+    _polylines.add(
+      Polyline(
+        polylineId: const PolylineId('route_to_driver'),
+        points: [userLatLng, driverLatLng],
+        color: AppColors.designYellow,
+        width: 5,
+        patterns: [PatternItem.dash(20), PatternItem.gap(10)],
       ),
     );
   }
@@ -138,7 +168,13 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
                                   Row(
                                     children: const [
                                       Icon(Icons.star, color: Colors.orange, size: 16),
-                                      Text(' 4.9 · Main Driver · 620 trips', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                                      Expanded(
+                                        child: Text(
+                                          ' 4.9 · Main Driver · 620 trips',
+                                          style: TextStyle(color: Colors.grey, fontSize: 13),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                   const Text(
@@ -211,6 +247,7 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
                                 zoom: 14,
                               ),
                               markers: _markers,
+                              polylines: _polylines,
                               onMapCreated: (controller) => _mapController = controller,
                               myLocationEnabled: true,
                               zoomControlsEnabled: false,
@@ -225,8 +262,8 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
                     height: 60,
                     child: ElevatedButton(
                       onPressed: () {
-                        // Current Flow: Simulation
-                        Navigator.pushReplacementNamed(context, '/support_driver_inspection');
+                        // Manual override for testing flow
+                        Navigator.pushReplacementNamed(context, '/support_driver_arrived');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
