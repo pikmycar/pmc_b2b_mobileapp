@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
 class RideSummaryScreen extends StatefulWidget {
-  const RideSummaryScreen({Key? key}) : super(key: key);
+  const RideSummaryScreen({super.key});
 
   @override
   State<RideSummaryScreen> createState() => _RideSummaryScreenState();
@@ -28,25 +28,29 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.designForestGreen,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
+        backgroundColor: colorScheme.primary,
+        iconTheme: IconThemeData(color: colorScheme.onPrimary),
+        title: Text(
           'Ride Summary',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 24, letterSpacing: -0.5),
+          style: textTheme.titleLarge?.copyWith(
+            color: colorScheme.onPrimary,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.5,
+          ),
         ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: _buildDoneBadge(),
+            child: _buildDoneBadge(context),
           ),
         ],
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -55,61 +59,54 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> with SingleTicker
             const SizedBox(height: 20),
             
             // Success Icon
-            _buildSuccessIcon(),
+            _buildSuccessIcon(context),
             const SizedBox(height: 32),
             
             // Completion Titles
-            const Text(
+            Text(
               "Ride\nCompleted!",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 48,
+              style: textTheme.displayLarge?.copyWith(
                 fontWeight: FontWeight.w900,
-                color: Colors.black,
                 height: 1.0,
-                fontFamily: 'Roboto',
                 letterSpacing: -1.5,
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               "Car delivered to garage.\nStatus: At Garage – Service In Progress",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.blueGrey, fontSize: 16, height: 1.4),
+              style: textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.6),
+                height: 1.4,
+              ),
             ),
             
             const SizedBox(height: 48),
 
             // Trip Summary Card
-            _buildTripDetailsCard(),
+            _buildTripDetailsCard(context),
             
             const SizedBox(height: 32),
             
             // Availability Status
-            _buildAvailabilityFooter(),
+            _buildAvailabilityFooter(context),
             
             const SizedBox(height: 40),
 
             // Final Action
             SizedBox(
               width: double.infinity,
-              height: 64,
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pushNamedAndRemoveUntil(context, '/support_driver_dashboard', (route) => false);
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.designForestGreen,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  elevation: 0,
-                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
                     Icon(Icons.check_circle, size: 24),
                     SizedBox(width: 12),
-                    Text("Back to Home", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+                    Text("Back to Home"),
                   ],
                 ),
               ),
@@ -120,27 +117,33 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> with SingleTicker
     );
   }
 
-  Widget _buildDoneBadge() {
+  Widget _buildDoneBadge(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return ScaleTransition(
       scale: Tween(begin: 1.0, end: 1.1).animate(_doneBadgeController),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.2),
+          color: colorScheme.onPrimary.withOpacity(0.2),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
-          children: const [
-            Text("DONE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-            SizedBox(width: 4),
-            Icon(Icons.check, color: Colors.greenAccent, size: 14),
+          children: [
+            Text(
+              "DONE", 
+              style: textTheme.labelSmall?.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.check, color: AppColors.success, size: 14),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSuccessIcon() {
+  Widget _buildSuccessIcon(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -148,48 +151,50 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> with SingleTicker
           width: 140,
           height: 140,
           decoration: BoxDecoration(
-            color: const Color(0xFFE8F5E9),
+            color: colorScheme.primary.withOpacity(0.1),
             shape: BoxShape.circle,
           ),
         ),
         Container(
           width: 100,
           height: 100,
-          decoration: const BoxDecoration(
-            color: AppColors.designForestGreen,
+          decoration: BoxDecoration(
+            color: colorScheme.primary,
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.check, color: Colors.white, size: 60),
+          child: Icon(Icons.check, color: colorScheme.onPrimary, size: 60),
         ),
       ],
     );
   }
 
-  Widget _buildTripDetailsCard() {
+  Widget _buildTripDetailsCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.black12, width: 1),
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         children: [
-          _buildDetailRow("Trip #", "#PKM-2847", isBold: true),
-          _buildDetailRow("Customer", "Ahmed Al-Rashid"),
-          _buildDetailRow("Car", "BMW · M72528"),
-          _buildDetailRow("Distance", "12.4 km"),
-          _buildDetailRow("Duration", "38 mins"),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16.0),
-            child: Divider(color: Colors.black12),
+          _buildDetailRow(context, "Trip #", "#PKM-2847", isBold: true),
+          _buildDetailRow(context, "Customer", "Ahmed Al-Rashid"),
+          _buildDetailRow(context, "Car", "BMW · M72528"),
+          _buildDetailRow(context, "Distance", "12.4 km"),
+          _buildDetailRow(context, "Duration", "38 mins"),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Divider(color: colorScheme.outlineVariant),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Earnings", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
-              _buildAnimatedEarnings(),
+              Text("Earnings", style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900)),
+              _buildAnimatedEarnings(context),
             ],
           ),
         ],
@@ -197,20 +202,30 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> with SingleTicker
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {bool isBold = false}) {
+  Widget _buildDetailRow(BuildContext context, String label, String value, {bool isBold = false}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.blueGrey, fontSize: 14, fontWeight: FontWeight.bold)),
-          Text(value, style: TextStyle(fontWeight: isBold ? FontWeight.w900 : FontWeight.bold, fontSize: 16)),
+          Text(
+            label, 
+            style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5), fontWeight: FontWeight.bold),
+          ),
+          Text(
+            value, 
+            style: textTheme.bodyLarge?.copyWith(fontWeight: isBold ? FontWeight.w900 : FontWeight.bold),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildAnimatedEarnings() {
+  Widget _buildAnimatedEarnings(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0, end: 85),
       duration: const Duration(milliseconds: 1500),
@@ -218,11 +233,9 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> with SingleTicker
       builder: (context, value, child) {
         return Text(
           "AED ${value.toInt()}",
-          style: const TextStyle(
-            color: AppColors.designForestGreen,
-            fontSize: 32,
+          style: textTheme.headlineMedium?.copyWith(
+            color: colorScheme.primary,
             fontWeight: FontWeight.w900,
-            fontFamily: 'Roboto',
             letterSpacing: -1,
           ),
         );
@@ -230,21 +243,23 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> with SingleTicker
     );
   }
 
-  Widget _buildAvailabilityFooter() {
+  Widget _buildAvailabilityFooter(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.designMint,
+        color: AppColors.success.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: const [
-          Icon(Icons.check_circle, color: AppColors.designForestGreen, size: 20),
-          SizedBox(width: 8),
+        children: [
+          Icon(Icons.check_circle, color: AppColors.success, size: 20),
+          const SizedBox(width: 8),
           Text(
             "Status: Now Available for next trip",
-            style: TextStyle(color: AppColors.designForestGreen, fontWeight: FontWeight.bold, fontSize: 14),
+            style: textTheme.labelLarge?.copyWith(color: AppColors.success, fontWeight: FontWeight.bold),
           ),
         ],
       ),

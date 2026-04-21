@@ -7,7 +7,7 @@ import '../transport_trip/bloc/trip_state.dart';
 import '../../../core/models/trip_models.dart';
 
 class MainDriverPickMeRequestScreen extends StatefulWidget {
-  const MainDriverPickMeRequestScreen({Key? key}) : super(key: key);
+  const MainDriverPickMeRequestScreen({super.key});
 
   @override
   State<MainDriverPickMeRequestScreen> createState() => _MainDriverPickMeRequestScreenState();
@@ -16,6 +16,10 @@ class MainDriverPickMeRequestScreen extends StatefulWidget {
 class _MainDriverPickMeRequestScreenState extends State<MainDriverPickMeRequestScreen> {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return BlocListener<TripBloc, TripState>(
       listener: (context, state) {
         if (state.status == TripStatus.accepted) {
@@ -23,14 +27,21 @@ class _MainDriverPickMeRequestScreenState extends State<MainDriverPickMeRequestS
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.primary.withOpacity(0.87),
+        backgroundColor: colorScheme.primary.withOpacity(0.9),
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: Text('Trip Requests', style: AppTextStyles.heading3.copyWith(color: Colors.white)),
+          title: Text(
+            'Trip Requests', 
+            style: textTheme.titleLarge?.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.bold),
+          ),
+          iconTheme: IconThemeData(color: colorScheme.onPrimary),
         ),
-        body: const Center(
-          child: Text('Please manage trips from the Home Dashboard', style: TextStyle(color: Colors.white)),
+        body: Center(
+          child: Text(
+            'Please manage trips from the Home Dashboard', 
+            style: textTheme.bodyLarge?.copyWith(color: colorScheme.onPrimary),
+          ),
         ),
       ),
     );

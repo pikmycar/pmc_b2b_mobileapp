@@ -40,7 +40,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void _onContinue() async {
     setState(() => _isLoading = true);
     
-    // Save role to secure storage
     final storage = context.read<SecureStorageService>();
     await storage.setUserRole(_selectedRole.toString());
 
@@ -72,8 +71,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -82,79 +84,41 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 60),
-              const Center(
+              Center(
                 child: Text(
                   "Choose Your Role",
-                  style: AppTextStyles.heading2,
+                  style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 24),
               Row(
                 children: [
                   Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _selectedRole = UserRole.mainDriver),
-                      child: Container(
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: _selectedRole == UserRole.mainDriver ? AppColors.primary : Colors.white,
-                          border: Border.all(color: _selectedRole == UserRole.mainDriver ? AppColors.primary : Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: _selectedRole == UserRole.mainDriver ? [BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.person, color: _selectedRole == UserRole.mainDriver ? Colors.white : Colors.black54),
-                            const SizedBox(height: 4),
-                            Text(
-                              "Main Driver",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: _selectedRole == UserRole.mainDriver ? Colors.white : Colors.black54,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    child: _roleCard(
+                      label: "Main Driver",
+                      icon: Icons.person,
+                      role: UserRole.mainDriver,
+                      activeColor: colorScheme.primary,
+                      onColor: colorScheme.onPrimary,
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _selectedRole = UserRole.supportDriver),
-                      child: Container(
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: _selectedRole == UserRole.supportDriver ? AppColors.secondary : Colors.white,
-                          border: Border.all(color: _selectedRole == UserRole.supportDriver ? AppColors.secondary : Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: _selectedRole == UserRole.supportDriver ? [BoxShadow(color: AppColors.secondary.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.support_agent, color: _selectedRole == UserRole.supportDriver ? Colors.white : Colors.black54),
-                            const SizedBox(height: 4),
-                            Text(
-                              "Support Driver",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: _selectedRole == UserRole.supportDriver ? Colors.white : Colors.black54,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    child: _roleCard(
+                      label: "Support Driver",
+                      icon: Icons.support_agent,
+                      role: UserRole.supportDriver,
+                      activeColor: colorScheme.secondary,
+                      onColor: colorScheme.onSecondary,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 48),
-              const Center(
+              Center(
                 child: Text(
                   "Login or Sign Up",
-                  style: AppTextStyles.heading2,
+                  style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 32),
@@ -162,49 +126,9 @@ class _LoginScreenState extends State<LoginScreen> {
               // Toggle Switch
               Row(
                 children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _isMobileSelected = true),
-                      child: Container(
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: _isMobileSelected ? AppColors.accent.withOpacity(0.1) : Colors.white,
-                          border: Border.all(color: _isMobileSelected ? AppColors.accent : Colors.grey.shade200),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        alignment: Alignment.center,
-                        child: const Text(
-                          "Mobile",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  Expanded(child: _toggleItem("Mobile", _isMobileSelected, () => setState(() => _isMobileSelected = true))),
                   const SizedBox(width: 12),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _isMobileSelected = false),
-                      child: Container(
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: !_isMobileSelected ? AppColors.accent.withOpacity(0.1) : Colors.white,
-                          border: Border.all(color: !_isMobileSelected ? AppColors.accent : Colors.grey.shade200),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        alignment: Alignment.center,
-                        child: const Text(
-                          "Email",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  Expanded(child: _toggleItem("Email", !_isMobileSelected, () => setState(() => _isMobileSelected = false))),
                 ],
               ),
               const SizedBox(height: 48),
@@ -213,99 +137,50 @@ class _LoginScreenState extends State<LoginScreen> {
                 _isMobileSelected
                     ? "Enter your registered\nMobile number"
                     : "Enter your registered\nEmail address",
-                style: AppTextStyles.heading1.copyWith(
-                  fontSize: 26,
-                  height: 1.25,
-                ),
+                style: textTheme.displayLarge?.copyWith(fontSize: 26, height: 1.25),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 "Be part of a community where you choose how you ride.",
-                style: AppTextStyles.caption,
+                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
               ),
               const SizedBox(height: 40),
 
               // Input Field
               if (_isMobileSelected)
-                Container(
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                  ),
-                  child: Row(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          "+91 ",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.black54,
-                            fontWeight: FontWeight.w500,
-                          ),
+                TextField(
+                  controller: _mobileController,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      child: Text(
+                        "+91 ",
+                        style: textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      Expanded(
-                        child: TextField(
-                          controller: _mobileController,
-                          keyboardType: TextInputType.phone,
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "50 123 4567",
-                            hintStyle: TextStyle(
-                              color: Colors.black26,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
+                    hintText: "50 123 4567",
                   ),
                 )
               else
-                Container(
-                  height: 56,
-                  decoration: BoxDecoration(
-                  ),
-                  child: TextField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      hintText: "Enter Email Address",
-                      hintStyle: TextStyle(
-                        color: Colors.black26,
-                        fontSize: 14,
-                      ),
-                    ),
+                TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    hintText: "Enter Email Address",
                   ),
                 ),
               
               const SizedBox(height: 40),
 
               // Continue Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _onContinue,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.black, strokeWidth: 2)
-                      : const Text(
-                          "Continue",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
-                        ),
-                ),
+              ElevatedButton(
+                onPressed: _isLoading ? null : _onContinue,
+                child: _isLoading
+                    ? SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: colorScheme.onPrimary))
+                    : const Text("Continue"),
               ),
 
               const SizedBox(height: 48),
@@ -314,19 +189,15 @@ class _LoginScreenState extends State<LoginScreen> {
               Center(
                 child: Column(
                   children: [
-                    const Text(
+                    Text(
                       "By continuing, you agree to our Terms",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
+                      style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
                     ),
                     const SizedBox(height: 8),
                     RichText(
                       text: TextSpan(
-                        style: AppTextStyles.caption.copyWith(
-                          fontSize: 12,
-                          color: AppColors.textPrimary,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.primary,
                           fontWeight: FontWeight.w600,
                           decoration: TextDecoration.underline,
                         ),
@@ -335,9 +206,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             text: 'Terms of Service',
                             recognizer: TapGestureRecognizer()..onTap = () {},
                           ),
-                          const TextSpan(
+                          TextSpan(
                             text: '   &   ',
-                            style: TextStyle(decoration: TextDecoration.none, color: Colors.grey),
+                            style: TextStyle(decoration: TextDecoration.none, color: colorScheme.onSurface.withOpacity(0.5)),
                           ),
                           TextSpan(
                             text: 'Privacy Policy',
@@ -351,6 +222,64 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 24),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _roleCard({required String label, required IconData icon, required UserRole role, required Color activeColor, required Color onColor}) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isSelected = _selectedRole == role;
+    
+    return GestureDetector(
+      onTap: () => setState(() => _selectedRole = role),
+      child: Container(
+        height: 70,
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor : colorScheme.surface,
+          border: Border.all(color: isSelected ? activeColor : colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: isSelected ? [BoxShadow(color: activeColor.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: isSelected ? onColor : colorScheme.onSurface.withOpacity(0.6)),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: isSelected ? onColor : colorScheme.onSurface.withOpacity(0.6),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _toggleItem(String label, bool isSelected, VoidCallback onTap) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 48,
+        decoration: BoxDecoration(
+          color: isSelected ? colorScheme.primary.withOpacity(0.1) : colorScheme.surface,
+          border: Border.all(color: isSelected ? colorScheme.primary : colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: theme.textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: isSelected ? colorScheme.primary : colorScheme.onSurface.withOpacity(0.6),
           ),
         ),
       ),

@@ -11,14 +11,14 @@ class TripRequestBottomSheet extends StatefulWidget {
   final VoidCallback onReject;
 
   const TripRequestBottomSheet({
-    Key? key,
+    super.key,
     required this.customerName,
     required this.pickupLocation,
     required this.destinationLocation,
     required this.fare,
     required this.onAccept,
     required this.onReject,
-  }) : super(key: key);
+  });
 
   @override
   State<TripRequestBottomSheet> createState() => _TripRequestBottomSheetState();
@@ -37,9 +37,11 @@ class _TripRequestBottomSheetState extends State<TripRequestBottomSheet> {
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_secondsRemaining > 0) {
-        setState(() {
-          _secondsRemaining--;
-        });
+        if (mounted) {
+          setState(() {
+            _secondsRemaining--;
+          });
+        }
       } else {
         _timer.cancel();
         widget.onReject();
@@ -62,18 +64,20 @@ class _TripRequestBottomSheetState extends State<TripRequestBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: theme.cardColor,
+        color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
+            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.1 : 0.4),
+            blurRadius: 40,
+            offset: const Offset(0, -10),
           ),
         ],
       ),
@@ -84,9 +88,9 @@ class _TripRequestBottomSheetState extends State<TripRequestBottomSheet> {
           Container(
             width: 40,
             height: 4,
-            margin: const EdgeInsets.only(bottom: 20),
+            margin: const EdgeInsets.only(bottom: 24),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              color: colorScheme.onSurface.withOpacity(0.1),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -97,27 +101,26 @@ class _TripRequestBottomSheetState extends State<TripRequestBottomSheet> {
             children: [
               Text(
                 "New Trip Request",
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: AppColors.error.withOpacity(0.1),
+                  color: colorScheme.error.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.timer_outlined, color: AppColors.error, size: 18),
-                    const SizedBox(width: 6),
+                    Icon(Icons.timer_outlined, color: colorScheme.error, size: 18),
+                    const SizedBox(width: 8),
                     Text(
                       _formatTime(_secondsRemaining),
-                      style: const TextStyle(
-                        color: AppColors.error,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                      style: textTheme.labelLarge?.copyWith(
+                        color: colorScheme.error,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
                   ],
@@ -125,42 +128,58 @@ class _TripRequestBottomSheetState extends State<TripRequestBottomSheet> {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
 
           // Customer Info
           Row(
             children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: AppColors.primary.withOpacity(0.1),
-                child: const Icon(Icons.person, color: AppColors.primary),
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Icon(Icons.person, color: colorScheme.primary, size: 32),
+                ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       widget.customerName,
-                      style: theme.textTheme.titleLarge?.copyWith(fontSize: 18),
+                      style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
                     ),
-                    const Text(
-                      "4.8 ★ (120 trips)", // Placeholder rating
-                      style: TextStyle(color: Colors.grey, fontSize: 13),
+                    Row(
+                      children: [
+                        Icon(Icons.star, color: colorScheme.secondary, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          "4.8 ★ (120 trips)", 
+                          style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5), fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
               Text(
-                "AED ${widget.fare.toStringAsFixed(2)}",
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  color: AppColors.secondary,
-                  fontWeight: FontWeight.bold,
+                "AED ${widget.fare.toStringAsFixed(0)}",
+                style: textTheme.headlineMedium?.copyWith(
+                  color: colorScheme.secondary,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24.0),
+            child: Divider(),
+          ),
 
           // Locations
           Stack(
@@ -169,17 +188,17 @@ class _TripRequestBottomSheetState extends State<TripRequestBottomSheet> {
                 children: [
                   _buildLocationRow(
                     context,
-                    Icons.circle,
-                    AppColors.primary,
-                    "Pickup",
+                    Icons.radio_button_checked,
+                    colorScheme.primary,
+                    "PICKUP",
                     widget.pickupLocation,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   _buildLocationRow(
                     context,
                     Icons.location_on,
-                    AppColors.error,
-                    "Destination",
+                    colorScheme.error,
+                    "DESTINATION",
                     widget.destinationLocation,
                   ),
                 ],
@@ -190,12 +209,15 @@ class _TripRequestBottomSheetState extends State<TripRequestBottomSheet> {
                 bottom: 24,
                 child: Container(
                   width: 2,
-                  color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                  decoration: BoxDecoration(
+                    color: colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(1),
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 40),
 
           // Action Buttons
           Row(
@@ -203,18 +225,7 @@ class _TripRequestBottomSheetState extends State<TripRequestBottomSheet> {
               Expanded(
                 child: OutlinedButton(
                   onPressed: widget.onReject,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                  child: Text(
-                    "Decline",
-                    style: TextStyle(
-                      color: isDark ? Colors.white70 : AppColors.textPrimaryLight,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: const Text("DECLINE"),
                 ),
               ),
               const SizedBox(width: 16),
@@ -222,18 +233,15 @@ class _TripRequestBottomSheetState extends State<TripRequestBottomSheet> {
                 child: ElevatedButton(
                   onPressed: widget.onAccept,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    backgroundColor: colorScheme.secondary,
+                    foregroundColor: colorScheme.onSecondary,
                   ),
-                  child: const Text(
-                    "Accept Trip",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                  child: const Text("ACCEPT TRIP"),
                 ),
               ),
             ],
           ),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -247,9 +255,16 @@ class _TripRequestBottomSheetState extends State<TripRequestBottomSheet> {
     String address,
   ) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: color, size: 24),
+        Container(
+          padding: const EdgeInsets.only(top: 2),
+          child: Icon(icon, color: color, size: 24),
+        ),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
@@ -257,15 +272,19 @@ class _TripRequestBottomSheetState extends State<TripRequestBottomSheet> {
             children: [
               Text(
                 label,
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                style: textTheme.labelSmall?.copyWith(
+                  color: colorScheme.onSurface.withOpacity(0.5),
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.0,
+                ),
               ),
+              const SizedBox(height: 4),
               Text(
                 address,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 15,
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ],

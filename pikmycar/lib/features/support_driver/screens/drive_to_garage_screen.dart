@@ -5,7 +5,7 @@ import 'dart:async';
 import '../../../core/theme/app_theme.dart';
 
 class DriveToGarageScreen extends StatefulWidget {
-  const DriveToGarageScreen({Key? key}) : super(key: key);
+  const DriveToGarageScreen({super.key});
 
   @override
   State<DriveToGarageScreen> createState() => _DriveToGarageScreenState();
@@ -60,6 +60,7 @@ class _DriveToGarageScreenState extends State<DriveToGarageScreen> with SingleTi
   void _updateMapElements(Position position) {
     _markers.clear();
     final userLatLng = LatLng(position.latitude, position.longitude);
+    final colorScheme = Theme.of(context).colorScheme;
     
     // Mock Garage Location (approx 8.4km away)
     final garageLatLng = LatLng(position.latitude + 0.055, position.longitude + 0.042);
@@ -89,7 +90,7 @@ class _DriveToGarageScreenState extends State<DriveToGarageScreen> with SingleTi
         Polyline(
           polylineId: const PolylineId('route_to_garage'),
           points: [userLatLng, garageLatLng],
-          color: AppColors.designForestGreen,
+          color: colorScheme.primary,
           width: 6,
           patterns: [PatternItem.dash(20), PatternItem.gap(12)],
         ),
@@ -106,16 +107,19 @@ class _DriveToGarageScreenState extends State<DriveToGarageScreen> with SingleTi
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Column(
         children: [
           // Header Section
           Container(
             padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 24),
-            decoration: const BoxDecoration(
-              color: AppColors.designForestGreen,
-              borderRadius: BorderRadius.only(
+            decoration: BoxDecoration(
+              color: colorScheme.primary,
+              borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(32),
                 bottomRight: Radius.circular(32),
               ),
@@ -125,18 +129,18 @@ class _DriveToGarageScreenState extends State<DriveToGarageScreen> with SingleTi
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       "DRIVING CUSTOMER CAR",
-                      style: TextStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                      style: textTheme.labelSmall?.copyWith(color: colorScheme.onPrimary.withOpacity(0.5), fontWeight: FontWeight.bold, letterSpacing: 1.2),
                     ),
                     Text(
                       "En Route to\nGarage",
-                      style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w900, height: 1.1),
+                      style: textTheme.displaySmall?.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.w900, height: 1.1),
                     ),
                   ],
                 ),
-                _buildActiveBadge(),
+                _buildActiveBadge(context),
               ],
             ),
           ),
@@ -146,7 +150,7 @@ class _DriveToGarageScreenState extends State<DriveToGarageScreen> with SingleTi
             child: Stack(
               children: [
                 _currentPosition == null
-                    ? const Center(child: CircularProgressIndicator())
+                    ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
                     : GoogleMap(
                         initialCameraPosition: CameraPosition(
                           target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
@@ -167,17 +171,18 @@ class _DriveToGarageScreenState extends State<DriveToGarageScreen> with SingleTi
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: colorScheme.outlineVariant),
                       boxShadow: [
                         BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4)),
                       ],
                     ),
                     child: Row(
-                      children: const [
-                        Icon(Icons.build, size: 16, color: Colors.blueAccent),
-                        SizedBox(width: 8),
-                        Text("Al Quoz Auto Service", style: TextStyle(fontWeight: FontWeight.bold)),
+                      children: [
+                        const Icon(Icons.build, size: 16, color: Colors.blueAccent),
+                        const SizedBox(width: 8),
+                        Text("Al Quoz Auto Service", style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
@@ -189,14 +194,14 @@ class _DriveToGarageScreenState extends State<DriveToGarageScreen> with SingleTi
           // Bottom Info Card
           Container(
             padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(32),
                 topRight: Radius.circular(32),
               ),
               boxShadow: [
-                BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -5)),
+                BoxShadow(color: Colors.black12, blurRadius: 20, offset: const Offset(0, -5)),
               ],
             ),
             child: Column(
@@ -205,11 +210,11 @@ class _DriveToGarageScreenState extends State<DriveToGarageScreen> with SingleTi
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildStatItem("8.4", "km left"),
-                    _buildStatDivider(),
-                    _buildStatItem("18", "min ETA"),
-                    _buildStatDivider(),
-                    _buildStatItem("62", "km/h"),
+                    _buildStatItem(context, "8.4", "km left"),
+                    _buildStatDivider(context),
+                    _buildStatItem(context, "18", "min ETA"),
+                    _buildStatDivider(context),
+                    _buildStatItem(context, "62", "km/h"),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -218,17 +223,17 @@ class _DriveToGarageScreenState extends State<DriveToGarageScreen> with SingleTi
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
+                    color: colorScheme.onSurface.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
                     children: [
                       const Icon(Icons.location_on, color: Colors.blueAccent, size: 24),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           "Al Quoz Auto Service Center — Drop-off Point",
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          style: textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -239,16 +244,8 @@ class _DriveToGarageScreenState extends State<DriveToGarageScreen> with SingleTi
                 // Action Button
                 SizedBox(
                   width: double.infinity,
-                  height: 60,
                   child: ElevatedButton(
                     onPressed: _isNavigating ? null : _startNavigation,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.designForestGreen,
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: Colors.grey.shade300,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 0,
-                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -256,7 +253,6 @@ class _DriveToGarageScreenState extends State<DriveToGarageScreen> with SingleTi
                         const SizedBox(width: 8),
                         Text(
                           _isNavigating ? "Delivering..." : "Navigate to Garage",
-                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
                         ),
                       ],
                     ),
@@ -270,22 +266,24 @@ class _DriveToGarageScreenState extends State<DriveToGarageScreen> with SingleTi
     );
   }
 
-  Widget _buildActiveBadge() {
+  Widget _buildActiveBadge(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return FadeTransition(
       opacity: _badgeController,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
+          color: colorScheme.onPrimary.withOpacity(0.15),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
-          children: const [
-            Icon(Icons.gps_fixed, color: Colors.greenAccent, size: 18),
-            SizedBox(width: 8),
+          children: [
+            const Icon(Icons.gps_fixed, color: AppColors.success, size: 18),
+            const SizedBox(width: 8),
             Text(
               "ACTIVE",
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+              style: textTheme.labelMedium?.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -293,22 +291,29 @@ class _DriveToGarageScreenState extends State<DriveToGarageScreen> with SingleTi
     );
   }
 
-  Widget _buildStatItem(String value, String label) {
+  Widget _buildStatItem(BuildContext context, String value, String label) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       children: [
         Text(
           value,
-          style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w900, fontFamily: 'Roboto', letterSpacing: -1),
+          style: textTheme.displaySmall?.copyWith(
+            fontWeight: FontWeight.w900,
+            letterSpacing: -1,
+            color: colorScheme.onSurface,
+          ),
         ),
         Text(
           label,
-          style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w500),
+          style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5), fontWeight: FontWeight.w500),
         ),
       ],
     );
   }
 
-  Widget _buildStatDivider() {
-    return Container(height: 40, width: 1, color: Colors.grey.shade200);
+  Widget _buildStatDivider(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(height: 40, width: 1, color: colorScheme.outlineVariant);
   }
 }

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../bloc/trip_state.dart';
-import '../../../../core/models/trip_models.dart';
 
 class TransportHeaderWidget extends StatelessWidget {
   final String title;
@@ -8,14 +6,17 @@ class TransportHeaderWidget extends StatelessWidget {
   final VoidCallback onBackTap;
 
   const TransportHeaderWidget({
-    Key? key,
+    super.key,
     required this.title,
     this.subtitle,
     required this.onBackTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Container(
       padding: const EdgeInsets.only(top: 50, left: 16, right: 16, bottom: 16),
@@ -24,17 +25,17 @@ class TransportHeaderWidget extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Colors.white.withOpacity(0.9),
-            Colors.white.withOpacity(0.0),
+            theme.scaffoldBackgroundColor.withOpacity(0.9),
+            theme.scaffoldBackgroundColor.withOpacity(0.0),
           ],
         ),
       ),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: Colors.white,
+            backgroundColor: colorScheme.surface,
             child: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
               onPressed: onBackTap,
             ),
           ),
@@ -46,16 +47,16 @@ class TransportHeaderWidget extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 22,
+                  style: textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w900,
                   ),
                 ),
                 if (subtitle != null)
                   Text(
                     subtitle!,
-                    style: const TextStyle(color: Colors.blueGrey, fontSize: 13),
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurface.withOpacity(0.6),
+                    ),
                   ),
               ],
             ),

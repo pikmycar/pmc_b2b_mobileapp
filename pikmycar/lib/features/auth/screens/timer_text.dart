@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
 
 class TimerText extends StatefulWidget {
   final VoidCallback onTimerComplete;
@@ -60,7 +59,7 @@ class _TimerTextState extends State<TimerText> {
   Widget build(BuildContext context) {
     return Text(
       "Resend in ${_formatTime()}",
-      style: AppTextStyles.caption,
+      style: Theme.of(context).textTheme.bodySmall,
     );
   }
 }

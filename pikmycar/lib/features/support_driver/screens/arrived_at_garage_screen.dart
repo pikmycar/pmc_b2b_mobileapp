@@ -2,28 +2,25 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
 class ArrivedAtGarageScreen extends StatelessWidget {
-  const ArrivedAtGarageScreen({Key? key}) : super(key: key);
+  const ArrivedAtGarageScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Arrived at Garage',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 22,
+          style: textTheme.titleLarge?.copyWith(
+            color: colorScheme.onPrimary,
             fontWeight: FontWeight.w900,
-            letterSpacing: -0.5,
           ),
         ),
-        backgroundColor: AppColors.designForestGreen,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+        backgroundColor: colorScheme.primary,
+        iconTheme: IconThemeData(color: colorScheme.onPrimary),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -35,65 +32,54 @@ class ArrivedAtGarageScreen extends StatelessWidget {
               width: 140,
               height: 140,
               decoration: BoxDecoration(
-                color: const Color(0xFFE8F5E9),
+                color: colorScheme.primary.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Center(
-                child: Icon(Icons.emoji_events, color: AppColors.designYellow, size: 70),
+              child: Center(
+                child: Icon(Icons.emoji_events, color: colorScheme.primary, size: 70),
               ),
             ),
             const SizedBox(height: 32),
             
             // Completion Header
-            const Text(
+            Text(
               "You've Arrived\nat the Garage!",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 32,
+              style: textTheme.displaySmall?.copyWith(
                 fontWeight: FontWeight.w900,
-                color: Colors.black,
                 letterSpacing: -1,
                 height: 1.1,
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               "Al Quoz Auto Service Center",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.blueGrey,
-                fontSize: 18,
+              style: textTheme.titleMedium?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.6),
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 48),
 
             // Trip Summary Card
-            _buildSummaryCard(),
+            _buildSummaryCard(context),
             
             const SizedBox(height: 48),
 
             // Primary Action
             SizedBox(
               width: double.infinity,
-              height: 64,
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pushReplacementNamed(context, '/support_driver_garage_handover');
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.designForestGreen,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  elevation: 0,
-                  textStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
-                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    const Icon(Icons.check_circle, size: 24),
-                    const SizedBox(width: 12),
-                    const Text("Handover to Garage"),
+                    Icon(Icons.check_circle, size: 24),
+                    SizedBox(width: 12),
+                    Text("Handover to Garage"),
                   ],
                 ),
               ),
@@ -104,28 +90,30 @@ class ArrivedAtGarageScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryCard() {
+  Widget _buildSummaryCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: Colors.black12, width: 1),
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         children: [
-          const Text(
+          Text(
             "JOURNEY SUMMARY",
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blueGrey, letterSpacing: 1.2),
+            style: textTheme.labelSmall?.copyWith(fontSize: 12, fontWeight: FontWeight.bold, color: colorScheme.onSurface.withOpacity(0.5), letterSpacing: 1.2),
           ),
           const SizedBox(height: 32),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildSummaryItem(Icons.route, "14.6 km", "Distance"),
-              Container(height: 30, width: 1, color: Colors.grey.shade300),
-              _buildSummaryItem(Icons.timer, "36 mins", "Duration"),
+              _buildSummaryItem(context, Icons.route, "14.6 km", "Distance"),
+              Container(height: 30, width: 1, color: colorScheme.outlineVariant),
+              _buildSummaryItem(context, Icons.timer, "36 mins", "Duration"),
             ],
           ),
         ],
@@ -133,18 +121,20 @@ class ArrivedAtGarageScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryItem(IconData icon, String value, String label) {
+  Widget _buildSummaryItem(BuildContext context, IconData icon, String value, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Column(
       children: [
-        Icon(icon, color: AppColors.designForestGreen, size: 24),
+        Icon(icon, color: colorScheme.primary, size: 24),
         const SizedBox(height: 12),
         Text(
           value,
-          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 22, letterSpacing: -0.5),
+          style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -0.5),
         ),
         Text(
           label,
-          style: const TextStyle(color: Colors.blueGrey, fontSize: 12, fontWeight: FontWeight.bold),
+          style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5), fontWeight: FontWeight.bold),
         ),
       ],
     );

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
 class GarageHandoverScreen extends StatefulWidget {
-  const GarageHandoverScreen({Key? key}) : super(key: key);
+  const GarageHandoverScreen({super.key});
 
   @override
   State<GarageHandoverScreen> createState() => _GarageHandoverScreenState();
@@ -12,13 +12,18 @@ class _GarageHandoverScreenState extends State<GarageHandoverScreen> {
   // Checklist State
   bool _isCarDelivered = false;
   bool _areKeysHanded = false;
-  bool _isParkingNoted = true; // Default to true as often done
+  bool _isParkingNoted = false; 
   bool _isReceiptReceived = false;
 
   final TextEditingController _techNameController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
 
-  bool get _canSubmit => _isCarDelivered && _areKeysHanded;
+  // Updated Validation: Require ALL 4 checklist items to be checked
+  bool get _canSubmit => 
+      _isCarDelivered && 
+      _areKeysHanded && 
+      _isParkingNoted && 
+      _isReceiptReceived;
 
   @override
   void dispose() {
@@ -28,38 +33,46 @@ class _GarageHandoverScreenState extends State<GarageHandoverScreen> {
   }
 
   void _submitHandover() {
-    // Show a quick success snackbar before returning home
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Handover Submitted Successfully! Ride Completed."),
-        backgroundColor: AppColors.designForestGreen,
+    // Capture the dispatcher and context-dependent data before navigation
+    final messenger = ScaffoldMessenger.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: const Text("Handover Submitted Successfully! Ride Completed."),
+        backgroundColor: colorScheme.secondary,
+        behavior: SnackBarBehavior.floating,
       ),
     );
     
-    // Navigate to Ride Summary
-    Navigator.pushReplacementNamed(context, '/support_driver_ride_summary');
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/support_driver_ride_summary');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.designForestGreen,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
+        backgroundColor: colorScheme.primary,
+        iconTheme: IconThemeData(color: colorScheme.onPrimary),
+        title: Text(
           'Garage Handover',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 24),
+          style: textTheme.titleLarge?.copyWith(
+            color: colorScheme.onPrimary, 
+            fontWeight: FontWeight.w900,
+          ),
         ),
         centerTitle: true,
         elevation: 0,
       ),
       body: Column(
         children: [
-          _buildTopProgressBar(),
+          _buildTopProgressBar(context),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
@@ -67,45 +80,59 @@ class _GarageHandoverScreenState extends State<GarageHandoverScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Card 1: Arrival Confirmation
-                  _buildArrivalCard(),
+                  _buildArrivalCard(context),
                   const SizedBox(height: 24),
 
                   // Card 2: Handover Checklist
-                  _buildChecklistCard(),
+                  _buildChecklistCard(context),
                   const SizedBox(height: 24),
 
                   // Form Section: Tech & Notes
-                  const Text("TECHNICIAN DETAILS", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey, fontSize: 13, letterSpacing: 1.2)),
+                  Text(
+                    "TECHNICIAN DETAILS", 
+                    style: textTheme.labelSmall?.copyWith(
+                      fontWeight: FontWeight.w900, 
+                      color: colorScheme.onSurface.withOpacity(0.5), 
+                      letterSpacing: 1.2,
+                    ),
+                  ),
                   const SizedBox(height: 12),
-                  _buildTextField(_techNameController, "Technician Name (Optional)", Icons.person_outline),
+                  _buildTextField(context, _techNameController, "Technician Name (Optional)", Icons.person_outline),
                   
                   const SizedBox(height: 24),
-                  const Text("ADDITIONAL NOTES", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey, fontSize: 13, letterSpacing: 1.2)),
+                  Text(
+                    "ADDITIONAL NOTES", 
+                    style: textTheme.labelSmall?.copyWith(
+                      fontWeight: FontWeight.w900, 
+                      color: colorScheme.onSurface.withOpacity(0.5), 
+                      letterSpacing: 1.2,
+                    ),
+                  ),
                   const SizedBox(height: 12),
-                  _buildTextField(_notesController, "Special instructions or parking details...", Icons.notes, isMultiline: true),
+                  _buildTextField(context, _notesController, "Special instructions or parking details...", Icons.notes, isMultiline: true),
                   
                   const SizedBox(height: 40),
 
                   // Final Action Button
                   SizedBox(
                     width: double.infinity,
-                    height: 64,
                     child: ElevatedButton(
                       onPressed: _canSubmit ? _submitHandover : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.designForestGreen,
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: Colors.grey.shade300,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        "Close Ride & Submit",
-                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
-                      ),
+                      child: const Text("Close Ride & Submit"),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
+                  if (!_canSubmit)
+                    Center(
+                      child: Text(
+                        "Please complete the checklist to proceed",
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.error.withOpacity(0.7),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -115,24 +142,39 @@ class _GarageHandoverScreenState extends State<GarageHandoverScreen> {
     );
   }
 
-  Widget _buildTopProgressBar() {
+  Widget _buildTopProgressBar(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
-      color: AppColors.designForestGreen,
+      color: colorScheme.primary,
       padding: const EdgeInsets.only(bottom: 20, left: 24, right: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          const Text("Step 3/3", style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 12)),
+          Text(
+            "Step 3/3", 
+            style: textTheme.labelSmall?.copyWith(
+              color: colorScheme.onPrimary.withOpacity(0.7), 
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 8),
           Container(
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.3),
+              color: colorScheme.onPrimary.withOpacity(0.3),
               borderRadius: BorderRadius.circular(2),
             ),
             child: Row(
               children: [
-                Expanded(child: Container(decoration: BoxDecoration(color: AppColors.designYellow, borderRadius: BorderRadius.circular(2)))),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.secondary, 
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -141,26 +183,40 @@ class _GarageHandoverScreenState extends State<GarageHandoverScreen> {
     );
   }
 
-  Widget _buildArrivalCard() {
+  Widget _buildArrivalCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.designMint.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.designForestGreen.withOpacity(0.1)),
+        color: colorScheme.secondary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.secondary.withOpacity(0.2)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.check_circle, color: AppColors.designForestGreen, size: 40),
+          Icon(Icons.check_circle, color: colorScheme.secondary, size: 40),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text("Arrived at Garage!", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: AppColors.designForestGreen)),
-                Text("Al Quoz Auto Service Center", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                Text("Dubai Marina Industrial Area", style: TextStyle(color: Colors.blueGrey, fontSize: 12)),
+              children: [
+                Text(
+                  "Arrived at Garage!", 
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w900, 
+                    color: colorScheme.secondary,
+                  ),
+                ),
+                Text(
+                  "Al Quoz Auto Service Center", 
+                  style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  "Dubai Marina Industrial Area", 
+                  style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
+                ),
               ],
             ),
           ),
@@ -169,66 +225,74 @@ class _GarageHandoverScreenState extends State<GarageHandoverScreen> {
     );
   }
 
-  Widget _buildChecklistCard() {
+  Widget _buildChecklistCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.black12),
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("HANDOVER CHECKLIST", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blueGrey, letterSpacing: 1.2)),
+          Text(
+            "HANDOVER CHECKLIST", 
+            style: textTheme.labelSmall?.copyWith(
+              fontWeight: FontWeight.bold, 
+              color: colorScheme.onSurface.withOpacity(0.5), 
+              letterSpacing: 1.2,
+            ),
+          ),
           const SizedBox(height: 20),
-          _buildToggleItem("Car delivered to garage team", _isCarDelivered, (v) => setState(() => _isCarDelivered = v), isRequired: true),
-          _buildToggleItem("Keys handed to technician", _areKeysHanded, (v) => setState(() => _areKeysHanded = v), isRequired: true),
-          _buildToggleItem("Parking location noted", _isParkingNoted, (v) => setState(() => _isParkingNoted = v)),
-          _buildToggleItem("Garage receipt received", _isReceiptReceived, (v) => setState(() => _isReceiptReceived = v)),
+          _buildToggleItem(context, "Car delivered to garage team", _isCarDelivered, (v) => setState(() => _isCarDelivered = v)),
+          _buildToggleItem(context, "Keys handed to technician", _areKeysHanded, (v) => setState(() => _areKeysHanded = v)),
+          _buildToggleItem(context, "Parking location noted", _isParkingNoted, (v) => setState(() => _isParkingNoted = v)),
+          _buildToggleItem(context, "Garage receipt received", _isReceiptReceived, (v) => setState(() => _isReceiptReceived = v)),
         ],
       ),
     );
   }
 
-  Widget _buildToggleItem(String label, bool value, Function(bool) onChanged, {bool isRequired = false}) {
+  Widget _buildToggleItem(BuildContext context, String label, bool value, Function(bool) onChanged) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(16),
+        color: colorScheme.onSurface.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: SwitchListTile(
         title: Row(
           children: [
             Expanded(
-              child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              child: Text(label, style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
             ),
-            if (isRequired) const Padding(
-              padding: EdgeInsets.only(left: 4.0),
-              child: Text("*", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            Padding(
+              padding: const EdgeInsets.only(left: 4.0),
+              child: Text("*", style: TextStyle(color: colorScheme.error, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
         value: value,
-        activeColor: AppColors.designForestGreen,
+        activeColor: colorScheme.secondary,
         onChanged: onChanged,
         dense: true,
       ),
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint, IconData icon, {bool isMultiline = false}) {
+  Widget _buildTextField(BuildContext context, TextEditingController controller, String hint, IconData icon, {bool isMultiline = false}) {
     return TextField(
       controller: controller,
       maxLines: isMultiline ? 4 : 1,
       decoration: InputDecoration(
         hintText: hint,
-        prefixIcon: Icon(icon, color: Colors.blueGrey.shade300),
-        fillColor: AppColors.background,
-        filled: true,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+        prefixIcon: Icon(icon),
       ),
     );
   }

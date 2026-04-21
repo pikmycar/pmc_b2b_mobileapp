@@ -9,25 +9,45 @@ class DocumentsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("My Documents", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        title: Text(
+          "My Documents",
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+        ),
+        centerTitle: true,
       ),
       body: BlocBuilder<SettingsBloc, SettingsState>(
         builder: (context, state) {
           final docs = state.documents;
           
+          if (docs.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.folder_open_rounded, size: 80, color: colorScheme.onSurface.withOpacity(0.1)),
+                  const SizedBox(height: 16),
+                  Text(
+                    "No documents found",
+                    style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
+                  ),
+                ],
+              ),
+            );
+          }
+
           return ListView.separated(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(24),
             itemCount: docs.length,
             separatorBuilder: (_, __) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final doc = docs[index];
-              return _buildDocumentCard(doc);
+              return _buildDocumentCard(context, doc);
             },
           );
         },
@@ -35,18 +55,22 @@ class DocumentsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDocumentCard(DocumentModel doc) {
+  Widget _buildDocumentCard(BuildContext context, DocumentModel doc) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.04 : 0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -57,40 +81,44 @@ class DocumentsScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.indigo.withOpacity(0.05),
+                  color: colorScheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.description_outlined, color: Colors.indigo),
+                child: Icon(Icons.description_outlined, color: colorScheme.primary),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(doc.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    const SizedBox(height: 4),
-                    _buildStatusBadge(doc.status),
+                    Text(
+                      doc.title,
+                      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+                    ),
+                    const SizedBox(height: 6),
+                    _buildStatusBadge(context, doc.status),
                   ],
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.remove_red_eye_outlined, color: Colors.grey),
+                icon: Icon(Icons.remove_red_eye_outlined, color: colorScheme.onSurface.withOpacity(0.3)),
                 onPressed: () {},
               ),
             ],
           ),
-          const Divider(height: 24),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.0),
+            child: Divider(),
+          ),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () {},
-                  icon: const Icon(Icons.upload_file, size: 18),
-                  label: const Text("Replace"),
+                  icon: const Icon(Icons.upload_file_rounded, size: 18),
+                  label: const Text("REPLACE DOCUMENT"),
                   style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    foregroundColor: Colors.indigo,
-                    side: const BorderSide(color: Colors.indigo),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),
@@ -101,41 +129,49 @@ class DocumentsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge(DocumentStatus status) {
+  Widget _buildStatusBadge(BuildContext context, DocumentStatus status) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
     Color color;
     String text;
     IconData icon;
 
     switch (status) {
       case DocumentStatus.verified:
-        color = Colors.green;
+        color = colorScheme.secondary; // Primary success color
         text = "Verified";
-        icon = Icons.check_circle;
+        icon = Icons.check_circle_rounded;
         break;
       case DocumentStatus.pending:
         color = Colors.orange;
         text = "Pending Verification";
-        icon = Icons.hourglass_empty;
+        icon = Icons.hourglass_top_rounded;
         break;
       case DocumentStatus.rejected:
-        color = Colors.red;
+        color = colorScheme.error;
         text = "Rejected";
-        icon = Icons.error_outline;
+        icon = Icons.error_rounded;
         break;
       case DocumentStatus.notUploaded:
-        color = Colors.grey;
+        color = colorScheme.onSurface.withOpacity(0.4);
         text = "Not Uploaded";
         icon = Icons.cloud_upload_outlined;
         break;
     }
 
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 14, color: color),
-        const SizedBox(width: 4),
+        const SizedBox(width: 6),
         Text(
           text,
-          style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+          style: textTheme.labelSmall?.copyWith(
+            color: color,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.5,
+          ),
         ),
       ],
     );

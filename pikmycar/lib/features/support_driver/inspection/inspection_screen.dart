@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_theme.dart';
 
 class SupportDriverInspectionScreen extends StatefulWidget {
-  const SupportDriverInspectionScreen({Key? key}) : super(key: key);
+  const SupportDriverInspectionScreen({super.key});
 
   @override
   State<SupportDriverInspectionScreen> createState() =>
@@ -87,6 +87,10 @@ class _SupportDriverInspectionScreenState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -94,16 +98,16 @@ class _SupportDriverInspectionScreenState
         _previousPage();
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: Colors.black,
+          backgroundColor: colorScheme.surface,
+          elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
             onPressed: _previousPage,
           ),
           title: Text(
             _currentStep < 2 ? 'Car Inspection' : 'Car Photos',
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 24),
+            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
           ),
           actions: [
             Padding(
@@ -111,7 +115,10 @@ class _SupportDriverInspectionScreenState
               child: Center(
                 child: Text(
                   '${_currentStep + 1}/3',
-                  style: const TextStyle(color: Colors.white54, fontWeight: FontWeight.bold, fontSize: 16),
+                  style: textTheme.labelLarge?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.5),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -119,16 +126,16 @@ class _SupportDriverInspectionScreenState
         ),
         body: Column(
           children: [
-            _buildProgressBar(),
+            _buildProgressBar(context),
             Expanded(
               child: PageView(
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (idx) => setState(() => _currentStep = idx),
                 children: [
-                  _buildExteriorStep(),
-                  _buildInteriorStep(),
-                  _buildPhotoStep(),
+                  _buildExteriorStep(context),
+                  _buildInteriorStep(context),
+                  _buildPhotoStep(context),
                 ],
               ),
             ),
@@ -138,9 +145,10 @@ class _SupportDriverInspectionScreenState
     );
   }
 
-  Widget _buildProgressBar() {
+  Widget _buildProgressBar(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      color: Colors.black,
+      color: colorScheme.surface,
       padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
       child: Row(
         children: List.generate(3, (index) {
@@ -149,7 +157,7 @@ class _SupportDriverInspectionScreenState
               height: 4,
               margin: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
-                color: index <= _currentStep ? AppColors.designForestGreen : Colors.white24,
+                color: index <= _currentStep ? colorScheme.primary : colorScheme.onSurface.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -160,81 +168,126 @@ class _SupportDriverInspectionScreenState
   }
 
   // --- STEP 1: EXTERIOR ---
-  Widget _buildExteriorStep() {
+  Widget _buildExteriorStep(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("EXTERIOR CHECK", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey, fontSize: 13, letterSpacing: 1.2)),
+          Text(
+            "EXTERIOR CHECK", 
+            style: textTheme.labelSmall?.copyWith(
+              fontWeight: FontWeight.w900, 
+              color: colorScheme.onSurface.withOpacity(0.5), 
+              letterSpacing: 1.2,
+            ),
+          ),
           const SizedBox(height: 16),
-          _buildToggleItem(Icons.handyman_outlined, "No pre-existing scratches", _noScratches, (v) => setState(() => _noScratches = v)),
-          _buildToggleItem(Icons.lightbulb_outline, "All lights functional", _lightsWorking, (v) => setState(() => _lightsWorking = v)),
-          _buildToggleItem(Icons.settings_input_component, "Tyre condition OK", _tyreOk, (v) => setState(() => _tyreOk = v)),
-          _buildToggleItem(Icons.window, "Windscreen no damage", _windscreenOk, (v) => setState(() => _windscreenOk = v)),
-          _buildToggleItem(Icons.directions_car, "Body panels intact", _bodyPanelsOk, (v) => setState(() => _bodyPanelsOk = v)),
+          _buildToggleItem(context, Icons.handyman_outlined, "No pre-existing scratches", _noScratches, (v) => setState(() => _noScratches = v)),
+          _buildToggleItem(context, Icons.lightbulb_outline, "All lights functional", _lightsWorking, (v) => setState(() => _lightsWorking = v)),
+          _buildToggleItem(context, Icons.settings_input_component, "Tyre condition OK", _tyreOk, (v) => setState(() => _tyreOk = v)),
+          _buildToggleItem(context, Icons.window, "Windscreen no damage", _windscreenOk, (v) => setState(() => _windscreenOk = v)),
+          _buildToggleItem(context, Icons.directions_car, "Body panels intact", _bodyPanelsOk, (v) => setState(() => _bodyPanelsOk = v)),
           const SizedBox(height: 24),
-          const Text("EXISTING DAMAGE NOTES", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey, fontSize: 13, letterSpacing: 1.2)),
+          Text(
+            "EXISTING DAMAGE NOTES", 
+            style: textTheme.labelSmall?.copyWith(
+              fontWeight: FontWeight.w900, 
+              color: colorScheme.onSurface.withOpacity(0.5), 
+              letterSpacing: 1.2,
+            ),
+          ),
           const SizedBox(height: 12),
           TextField(
             controller: _damageNotesController,
             maxLines: 4,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: "Tap to note any existing damage...",
-              fillColor: AppColors.background,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
             ),
           ),
           const SizedBox(height: 40),
-          _buildActionButton("Next: Interior Check →", _nextPage),
+          _buildActionButton(context, "Next: Interior Check →", _nextPage),
         ],
       ),
     );
   }
 
   // --- STEP 2: INTERIOR ---
-  Widget _buildInteriorStep() {
+  Widget _buildInteriorStep(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("INTERIOR CHECK", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey, fontSize: 13, letterSpacing: 1.2)),
+          Text(
+            "INTERIOR CHECK", 
+            style: textTheme.labelSmall?.copyWith(
+              fontWeight: FontWeight.w900, 
+              color: colorScheme.onSurface.withOpacity(0.5), 
+              letterSpacing: 1.2,
+            ),
+          ),
           const SizedBox(height: 16),
-          _buildToggleItem(Icons.event_seat, "Seats undamaged", _seatsOk, (v) => setState(() => _seatsOk = v)),
-          _buildToggleItem(Icons.dashboard_customize_outlined, "Dashboard intact", _dashboardOk, (v) => setState(() => _dashboardOk = v)),
-          _buildToggleItem(Icons.key, "Keys received", _keysReceived, (v) => setState(() => _keysReceived = v)),
-          _buildToggleItem(Icons.cleaning_services, "No valuables left in car", _noValuables, (v) => setState(() => _noValuables = v)),
+          _buildToggleItem(context, Icons.event_seat, "Seats undamaged", _seatsOk, (v) => setState(() => _seatsOk = v)),
+          _buildToggleItem(context, Icons.dashboard_customize_outlined, "Dashboard intact", _dashboardOk, (v) => setState(() => _dashboardOk = v)),
+          _buildToggleItem(context, Icons.key, "Keys received", _keysReceived, (v) => setState(() => _keysReceived = v)),
+          _buildToggleItem(context, Icons.cleaning_services, "No valuables left in car", _noValuables, (v) => setState(() => _noValuables = v)),
           const SizedBox(height: 24),
-          const Text("ODOMETER READING", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey, fontSize: 13, letterSpacing: 1.2)),
+          Text(
+            "ODOMETER READING", 
+            style: textTheme.labelSmall?.copyWith(
+              fontWeight: FontWeight.w900, 
+              color: colorScheme.onSurface.withOpacity(0.5), 
+              letterSpacing: 1.2,
+            ),
+          ),
           const SizedBox(height: 12),
           TextField(
             controller: _odometerController,
-            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 24, letterSpacing: -1, color: Colors.indigo),
+            style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -1, color: colorScheme.primary),
             decoration: InputDecoration(
-              fillColor: AppColors.designMint,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.designForestGreen, width: 2)),
+              fillColor: colorScheme.primary.withOpacity(0.05),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16), 
+                borderSide: BorderSide(color: colorScheme.primary.withOpacity(0.2)),
+              ),
             ),
           ),
           const SizedBox(height: 24),
-          const Text("FUEL LEVEL", style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey, fontSize: 13, letterSpacing: 1.2)),
+          Text(
+            "FUEL LEVEL", 
+            style: textTheme.labelSmall?.copyWith(
+              fontWeight: FontWeight.w900, 
+              color: colorScheme.onSurface.withOpacity(0.5), 
+              letterSpacing: 1.2,
+            ),
+          ),
           const SizedBox(height: 12),
-          _buildFuelSelector(),
+          _buildFuelSelector(context),
           const SizedBox(height: 40),
-          _buildActionButton("Next: Photo Capture →", _nextPage),
+          _buildActionButton(context, "Next: Photo Capture →", _nextPage),
         ],
       ),
     );
   }
 
   // --- STEP 3: PHOTOS ---
-  Widget _buildPhotoStep() {
+  Widget _buildPhotoStep(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Take all required photos before proceeding", style: TextStyle(color: Colors.blueGrey, fontSize: 15)),
+          Text(
+            "Take all required photos before proceeding", 
+            style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
+          ),
           const SizedBox(height: 16),
           GridView.builder(
             shrinkWrap: true,
@@ -249,16 +302,17 @@ class _SupportDriverInspectionScreenState
             itemBuilder: (context, index) {
               String slot = _capturedPhotos.keys.elementAt(index);
               File? photo = _capturedPhotos[slot];
-              return _buildPhotoSlot(slot, photo);
+              return _buildPhotoSlot(context, slot, photo);
             },
           ),
           const SizedBox(height: 24),
           Text(
             "$_photosCount/6 photos taken · Minimum 4 required",
-            style: const TextStyle(color: Colors.blueGrey, fontWeight: FontWeight.bold),
+            style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface.withOpacity(0.8)),
           ),
           const SizedBox(height: 40),
           _buildActionButton(
+            context,
             "Next: Customer Handover →", 
             _nextPage, 
             enabled: _photosCount >= 4,
@@ -269,59 +323,68 @@ class _SupportDriverInspectionScreenState
   }
 
   // --- WIDGET BUILDERS ---
-  Widget _buildToggleItem(IconData icon, String label, bool value, Function(bool) onChanged) {
+  Widget _buildToggleItem(BuildContext context, IconData icon, String label, bool value, Function(bool) onChanged) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black12),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: SwitchListTile(
-        secondary: Icon(icon, color: Colors.blueGrey.shade300),
-        title: Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+        secondary: Icon(icon, color: colorScheme.onSurface.withOpacity(0.3)),
+        title: Text(label, style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700)),
         value: value,
-        activeColor: AppColors.designForestGreen,
+        activeColor: AppColors.success,
         onChanged: onChanged,
       ),
     );
   }
 
-  Widget _buildFuelSelector() {
+  Widget _buildFuelSelector(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.designMint.withOpacity(0.3),
+        color: colorScheme.primary.withOpacity(0.05),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const ["E", "1/4", "1/2", "3/4", "F"].map((e) => Text(e, style: const TextStyle(fontWeight: FontWeight.bold))).toList(),
+            children: ["E", "1/4", "1/2", "3/4", "F"].map((e) => Text(e, style: textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold))).toList(),
           ),
           Slider(
             value: _fuelLevel,
-            activeColor: AppColors.designForestGreen,
+            activeColor: colorScheme.primary,
             onChanged: (v) => setState(() => _fuelLevel = v),
           ),
-          Text("~${(_fuelLevel * 100).toInt()}% Full", style: const TextStyle(color: AppColors.designForestGreen, fontWeight: FontWeight.bold)),
+          Text(
+            "~${(_fuelLevel * 100).toInt()}% Full", 
+            style: textTheme.bodyMedium?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPhotoSlot(String slot, File? photo) {
+  Widget _buildPhotoSlot(BuildContext context, String slot, File? photo) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     bool hasPhoto = photo != null;
     return GestureDetector(
       onTap: () => _takePhoto(slot),
       child: Container(
         decoration: BoxDecoration(
-          color: hasPhoto ? const Color(0xFFE8F5E9) : Colors.white,
+          color: hasPhoto ? AppColors.success.withOpacity(0.1) : colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: hasPhoto ? AppColors.designForestGreen : Colors.black12,
-            style: hasPhoto ? BorderStyle.solid : BorderStyle.none,
+            color: hasPhoto ? AppColors.success : colorScheme.outlineVariant,
+            width: hasPhoto ? 2 : 1,
           ),
           image: hasPhoto ? DecorationImage(image: FileImage(photo), fit: BoxFit.cover, opacity: 0.3) : null,
         ),
@@ -331,16 +394,26 @@ class _SupportDriverInspectionScreenState
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(hasPhoto ? Icons.check_circle : Icons.camera_alt, color: hasPhoto ? AppColors.designForestGreen : Colors.blueGrey.shade200, size: 32),
+                Icon(
+                  hasPhoto ? Icons.check_circle : Icons.camera_alt, 
+                  color: hasPhoto ? AppColors.success : colorScheme.onSurface.withOpacity(0.2), 
+                  size: 32,
+                ),
                 const SizedBox(height: 4),
-                Text(slot, style: TextStyle(color: hasPhoto ? AppColors.designForestGreen : Colors.blueGrey.shade400, fontWeight: FontWeight.bold)),
+                Text(
+                  slot, 
+                  style: textTheme.labelLarge?.copyWith(
+                    color: hasPhoto ? AppColors.success : colorScheme.onSurface.withOpacity(0.4), 
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
             if (hasPhoto)
-              const Positioned(
+              Positioned(
                 top: 8,
                 right: 8,
-                child: Icon(Icons.check_circle, color: AppColors.designForestGreen, size: 20),
+                child: Icon(Icons.check_circle, color: AppColors.success, size: 20),
               ),
           ],
         ),
@@ -348,19 +421,16 @@ class _SupportDriverInspectionScreenState
     );
   }
 
-  Widget _buildActionButton(String label, VoidCallback onPressed, {bool enabled = true}) {
+  Widget _buildActionButton(BuildContext context, String label, VoidCallback onPressed, {bool enabled = true}) {
     return SizedBox(
       width: double.infinity,
-      height: 60,
       child: ElevatedButton(
+        onPressed: enabled ? onPressed : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.designYellow,
           foregroundColor: Colors.black,
-          disabledBackgroundColor: Colors.grey.shade300,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         ),
-        onPressed: enabled ? onPressed : null,
-        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+        child: Text(label),
       ),
     );
   }

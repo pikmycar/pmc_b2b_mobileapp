@@ -36,23 +36,15 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.designYellow,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: Text(
           "Ticket #${widget.ticketId}",
-          style: const TextStyle(
-            color: Colors.black,
-            fontSize: 24,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -1,
-          ),
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
         ),
         centerTitle: false,
       ),
@@ -65,18 +57,18 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             Row(
               children: [
                 _buildStatusBadge(
+                  context: context,
                   icon: Icons.check,
-                  label: "Accepted by Pikmycar",
-                  bgColor: AppColors.designForestGreen,
+                  label: "Accepted",
+                  bgColor: AppColors.success,
                   textColor: Colors.white,
                 ),
-                const SizedBox(width: 8),
-                const Text(
+                const SizedBox(width: 12),
+                Text(
                   "HIGH priority",
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 15,
+                  style: textTheme.labelLarge?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.5),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -84,21 +76,24 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             const SizedBox(height: 24),
 
             // Customer InfoSection
-            _buildSectionHeader("CUSTOMER INFO"),
+            _buildSectionHeader(context, "CUSTOMER INFO"),
             const SizedBox(height: 12),
             _buildInfoCard(
+              context: context,
               child: Column(
                 children: [
                   _buildDetailRow(
+                    context: context,
                     icon: Icons.person,
-                    iconColor: Colors.deepPurple,
+                    iconColor: colorScheme.primary,
                     title: "Ahmed Al-Rashid",
                     subtitle: "+971 50 123 4567",
                   ),
                   const Divider(height: 24),
                   _buildDetailRow(
+                    context: context,
                     icon: Icons.email,
-                    iconColor: Colors.purple.shade100,
+                    iconColor: colorScheme.secondary,
                     title: "ahmed@example.ae",
                     subtitle: "",
                   ),
@@ -108,19 +103,20 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             const SizedBox(height: 24),
 
             // Pickup Details Section
-            _buildSectionHeader("PICKUP DETAILS"),
+            _buildSectionHeader(context, "PICKUP DETAILS"),
             const SizedBox(height: 12),
             _buildInfoCard(
+              context: context,
               child: Column(
                 children: [
                   _buildDetailRow(
+                    context: context,
                     icon: Icons.location_on,
-                    iconColor: Colors.pink,
+                    iconColor: AppColors.error,
                     title: "Dubai Marina, Tower B",
                     subtitle: "Today · 10:30 AM · Ahmed Al-Rashid",
                   ),
                   const SizedBox(height: 12),
-                  // Dotted line simulation
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Container(
@@ -130,9 +126,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       decoration: BoxDecoration(
                         border: Border(
                           left: BorderSide(
-                            color: Colors.grey.shade300,
+                            color: colorScheme.outlineVariant,
                             width: 2,
-                            style: BorderStyle.solid,
                           ),
                         ),
                       ),
@@ -140,8 +135,9 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                   ),
                   const SizedBox(height: 12),
                   _buildDetailRow(
+                    context: context,
                     icon: Icons.factory_outlined,
-                    iconColor: Colors.blueGrey,
+                    iconColor: colorScheme.onSurface.withOpacity(0.6),
                     title: "Al Quoz Auto Service",
                     subtitle: "Preferred delivery: Today by 4:00 PM",
                   ),
@@ -151,55 +147,40 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             const SizedBox(height: 24),
 
             // Car Details Section
-            _buildSectionHeader("CAR DETAILS"),
+            _buildSectionHeader(context, "CAR DETAILS"),
             const SizedBox(height: 12),
             _buildInfoCard(
-              bgColor: const Color(0xFFE8F5E9),
+              context: context,
+              bgColor: colorScheme.primary.withOpacity(0.05),
               child: Stack(
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         "BMW 3 Series · Blue",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
+                      Text(
                         "2022 · Plate: M72528",
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
-                      ),
-                      const Text(
-                        "M72528",
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                        style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
                       ),
                     ],
                   ),
                   Positioned(
                     right: 0,
-                    top: 10,
+                    top: 0,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.black, width: 1.5),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 4,
-                          )
-                        ],
+                        border: Border.all(color: colorScheme.onSurface, width: 1.5),
                       ),
-                      child: const Text(
+                      child: Text(
                         "M72528",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                        style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -209,22 +190,25 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             const SizedBox(height: 24),
 
             // Service Options Section
-            _buildSectionHeader("SERVICE OPTIONS"),
+            _buildSectionHeader(context, "SERVICE OPTIONS"),
             const SizedBox(height: 12),
             _buildInfoCard(
-              bgColor: const Color(0xFFFFFBE6),
+              context: context,
+              bgColor: colorScheme.secondary.withOpacity(0.05),
               child: Column(
                 children: [
                   _buildDetailRow(
+                    context: context,
                     icon: Icons.build_outlined,
-                    iconColor: Colors.grey.shade400,
+                    iconColor: colorScheme.onSurface.withOpacity(0.4),
                     title: "Full Service",
                     subtitle: "Oil change, filters, inspection",
                   ),
                   const SizedBox(height: 16),
                   _buildDetailRow(
+                    context: context,
                     icon: Icons.money,
-                    iconColor: Colors.orange.shade300,
+                    iconColor: AppColors.warning,
                     title: "Pricing: AED 280",
                     subtitle: "Peak-time + High priority",
                   ),
@@ -236,20 +220,19 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             // Footer Note
             Text(
               "Notes: Please handle with care – premium vehicle",
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 14,
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.5),
                 fontStyle: FontStyle.italic,
               ),
             ),
-            const SizedBox(height: 100), // Space for bottom button
+            const SizedBox(height: 100),
           ],
         ),
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -260,46 +243,25 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         ),
         child: SizedBox(
           width: double.infinity,
-          height: 60,
           child: ElevatedButton(
             onPressed: _isSendingRequest ? null : _handlePickMe,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.designYellow,
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 0,
-            ),
             child: _isSendingRequest
                 ? Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       SizedBox(
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                          valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
                         ),
                       ),
-                      SizedBox(width: 12),
-                      Text(
-                        "Request sending...",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
+                      const SizedBox(width: 12),
+                      const Text("Request sending..."),
                     ],
                   )
-                : const Text(
-                    "Pick Me",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
+                : const Text("Pick Me"),
           ),
         ),
       ),
@@ -307,11 +269,13 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   }
 
   Widget _buildStatusBadge({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required Color bgColor,
     required Color textColor,
   }) {
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
@@ -325,10 +289,9 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           const SizedBox(width: 8),
           Text(
             label,
-            style: TextStyle(
+            style: textTheme.labelMedium?.copyWith(
               color: textColor,
               fontWeight: FontWeight.bold,
-              fontSize: 14,
             ),
           ),
         ],
@@ -336,44 +299,42 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Text(
       title,
-      style: const TextStyle(
-        fontSize: 13,
+      style: textTheme.labelSmall?.copyWith(
         fontWeight: FontWeight.bold,
-        color: Colors.blueGrey,
+        color: colorScheme.onSurface.withOpacity(0.5),
         letterSpacing: 1.2,
       ),
     );
   }
 
-  Widget _buildInfoCard({required Widget child, Color bgColor = Colors.transparent}) {
+  Widget _buildInfoCard({required BuildContext context, required Widget child, Color? bgColor}) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: bgColor == Colors.transparent ? Colors.white : bgColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: bgColor == Colors.transparent ? [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ] : null,
+        color: bgColor ?? colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: child,
     );
   }
 
   Widget _buildDetailRow({
+    required BuildContext context,
     required IconData icon,
     required Color iconColor,
     required String title,
     required String subtitle,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -392,18 +353,13 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+                style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               if (subtitle.isNotEmpty)
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.6),
                     height: 1.4,
                   ),
                 ),

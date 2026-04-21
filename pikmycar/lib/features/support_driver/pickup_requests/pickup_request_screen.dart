@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
 class SupportDriverPickupRequestScreen extends StatelessWidget {
-  const SupportDriverPickupRequestScreen({Key? key}) : super(key: key);
+  const SupportDriverPickupRequestScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: AppColors.primary.withOpacity(0.87), // Dark overlay feel for incoming requests
+      backgroundColor: colorScheme.primary.withOpacity(0.9), // Dark overlay feel for incoming requests
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -20,11 +24,11 @@ class SupportDriverPickupRequestScreen extends StatelessWidget {
                 height: 120,
                 width: 120,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Theme.of(context).colorScheme.secondary.withOpacity(0.5),
+                      color: colorScheme.secondary.withOpacity(0.5),
                       blurRadius: 30,
                       spreadRadius: 10,
                     )
@@ -34,7 +38,7 @@ class SupportDriverPickupRequestScreen extends StatelessWidget {
                   child: Icon(
                     Icons.directions_car,
                     size: 60,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: colorScheme.primary,
                   ),
                 ),
               ),
@@ -43,28 +47,28 @@ class SupportDriverPickupRequestScreen extends StatelessWidget {
               Text(
                 'New Pickup Alert!',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.heading1.copyWith(
-                  color: AppColors.textInversePrimary,
+                style: textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: colorScheme.onPrimary,
+                  letterSpacing: -1,
                 ),
               ),
               const SizedBox(height: 16),
               
               // Request Card Details
               Card(
-                color: Theme.of(context).colorScheme.surface,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Column(
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.location_on, color: AppColors.infoBlue),
-                          SizedBox(width: 12),
+                          Icon(Icons.location_on, color: colorScheme.primary),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               '123 Downtown Ave, Metro City',
-                              style: AppTextStyles.subtitle,
+                              style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
@@ -79,17 +83,29 @@ class SupportDriverPickupRequestScreen extends StatelessWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Est. Time', style: AppTextStyles.labelSmall),
-                              SizedBox(height: 4),
-                              Text('12 minutes', style: AppTextStyles.subtitle),
+                              Text(
+                                'Est. Time', 
+                                style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '12 minutes', 
+                                style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+                              ),
                             ],
                           ),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text('Distance', style: AppTextStyles.labelSmall),
-                              SizedBox(height: 4),
-                              Text('4.5 miles', style: AppTextStyles.subtitle),
+                              Text(
+                                'Distance', 
+                                style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '4.5 miles', 
+                                style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+                              ),
                             ],
                           )
                         ],
@@ -107,9 +123,8 @@ class SupportDriverPickupRequestScreen extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: AppColors.textInversePrimary),
-                        foregroundColor: AppColors.textInversePrimary,
+                        side: BorderSide(color: colorScheme.onPrimary),
+                        foregroundColor: colorScheme.onPrimary,
                       ),
                       onPressed: () => Navigator.pop(context),
                       child: const Text('Decline'),
@@ -120,8 +135,7 @@ class SupportDriverPickupRequestScreen extends StatelessWidget {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.success,
-                        foregroundColor: AppColors.textInversePrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        foregroundColor: Colors.white,
                       ),
                       onPressed: () {
                         Navigator.pushReplacementNamed(context, '/support_driver_waiting');

@@ -13,13 +13,16 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.only(top: 10, bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.05 : 0.2),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -28,18 +31,23 @@ class CustomBottomNavigationBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(0, 'Home', Icons.home),
-          _buildNavItem(1, 'Earnings', Icons.account_balance_wallet),
-          _buildNavItem(2, 'Ratings', Icons.star),
-          _buildNavItem(3, 'History', Icons.history),
-          _buildNavItem(4, 'Profile', Icons.person),
+          _buildNavItem(context, 0, 'Home', Icons.home),
+          _buildNavItem(context, 1, 'Earnings', Icons.account_balance_wallet),
+          _buildNavItem(context, 2, 'Ratings', Icons.star),
+          _buildNavItem(context, 3, 'History', Icons.history),
+          _buildNavItem(context, 4, 'Profile', Icons.person),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(int index, String label, IconData icon) {
+  Widget _buildNavItem(BuildContext context, int index, String label, IconData icon) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isSelected = currentIndex == index;
+    final activeColor = colorScheme.primary;
+    final inactiveColor = colorScheme.onSurface.withOpacity(0.5);
+
     return GestureDetector(
       onTap: () => onTap(index),
       behavior: HitTestBehavior.opaque,
@@ -49,14 +57,13 @@ class CustomBottomNavigationBar extends StatelessWidget {
           Icon(
             icon,
             size: 24,
-            color: isSelected ? AppColors.designYellow : Colors.grey,
+            color: isSelected ? activeColor : inactiveColor,
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12,
-              color: isSelected ? AppColors.designYellow : Colors.grey,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: isSelected ? activeColor : inactiveColor,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),
@@ -65,8 +72,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
               margin: const EdgeInsets.only(top: 4),
               width: 4,
               height: 4,
-              decoration: const BoxDecoration(
-                color: AppColors.designYellow,
+              decoration: BoxDecoration(
+                color: activeColor,
                 shape: BoxShape.circle,
               ),
             ),

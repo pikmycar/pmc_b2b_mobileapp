@@ -21,7 +21,7 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
           'plate': 'A11222',
           'route': 'DIFC ➡️ Motor City',
           'time': '2:00 PM',
-          'amount': '+₹110',
+          'amount': '+AED 110',
           'status': 'Completed',
         },
         {
@@ -59,23 +59,25 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.designSurface,
       body: SafeArea(
         child: Stack(
           children: [
-            _headerBg(),
+            _headerBg(context),
 
             Column(
               children: [
-                _header(),
+                _header(context),
 
                 const SizedBox(height: 30),
 
-                // 🔥 FLOATING FILTER CARD
-                _filterContainer(),
+                // FLOATING FILTER CARD
+                _filterContainer(context),
 
-                Expanded(child: _tripList()),
+                Expanded(child: _tripList(context)),
               ],
             ),
           ],
@@ -84,15 +86,17 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
     );
   }
 
-  // 🔥 HEADER BACKGROUND
-  Widget _headerBg() {
+  Widget _headerBg(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       height: 180,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
+        color: colorScheme.primary,
         gradient: LinearGradient(
           colors: [
-            AppColors.primary,
-            AppColors.designDarkGreen,
+            colorScheme.primary,
+            colorScheme.primary.withOpacity(0.85),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -101,26 +105,42 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
     );
   }
 
-  // 🔥 HEADER
-  Widget _header() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 16),
+  Widget _header(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24),
       child: Column(
         children: [
-          Text(
-            "Trip History",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.arrow_back_ios, color: colorScheme.onPrimary, size: 20),
+              ),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    "Trip History",
+                    style: textTheme.titleLarge?.copyWith(
+                      color: colorScheme.onPrimary,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 48), // Spacer for centering
+            ],
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             "Your completed & cancelled rides",
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 13,
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.onPrimary.withOpacity(0.7),
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -128,66 +148,84 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
     );
   }
 
-  // 🔥 FILTER CONTAINER (NEW PREMIUM)
-  Widget _filterContainer() {
+  Widget _filterContainer(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 24),
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
+            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.08 : 0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           )
         ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _chip('All'),
-          _chip('Completed'),
-          _chip('Cancelled'),
+          _chip(context, 'All'),
+          _chip(context, 'Completed'),
+          _chip(context, 'Cancelled'),
         ],
       ),
     );
   }
 
-  Widget _chip(String label) {
+  Widget _chip(BuildContext context, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     bool selected = _selectedFilter == label;
 
     return GestureDetector(
       onTap: () => setState(() => _selectedFilter = label),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding:
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          color: selected ? Colors.black : Colors.transparent,
+          color: selected ? colorScheme.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
-          style: TextStyle(
-            color: selected ? Colors.white : Colors.black87,
-            fontWeight: FontWeight.w600,
+          style: textTheme.labelLarge?.copyWith(
+            color: selected ? colorScheme.onPrimary : colorScheme.onSurface.withOpacity(0.6),
+            fontWeight: selected ? FontWeight.w900 : FontWeight.bold,
           ),
         ),
       ),
     );
   }
 
-  // 🔥 LIST
-  Widget _tripList() {
+  Widget _tripList(BuildContext context) {
     final groups = _filteredGroups;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     if (groups.isEmpty) {
-      return const Center(child: Text("No trips"));
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.history, size: 64, color: colorScheme.onSurface.withOpacity(0.1)),
+            const SizedBox(height: 16),
+            Text(
+              "No trips found",
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
+            ),
+          ],
+        ),
+      );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
       itemCount: groups.length,
       itemBuilder: (context, index) {
         final group = groups[index];
@@ -195,22 +233,20 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔥 DATE HEADER (IMPROVED)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(
                 group['dateHeader'],
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: Colors.grey,
-                  fontSize: 12,
-                  letterSpacing: 1,
+                style: textTheme.labelSmall?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: colorScheme.onSurface.withOpacity(0.5),
+                  letterSpacing: 1.2,
                 ),
               ),
             ),
 
             ...group['trips']
-                .map<Widget>((trip) => _tripCard(trip))
+                .map<Widget>((trip) => _tripCard(context, trip))
                 .toList(),
           ],
         );
@@ -218,101 +254,109 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
     );
   }
 
-  // 🔥 PREMIUM CARD
-  Widget _tripCard(Map trip) {
+  Widget _tripCard(BuildContext context, Map trip) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
     bool isCompleted = trip['status'] == 'Completed';
+    final statusColor = isCompleted ? colorScheme.secondary : colorScheme.error;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.04 : 0.2),
             blurRadius: 10,
+            offset: const Offset(0, 4),
           )
         ],
       ),
       child: Row(
         children: [
-          // ICON
           Container(
-            width: 48,
-            height: 48,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
-              color: isCompleted
-                  ? Colors.green.withOpacity(0.1)
-                  : Colors.red.withOpacity(0.1),
+              color: statusColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              isCompleted ? Icons.check : Icons.close,
-              color: isCompleted ? Colors.green : Colors.red,
+              isCompleted ? Icons.directions_car_filled : Icons.cancel_outlined,
+              color: statusColor,
             ),
           ),
 
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
 
-          // DETAILS
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(trip['vehicle'],
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w700)),
-                Text(trip['plate'],
-                    style: const TextStyle(fontSize: 12)),
-                const SizedBox(height: 4),
-                Text(trip['route'],
-                    style: const TextStyle(
-                        color: Colors.grey, fontSize: 12)),
-                Text(trip['time'],
-                    style: const TextStyle(
-                        color: Colors.grey, fontSize: 12)),
+                Text(
+                  trip['vehicle'],
+                  style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w900),
+                ),
+                Text(
+                  trip['plate'],
+                  style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5), fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  trip['route'],
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.7),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  trip['time'],
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.4),
+                  ),
+                ),
               ],
             ),
           ),
 
-          // RIGHT SIDE
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              // STATUS BADGE
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: isCompleted
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  color: statusColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  trip['status'],
-                  style: TextStyle(
-                    color:
-                        isCompleted ? Colors.green : Colors.red,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
+                  trip['status'].toUpperCase(),
+                  style: textTheme.labelSmall?.copyWith(
+                    color: statusColor,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 9,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
 
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
 
               if (isCompleted)
                 Text(
                   trip['amount'],
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: colorScheme.onSurface,
                   ),
                 ),
 
-              const SizedBox(height: 6),
+              if (isCompleted)
+                const SizedBox(height: 8),
 
               if (isCompleted)
                 GestureDetector(
@@ -320,17 +364,22 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>
-                            const RateExperienceScreen(),
+                        builder: (_) => const RateExperienceScreen(),
                       ),
                     );
                   },
-                  child: const Text(
-                    "Rate",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      "Rate Trip",
+                      style: textTheme.labelSmall?.copyWith(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
                 )

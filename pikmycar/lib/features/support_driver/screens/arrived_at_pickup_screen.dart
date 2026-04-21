@@ -2,27 +2,19 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
 class ArrivedAtPickupScreen extends StatelessWidget {
-  const ArrivedAtPickupScreen({Key? key}) : super(key: key);
+  const ArrivedAtPickupScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Arrived at Pickup',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -0.5,
-          ),
-        ),
-        backgroundColor: AppColors.designYellow,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
         ),
         centerTitle: false,
       ),
@@ -35,49 +27,44 @@ class ArrivedAtPickupScreen extends StatelessWidget {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: const Color(0xFFE8F5E9), // Pale Green
+                color: colorScheme.primary.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Center(
-                child: Icon(Icons.location_on, color: Colors.pink, size: 50),
+              child: Center(
+                child: Icon(Icons.location_on, color: AppColors.error, size: 50),
               ),
             ),
             const SizedBox(height: 32),
             
             // Arrival Header
-            const Text(
+            Text(
               "You've Arrived!",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 32,
+              style: textTheme.displaySmall?.copyWith(
                 fontWeight: FontWeight.w900,
-                color: Colors.black,
                 letterSpacing: -1,
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               "Dubai Marina, Tower B",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.blueGrey,
-                fontSize: 16,
+              style: textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const Text(
+            Text(
               "Locate the customer and begin inspection",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.blueGrey,
-                fontSize: 14,
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.6),
                 height: 1.4,
               ),
             ),
             const SizedBox(height: 48),
 
             // Customer Contact Card
-            _buildContactCard(),
+            _buildContactCard(context),
             
             const SizedBox(height: 32),
 
@@ -89,7 +76,7 @@ class ArrivedAtPickupScreen extends StatelessWidget {
                     context, 
                     "Call", 
                     Icons.phone_in_talk, 
-                    Colors.pink,
+                    AppColors.error,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -98,7 +85,7 @@ class ArrivedAtPickupScreen extends StatelessWidget {
                     context, 
                     "SMS", 
                     Icons.textsms_rounded, 
-                    Colors.deepPurpleAccent,
+                    colorScheme.secondary,
                   ),
                 ),
               ],
@@ -109,18 +96,10 @@ class ArrivedAtPickupScreen extends StatelessWidget {
             // Primary Action
             SizedBox(
               width: double.infinity,
-              height: 64,
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pushReplacementNamed(context, '/support_driver_inspection');
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.designForestGreen,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  elevation: 0,
-                  textStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
-                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
@@ -137,37 +116,39 @@ class ArrivedAtPickupScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContactCard() {
+  Widget _buildContactCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.black12, width: 1),
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "CUSTOMER CONTACT", 
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blueGrey, letterSpacing: 1.2),
+            style: textTheme.labelSmall?.copyWith(fontSize: 12, fontWeight: FontWeight.bold, color: colorScheme.onSurface.withOpacity(0.5), letterSpacing: 1.2),
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              const Icon(Icons.person, color: Colors.deepPurple, size: 28),
+              Icon(Icons.person, color: colorScheme.primary, size: 28),
               const SizedBox(width: 16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
                     "Ahmed Al-Rashid",
-                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: -0.5),
+                    style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -0.5),
                   ),
                   Text(
                     "Contact person on-site",
-                    style: TextStyle(color: Colors.blueGrey, fontSize: 13, fontWeight: FontWeight.w500),
+                    style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5), fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -176,11 +157,11 @@ class ArrivedAtPickupScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              const Icon(Icons.phone_android, color: Colors.pinkAccent, size: 26),
+              Icon(Icons.phone_android, color: AppColors.error, size: 26),
               const SizedBox(width: 16),
-              const Text(
+              Text(
                 "+971 50 123 4567",
-                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 17, letterSpacing: 0.5),
+                style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, letterSpacing: 0.5),
               ),
             ],
           ),
@@ -190,30 +171,24 @@ class ArrivedAtPickupScreen extends StatelessWidget {
   }
 
   Widget _buildSecondaryButton(BuildContext context, String label, IconData icon, Color iconColor) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return SizedBox(
       height: 56,
-      child: ElevatedButton(
+      child: OutlinedButton(
         onPressed: () {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text("${label}ing Ahmed Al-Rashid..."),
-              behavior: SnackBarBehavior.floating,
-              backgroundColor: AppColors.designForestGreen,
             ),
           );
         },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFF1F5F9),
-          foregroundColor: Colors.black,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          elevation: 0,
-        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: iconColor, size: 20),
             const SizedBox(width: 8),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
+            Text(label, style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900)),
           ],
         ),
       ),

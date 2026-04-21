@@ -5,8 +5,11 @@ class ThankYouScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -21,37 +24,31 @@ class ThankYouScreen extends StatelessWidget {
                   // Checkmark icon in yellow circle
                   Container(
                     padding: const EdgeInsets.all(20),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFFFCA20),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.check,
                       size: 48,
-                      color: Colors.white,
+                      color: colorScheme.onPrimary,
                     ),
                   ),
                   const SizedBox(height: 32),
 
                   // "Thank You!" text
-                  const Text(
+                  Text(
                     "Thank You!",
-                    style: TextStyle(
-                      fontSize: 22,
+                    style: textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF0C0E1E),
                     ),
                   ),
                   const SizedBox(height: 8),
 
                   // Subtext
-                  const Text(
+                  Text(
                     "You're now logged in. Let's go!",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFF6D6E78),
-                    ),
+                    style: textTheme.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -62,27 +59,11 @@ class ThankYouScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 20.0),
                 child: SizedBox(
                   width: double.infinity,
-                  height: 50,
                   child: ElevatedButton(
                     onPressed: () {
-                       // Route to dashboard for demo
-                       // For demo purposes, route to main driver
                       Navigator.pushReplacementNamed(context, '/main_driver_dashboard');
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFCA20),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      "Okay",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
+                    child: const Text("Okay"),
                   ),
                 ),
               ),

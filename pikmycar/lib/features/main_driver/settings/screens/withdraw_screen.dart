@@ -25,68 +25,117 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
   Widget build(BuildContext context) {
     if (_isSuccess) return _buildSuccessUI();
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
     final earnings = context.watch<SettingsBloc>().state.earnings;
     final bank = context.watch<SettingsBloc>().state.bankDetails;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Withdraw Money", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        title: Text(
+          "Withdraw Money",
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+        ),
+        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Enter Amount", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
+            Text(
+              "ENTER AMOUNT", 
+              style: textTheme.labelSmall?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.5), 
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.2,
+              ),
+            ),
+            const SizedBox(height: 16),
             TextField(
               controller: _amountController,
               keyboardType: TextInputType.number,
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              style: textTheme.displaySmall?.copyWith(
+                fontWeight: FontWeight.w900,
+                color: colorScheme.onSurface,
+              ),
               decoration: InputDecoration(
                 prefixText: "₹ ",
+                prefixStyle: textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: colorScheme.primary,
+                ),
                 hintText: "0.00",
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey.shade200)),
-                focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.indigo, width: 2)),
+                hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.1)),
+                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: colorScheme.outlineVariant)),
+                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: colorScheme.primary, width: 2)),
               ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              "Available: ₹${earnings?.availableBalance.toStringAsFixed(2) ?? "0.00"}",
-              style: const TextStyle(color: Colors.indigo, fontWeight: FontWeight.w600),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                "Available: ₹${earnings?.availableBalance.toStringAsFixed(2) ?? "0.00"}",
+                style: textTheme.labelLarge?.copyWith(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
             ),
             
             const SizedBox(height: 48),
-            const Text("Withdraw to", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+            Text(
+              "WITHDRAW TO", 
+              style: textTheme.labelSmall?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.5), 
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.2,
+              ),
+            ),
             const SizedBox(height: 16),
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.account_balance, color: Colors.indigo),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.account_balance_rounded, color: colorScheme.primary),
+                  ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(bank?.bankName ?? "Not Linked", style: const TextStyle(fontWeight: FontWeight.bold)),
-                        Text(bank?.accountNumber ?? "Link your bank account first", style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                        Text(
+                          bank?.bankName ?? "Not Linked", 
+                          style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          bank?.accountNumber ?? "Link your bank account first", 
+                          style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
+                        ),
                       ],
                     ),
                   ),
                   if (bank == null)
                     TextButton(
                       onPressed: () => Navigator.pushNamed(context, '/bank_account'),
-                      child: const Text("LINK"),
+                      child: const Text("LINK NOW"),
                     ),
                 ],
               ),
@@ -96,7 +145,6 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
             
             SizedBox(
               width: double.infinity,
-              height: 56,
               child: ElevatedButton(
                 onPressed: (bank == null || _amountController.text.isEmpty) ? null : () {
                   final amount = double.tryParse(_amountController.text) ?? 0;
@@ -105,15 +153,14 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                     setState(() => _isSuccess = true);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Invalid amount or insufficient balance")),
+                      SnackBar(
+                        content: const Text("Invalid amount or insufficient balance"),
+                        backgroundColor: colorScheme.error,
+                      ),
                     );
                   }
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                child: const Text("CONFIRM WITHDRAWAL", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                child: const Text("CONFIRM WITHDRAWAL"),
               ),
             ),
             const SizedBox(height: 20),
@@ -124,34 +171,47 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
   }
 
   Widget _buildSuccessUI() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.check_circle, color: Colors.green, size: 100),
-              const SizedBox(height: 32),
-              const Text("Withdrawal Successful!", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: colorScheme.secondary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.check_circle_rounded, color: colorScheme.secondary, size: 100),
+              ),
+              const SizedBox(height: 40),
+              Text(
+                "Withdrawal Successful!", 
+                style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 "Your money will be credited to your bank account within 24-48 hours.",
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey),
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.5), height: 1.5),
               ),
               const SizedBox(height: 48),
               SizedBox(
                 width: double.infinity,
-                height: 56,
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                   ),
-                  child: const Text("DONE", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                  child: const Text("DONE"),
                 ),
               ),
             ],

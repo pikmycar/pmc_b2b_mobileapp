@@ -16,9 +16,13 @@ class OfflineScreenBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Container(
       width: double.infinity,
-      color: Theme.of(context).scaffoldBackgroundColor,
+      color: theme.scaffoldBackgroundColor,
       child: Column(
         children: [
           const SizedBox(height: 16),
@@ -28,25 +32,24 @@ class OfflineScreenBody extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFFEF4ED),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFF7D1BA), width: 1),
+                color: AppColors.warning.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.warning.withOpacity(0.3), width: 1),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(
+                   const Icon(
                     Icons.error_outline,
-                    color: Color(0xFFB35C31),
+                    color: AppColors.warning,
                     size: 24,
                   ),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Turn on availability to receive trip assignments',
-                      style: TextStyle(
-                        color: Color(0xFFB35C31),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: AppColors.warning,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -62,11 +65,11 @@ class OfflineScreenBody extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: _buildStatCard(tripsCount, "Trips This Week"),
+                  child: _buildStatCard(context, tripsCount, "Trips This Week"),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: _buildStatCard(rating, "Rating"),
+                  child: _buildStatCard(context, rating, "Rating"),
                 ),
               ],
             ),
@@ -75,48 +78,26 @@ class OfflineScreenBody extends StatelessWidget {
           const Spacer(),
 
           // Offline Text
-          const Text(
+          Text(
             "You're offline",
-            style: AppTextStyles.heading2,
+            style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Text(
               'Turn On "Go Online" To Receive Trip Assignments.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w400,
-              ),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
             ),
           ),
           const SizedBox(height: 24),
           // Go Online Button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: onToggleOnline != null ? () => onToggleOnline!() : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.designDarkGreen,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 0,
-                ),
-                child: const Text(
-                  "Go Online",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+            child: ElevatedButton(
+              onPressed: onToggleOnline != null ? () => onToggleOnline!() : null,
+              child: const Text("Go Online"),
             ),
           ),
           
@@ -128,38 +109,37 @@ class OfflineScreenBody extends StatelessWidget {
             fit: BoxFit.fitWidth,
             alignment: Alignment.bottomCenter,
             placeholderBuilder: (context) => const SizedBox(height: 180),
-            // Added error builder fallback
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatCard(String value, String label) {
+  Widget _buildStatCard(BuildContext context, String value, String label) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 24),
       decoration: BoxDecoration(
-        color: const Color(0xFFFAF9F6),
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         children: [
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 22,
+            style: textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: colorScheme.primary,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
+            style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
           ),
         ],
       ),

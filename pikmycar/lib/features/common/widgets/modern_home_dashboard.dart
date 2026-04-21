@@ -112,7 +112,7 @@ Future<void> _loadRole() async {
         ? UserRole.supportDriver
         : UserRole.mainDriver;
 
-    if (widget.isOnline) _loadSimulation(); // ✅ CORRECT PLACE
+    if (widget.isOnline) _loadSimulation();
   });
 }
   void _simulateIncomingTrip() {
@@ -188,14 +188,15 @@ Future<void> _loadRole() async {
 
   Widget _card(String value, String label) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: theme.cardColor,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+          border: Border.all(color: colorScheme.outlineVariant),
         ),
         child: Column(
           children: [
@@ -209,12 +210,14 @@ Future<void> _loadRole() async {
 
   Widget _buildMapSection() {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.borderLight),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Stack(
         children: [
@@ -240,7 +243,7 @@ Future<void> _loadRole() async {
             child: BlocBuilder<TripBloc, TripState>(
               builder: (context, state) {
                 return Material(
-                  color: (isDark ? Colors.black : Colors.white).withOpacity(0.8),
+                  color: colorScheme.surface.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(20),
                   elevation: 4,
                   child: Padding(
@@ -250,8 +253,7 @@ Future<void> _loadRole() async {
                         ScaleTransition(scale: _pulseAnimation, child: const Text("🎯")),
                         const SizedBox(width: 10),
                         Text(state.status == TripStatus.searching ? "Searching for trips..." : "Trip in progress...", 
-                          style: TextStyle(
-                            color: isDark ? Colors.white : Colors.black, 
+                          style: theme.textTheme.labelLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           )),
                       ],
@@ -272,16 +274,10 @@ Future<void> _loadRole() async {
               }
             },
             builder: (context, state) {
-              print("DEBUG: [Dashboard] Rendering BLoC Builder. Status: ${state.status}, Role: ${_role}, Trip: ${state.activeTrip != null ? 'Present' : 'Null'}");
-              
               if (state.status == TripStatus.requestReceived && state.activeTrip != null && _role == UserRole.mainDriver) {
                 final driversCount = state.activeTrip!.supportDrivers.length;
-                print("DEBUG: [Dashboard] Showing MainDriverRequestPopup. Drivers visible: $driversCount");
-                
                 if (driversCount > 0) {
                   return MainDriverRequestPopup(trip: state.activeTrip!);
-                } else {
-                  print("DEBUG: [Dashboard] Warning: Active trip has zero support drivers.");
                 }
               }
               // Support driver specific popup

@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class TripCompletedScreen extends StatelessWidget {
-  const TripCompletedScreen({Key? key}) : super(key: key);
+  const TripCompletedScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -32,19 +35,17 @@ class TripCompletedScreen extends StatelessWidget {
               
               const SizedBox(height: 32),
               
-              const Text(
+              Text(
                 "Trip Completed!",
-                style: TextStyle(
-                  fontSize: 28,
+                style: textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w900,
-                  color: Colors.black,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 "Great job! You've successfully dropped off the support driver.",
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.blueGrey, fontSize: 16),
+                style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
               ),
               
               const SizedBox(height: 48),
@@ -53,19 +54,19 @@ class TripCompletedScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.grey[200]!),
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: colorScheme.outlineVariant),
                 ),
                 child: Column(
                   children: [
-                    _summaryRow("Trip Earnings", "₹250", isPrimary: true),
-                    const Divider(height: 32),
-                    _summaryRow("Distance", "4.8 km"),
+                    _summaryRow(context, "Trip Earnings", "₹250", isPrimary: true),
+                    Divider(height: 32, color: colorScheme.outlineVariant),
+                    _summaryRow(context, "Distance", "4.8 km"),
                     const SizedBox(height: 12),
-                    _summaryRow("Time", "12 mins"),
+                    _summaryRow(context, "Time", "12 mins"),
                     const SizedBox(height: 12),
-                    _summaryRow("Support Driver", "John Doe"),
+                    _summaryRow(context, "Support Driver", "John Doe"),
                   ],
                 ),
               ),
@@ -75,20 +76,11 @@ class TripCompletedScreen extends StatelessWidget {
               // Action Button
               SizedBox(
                 width: double.infinity,
-                height: 60,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Navigate back to the home screen by removing all previous routes
                     Navigator.of(context).pushNamedAndRemoveUntil('/driver_home', (route) => false);
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                  child: const Text(
-                    "BACK TO DASHBOARD",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white),
-                  ),
+                  child: const Text("BACK TO DASHBOARD"),
                 ),
               ),
               const SizedBox(height: 20),
@@ -99,17 +91,24 @@ class TripCompletedScreen extends StatelessWidget {
     );
   }
 
-  Widget _summaryRow(String label, String value, {bool isPrimary = false}) {
+  Widget _summaryRow(BuildContext context, String label, String value, {bool isPrimary = false}) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Colors.black54, fontSize: 16)),
+        Text(
+          label,
+          style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
+        ),
         Text(
           value,
-          style: TextStyle(
+          style: textTheme.titleMedium?.copyWith(
             fontSize: isPrimary ? 20 : 16,
             fontWeight: isPrimary ? FontWeight.w900 : FontWeight.bold,
-            color: isPrimary ? AppColors.success : Colors.black,
+            color: isPrimary ? AppColors.success : colorScheme.onSurface,
           ),
         ),
       ],

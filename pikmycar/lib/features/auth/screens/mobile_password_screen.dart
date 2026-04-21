@@ -5,7 +5,6 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import 'otp_verification_screen.dart';
-import 'thank_you_screen.dart';
 import '../../../core/theme/app_theme.dart';
 
 class MobilePasswordScreen extends StatefulWidget {
@@ -33,7 +32,6 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen> {
   }
 
   void _onLoginWithOtpInstead() {
-    // This could also be a separate event, but for now we follow the user's flow
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -45,46 +43,44 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return BlocListener<AuthBloc, AuthState>(
-  listener: (context, state) async {
-  if (state is AuthOtpRequired) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => OtpVerificationScreen(
-          email: "+91 ${widget.mobile}",
-        ),
-      ),
-    );
-  } 
-  else if (state is AuthAuthenticated) {
-    // 🔥 ADD THIS BLOCK
+      listener: (context, state) async {
+        if (state is AuthOtpRequired) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OtpVerificationScreen(
+                email: "+91 ${widget.mobile}",
+              ),
+            ),
+          );
+        } else if (state is AuthAuthenticated) {
+          final storage = context.read<SecureStorageService>();
+          final pin = await storage.getPin();
+          if (!mounted) return;
 
-    final storage = context.read<SecureStorageService>();
-
-    final pin = await storage.getPin();
-
-    if (!mounted) return;
-
-    if (pin == null) {
-      Navigator.pushReplacementNamed(context, '/create_pin');
-    } else {
-      Navigator.pushReplacementNamed(context, '/pin_login');
-    }
-  } 
-  else if (state is AuthError) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(state.message)),
-    );
-  }
-},
+          if (pin == null) {
+            Navigator.pushReplacementNamed(context, '/create_pin');
+          } else {
+            Navigator.pushReplacementNamed(context, '/pin_login');
+          }
+        } else if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: colorScheme.error,
+            ),
+          );
+        }
+      },
       child: Scaffold(
-        backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -95,40 +91,28 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   "Enter your password",
-                  style: AppTextStyles.heading1,
+                  style: textTheme.displayLarge,
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   "An OTP has been sent to",
-                  style: AppTextStyles.caption,
+                  style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   "+91 ${widget.mobile}",
-                  style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
+                  style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 32),
 
                 // Password Field
-                Container(
-                  height: 56,
-                  decoration: BoxDecoration(
-           
-                  ),
-                  child: TextField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                      hintText: "Enter your password",
-                      hintStyle: TextStyle(
-                        color: Colors.black26,
-                        fontSize: 14,
-                      ),
-                    ),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    hintText: "Enter your password",
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -139,21 +123,14 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen> {
                   children: [
                     TextButton(
                       onPressed: _onLoginWithOtpInstead,
-                      child: Text(
-                        "Login with OTP instead",
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.accent,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: const Text("Login with OTP instead"),
                     ),
                     TextButton(
                       onPressed: () {},
                       child: Text(
                         "Forgot Password?",
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w500,
+                        style: textTheme.labelLarge?.copyWith(
+                          color: colorScheme.onSurface.withOpacity(0.5),
                         ),
                       ),
                     ),
@@ -165,29 +142,21 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen> {
                 // Login Button
                 SizedBox(
                   width: double.infinity,
-                  height: 56,
                   child: BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
                       final bool isLoading = state is AuthLoading;
                       return ElevatedButton(
                         onPressed: isLoading ? null : _onLogin,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accent,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          elevation: 0,
-                        ),
                         child: isLoading
-                            ? const CircularProgressIndicator(color: Colors.black, strokeWidth: 2)
-                            : const Text(
-                                "Login",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
+                            ? SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: colorScheme.onPrimary,
+                                  strokeWidth: 2,
                                 ),
-                              ),
+                              )
+                            : const Text("Login"),
                       );
                     },
                   ),

@@ -6,18 +6,21 @@ class EarningsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: colorScheme.primary, // Dark header area
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
+            _buildHeader(context),
 
             Expanded(
               child: Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF6F7F9),
-                  borderRadius: BorderRadius.vertical(
+                decoration: BoxDecoration(
+                  color: theme.scaffoldBackgroundColor,
+                  borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(24),
                   ),
                 ),
@@ -25,13 +28,13 @@ class EarningsScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      _balanceCard(),
+                      _balanceCard(context),
                       const SizedBox(height: 20),
-                      _tabs(),
+                      _tabs(context),
                       const SizedBox(height: 20),
-                      _stats(),
+                      _stats(context),
                       const SizedBox(height: 20),
-                      _car(),
+                      _car(context),
                       const SizedBox(height: 20),
                       _payout(context),
                     ],
@@ -45,26 +48,20 @@ class EarningsScreen extends StatelessWidget {
     );
   }
 
-  // 🔥 GRADIENT HEADER
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF000000), Color(0xFF1C1C1C)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
       child: Row(
-        children: const [
-          Icon(Icons.account_balance_wallet, color: Colors.white, size: 22),
-          SizedBox(width: 8),
+        children: [
+          Icon(Icons.account_balance_wallet, color: colorScheme.onPrimary, size: 22),
+          const SizedBox(width: 8),
           Text(
             "Earnings",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
+            style: textTheme.titleLarge?.copyWith(
+              color: colorScheme.onPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -73,14 +70,18 @@ class EarningsScreen extends StatelessWidget {
     );
   }
 
-  // 🔥 BALANCE CARD
-  Widget _balanceCard() {
+  Widget _balanceCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final cardColor = theme.brightness == Brightness.light ? AppColors.designYellow : colorScheme.primaryContainer;
+    final onCardColor = theme.brightness == Brightness.light ? Colors.black : colorScheme.onPrimaryContainer;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.designYellow,
-        borderRadius: BorderRadius.circular(20),
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -91,32 +92,31 @@ class EarningsScreen extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           Text(
             "AED 1,240",
-            style: TextStyle(
-              fontSize: 34,
+            style: theme.textTheme.displaySmall?.copyWith(
               fontWeight: FontWeight.w900,
-              color: Colors.black,
+              color: onCardColor,
             ),
           ),
-          SizedBox(height: 6),
+          const SizedBox(height: 6),
           Text(
             "Total This Week",
-            style: TextStyle(
-              color: Colors.black54,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: onCardColor.withOpacity(0.7),
               fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Row(
             children: [
-              Icon(Icons.trending_up, color: Color(0xFF1E6B3F), size: 16),
-              SizedBox(width: 4),
+              Icon(Icons.trending_up, color: AppColors.success, size: 16),
+              const SizedBox(width: 4),
               Text(
                 "+18% vs last week",
-                style: TextStyle(
-                  color: Color(0xFF1E6B3F),
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: AppColors.success,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -127,34 +127,36 @@ class EarningsScreen extends StatelessWidget {
     );
   }
 
-  // 🔥 TABS
-  Widget _tabs() {
+  Widget _tabs(BuildContext context) {
     return Row(
       children: [
-        _tab("Today", true),
+        _tab(context, "Today", true),
         const SizedBox(width: 10),
-        _tab("Week", false),
+        _tab(context, "Week", false),
         const SizedBox(width: 10),
-        _tab("Month", false),
+        _tab(context, "Month", false),
       ],
     );
   }
 
-  Widget _tab(String text, bool active) {
+  Widget _tab(BuildContext context, String text, bool active) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return InkWell(
       borderRadius: BorderRadius.circular(20),
       onTap: () {},
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: active ? Colors.black : Colors.white,
+          color: active ? colorScheme.primary : colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey.shade300),
+          border: Border.all(color: active ? colorScheme.primary : colorScheme.outlineVariant),
         ),
         child: Text(
           text,
-          style: TextStyle(
-            color: active ? Colors.white : Colors.black87,
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: active ? colorScheme.onPrimary : colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -162,150 +164,140 @@ class EarningsScreen extends StatelessWidget {
     );
   }
 
-  // 🔥 STATS
-  Widget _stats() {
+  Widget _stats(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: _stat("12", "Trips")),
+        Expanded(child: _stat(context, "12", "Trips")),
         const SizedBox(width: 10),
-        Expanded(child: _rating()),
+        Expanded(child: _rating(context)),
         const SizedBox(width: 10),
-        Expanded(child: _stat("AED 320", "Today", green: true)),
+        Expanded(child: _stat(context, "AED 320", "Today", isPositive: true)),
       ],
     );
   }
 
-  Widget _stat(String value, String label, {bool green = false}) {
+  Widget _stat(BuildContext context, String value, String label, {bool isPositive = false}) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-          )
-        ],
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         children: [
           Text(
             value,
-            style: TextStyle(
+            style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w800,
-              fontSize: 18,
-              color: green ? const Color(0xFF1E6B3F) : Colors.black,
+              color: isPositive ? AppColors.success : colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 4),
-          Text(label,
-              style: const TextStyle(color: Colors.grey, fontSize: 12))
-        ],
-      ),
-    );
-  }
-
-  // ⭐ PRO RATING UI
-  Widget _rating() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.green.shade50,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Text(
-                "4.9",
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                  color: Color(0xFF1E6B3F),
-                ),
-              ),
-              SizedBox(width: 4),
-              Icon(Icons.star, color: Colors.green, size: 18),
-            ],
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            "Rating",
-            style: TextStyle(color: Colors.grey, fontSize: 12),
+          Text(
+            label,
+            style: theme.textTheme.labelSmall,
           )
         ],
       ),
     );
   }
 
-  // 🔥 CAR
-  Widget _car() {
+  Widget _rating(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: AppColors.success.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.success.withOpacity(0.2)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "4.9",
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.success,
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.star, color: Colors.amber, size: 18),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "Rating",
+            style: theme.textTheme.labelSmall,
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _car(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
-      child: const Center(
+      child: Center(
         child: Text(
           "BMW • Active Vehicle",
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
       ),
     );
   }
 
-  // 🔥 PAYOUT BUTTON
   Widget _payout(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(20),
-      onTap: () {},
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFFE8F5E9),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.account_balance_wallet,
-                color: Color(0xFF1E6B3F)),
-            const SizedBox(width: 10),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-            const Expanded(
-              child: Text(
-                "Payout Available",
-                style: TextStyle(
-                  color: Color(0xFF1E6B3F),
-                  fontWeight: FontWeight.w600,
-                ),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.success.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.success.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.account_balance_wallet, color: AppColors.success),
+          const SizedBox(width: 10),
+
+          Expanded(
+            child: Text(
+              "Payout Available",
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: AppColors.success,
+                fontWeight: FontWeight.w600,
               ),
             ),
+          ),
 
-            GestureDetector(
-  onTap: () {
-    Navigator.pushNamed(context, '/withdraw');
-  },
-  child: Container(
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-    decoration: BoxDecoration(
-      color: Colors.black,
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: const Text(
-      "Withdraw",
-      style: TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  ),
-)
-          ],
-        ),
+          ElevatedButton(
+            onPressed: () => Navigator.pushNamed(context, '/withdraw'),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+              minimumSize: const Size(0, 36),
+            ),
+            child: const Text("Withdraw"),
+          )
+        ],
       ),
     );
   }

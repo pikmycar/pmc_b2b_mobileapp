@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-
+import '../../../core/theme/app_theme.dart';
 
 class CustomTopHeaderBar extends StatelessWidget
     implements PreferredSizeWidget {
@@ -21,9 +20,11 @@ class CustomTopHeaderBar extends StatelessWidget
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   void _showOfflineSnackBar(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("You cannot go offline during an active trip."),
+      SnackBar(
+        content: const Text("You cannot go offline during an active trip."),
+        backgroundColor: colorScheme.error,
       ),
     );
   }
@@ -33,26 +34,29 @@ class CustomTopHeaderBar extends StatelessWidget
     onOnlineStatusChanged?.call(newStatus);
   }
 
-  /// 🔔 NOTIFICATION CLICK
   void _handleNotificationTap(BuildContext context) {
     Navigator.pushNamed(context, '/notifications');
   }
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      backgroundColor: isOnline ? const Color(0xFF00C853) : Colors.white,
-      elevation: 0,
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    // Indigo/Primary look when online, surface look when offline
+    final onlineColor = colorScheme.primary;
+    final offlineColor = colorScheme.surface;
+    final appBarBg = isOnline ? onlineColor : offlineColor;
+    final foregroundColor = isOnline ? colorScheme.onPrimary : colorScheme.onSurface;
 
+    return AppBar(
+      backgroundColor: appBarBg,
+      elevation: 0,
       leading: IconButton(
-        icon: Icon(Icons.menu,
-            color: isOnline ? Colors.white : Colors.black),
+        icon: Icon(Icons.menu, color: foregroundColor),
         onPressed: onMenuTap,
       ),
-
       centerTitle: true,
-
-      /// 🔥 ONLINE TOGGLE
       title: GestureDetector(
         onTap: () async {
           if (canGoOffline || !isOnline) {
@@ -61,69 +65,62 @@ class CustomTopHeaderBar extends StatelessWidget
             _showOfflineSnackBar(context);
           }
         },
-        child: _buildStatusToggle(),
+        child: _buildStatusToggle(context),
       ),
-
-      /// 🔔 NOTIFICATION ICON
       actions: [
         IconButton(
-          icon: Icon(
-            Icons.notifications_none,
-            color: isOnline ? Colors.white : Colors.black,
-          ),
+          icon: Icon(Icons.notifications_none, color: foregroundColor),
           onPressed: () => _handleNotificationTap(context),
         ),
       ],
     );
   }
 
-  Widget _buildStatusToggle() {
+  Widget _buildStatusToggle(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    final onlineBg = colorScheme.primaryContainer;
+    final offlineBg = colorScheme.onSurface.withOpacity(0.05);
+    final indicatorColor = isOnline ? AppColors.success : colorScheme.error;
+
     return Container(
       width: 130,
       height: 38,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: isOnline
-            ? const Color(0xFF00C853).withOpacity(0.8)
-            : Colors.grey.shade100,
+        color: isOnline ? onlineBg : offlineBg,
         borderRadius: BorderRadius.circular(40),
-        border: isOnline ? null : Border.all(color: Colors.redAccent),
+        border: isOnline ? null : Border.all(color: colorScheme.error.withOpacity(0.5)),
       ),
       child: Stack(
         alignment: Alignment.center,
         children: [
           AnimatedAlign(
             duration: const Duration(milliseconds: 300),
-            alignment:
-                isOnline ? Alignment.center : const Alignment(0.25, 0),
+            alignment: isOnline ? Alignment.center : const Alignment(0.25, 0),
             child: Text(
               isOnline ? "Online" : "Go Online",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color:
-                    isOnline ? Colors.white : const Color(0xFF131313),
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: isOnline ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
           AnimatedAlign(
             duration: const Duration(milliseconds: 350),
-            alignment: isOnline
-                ? Alignment.centerRight
-                : Alignment.centerLeft,
+            alignment: isOnline ? Alignment.centerRight : Alignment.centerLeft,
             child: Container(
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                color: isOnline
-                    ? const Color(0xFF00E676)
-                    : Colors.redAccent,
+                color: indicatorColor,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 isOnline ? Icons.wifi : Icons.wifi_off,
                 size: 18,
-                color: Colors.white,
+                color: Colors.white, // Indicator icon usually stays white for contrast
               ),
             ),
           ),

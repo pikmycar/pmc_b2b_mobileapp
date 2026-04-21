@@ -9,10 +9,16 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text("Settings"),
+        title: Text(
+          "Settings",
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+        ),
         centerTitle: true,
         actions: [
           IconButton(
@@ -24,55 +30,85 @@ class SettingsScreen extends StatelessWidget {
       body: BlocBuilder<SettingsBloc, SettingsState>(
         builder: (context, state) {
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(24),
             children: [
-
-              /// 🔹 SECURITY
-              _sectionTitle("Security"),
+              /// SECURITY
+              _sectionTitle(context, "SECURITY"),
               _tile(
+                context,
                 Icons.account_balance_wallet_outlined,
                 "Earnings & Withdraw",
                 () => Navigator.pushNamed(context, '/withdraw'),
               ),
               _tile(
-                Icons.lock_outline,
-                "Reset PIN",
+                context,
+                Icons.lock_reset_rounded,
+                "Reset Login PIN",
                 () => Navigator.pushNamed(context, '/reset_pin'),
               ),
 
-              ListTile(
-                leading: const Icon(Icons.fingerprint),
-                title: const Text("Biometric Login"),
-                trailing: Switch(
-                  value: state.preferences['biometric'] ?? false,
-                  onChanged: (val) {
-                    context.read<SettingsBloc>()
-                        .add(TogglePreference('biometric', val));
-                  },
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: colorScheme.outlineVariant),
+                ),
+                child: ListTile(
+                  leading: Icon(Icons.fingerprint_rounded, color: colorScheme.primary),
+                  title: Text(
+                    "Biometric Login",
+                    style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  trailing: Switch(
+                    value: state.preferences['biometric'] ?? false,
+                    onChanged: (val) {
+                      context.read<SettingsBloc>()
+                          .add(TogglePreference('biometric', val));
+                    },
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-              /// 🔹 PREFERENCES
-              _sectionTitle("Preferences"),
-              ListTile(
-                leading: const Icon(Icons.notifications_none),
-                title: const Text("Notifications"),
-                trailing: Switch(
-                  value: state.preferences['notifications'] ?? true,
-                  onChanged: (val) {
-                    context.read<SettingsBloc>()
-                        .add(TogglePreference('notifications', val));
-                  },
+              /// PREFERENCES
+              _sectionTitle(context, "PREFERENCES"),
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: colorScheme.outlineVariant),
+                ),
+                child: ListTile(
+                  leading: Icon(Icons.notifications_none_rounded, color: colorScheme.primary),
+                  title: Text(
+                    "Push Notifications",
+                    style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  trailing: Switch(
+                    value: state.preferences['notifications'] ?? true,
+                    onChanged: (val) {
+                      context.read<SettingsBloc>()
+                          .add(TogglePreference('notifications', val));
+                    },
+                  ),
                 ),
               ),
 
+              const SizedBox(height: 40),
 
-              const SizedBox(height: 30),
-
-              /// 🔹 LOGOUT
-          
+              /// APP INFO
+              Center(
+                child: Text(
+                  "PikMyCar Driver · v2.4.0",
+                  style: textTheme.labelSmall?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.3),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ],
           );
         },
@@ -80,28 +116,42 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  /// 🔹 TILE
-  Widget _tile(IconData icon, String title, VoidCallback onTap) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
+  Widget _tile(BuildContext context, IconData icon, String title, VoidCallback onTap) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
       child: ListTile(
-        leading: Icon(icon),
-        title: Text(title),
-        trailing: const Icon(Icons.chevron_right),
+        leading: Icon(icon, color: colorScheme.primary),
+        title: Text(
+          title,
+          style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        trailing: Icon(Icons.chevron_right_rounded, color: colorScheme.onSurface.withOpacity(0.2)),
         onTap: onTap,
       ),
     );
   }
 
-  /// 🔹 SECTION TITLE
-  Widget _sectionTitle(String title) {
+  Widget _sectionTitle(BuildContext context, String title) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.only(left: 4, bottom: 12),
       child: Text(
         title,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Colors.grey,
+        style: textTheme.labelSmall?.copyWith(
+          fontWeight: FontWeight.w900,
+          color: colorScheme.onSurface.withOpacity(0.4),
+          letterSpacing: 1.5,
         ),
       ),
     );

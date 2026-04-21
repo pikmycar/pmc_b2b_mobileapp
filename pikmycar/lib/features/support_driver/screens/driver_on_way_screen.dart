@@ -5,7 +5,7 @@ import 'dart:async';
 import '../../../core/theme/app_theme.dart';
 
 class DriverOnWayScreen extends StatefulWidget {
-  const DriverOnWayScreen({Key? key}) : super(key: key);
+  const DriverOnWayScreen({super.key});
 
   @override
   State<DriverOnWayScreen> createState() => _DriverOnWayScreenState();
@@ -34,6 +34,7 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
   @override
   void dispose() {
     _navigationTimer?.cancel();
+    _mapController?.dispose();
     super.dispose();
   }
 
@@ -67,6 +68,7 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
     
     final userLatLng = LatLng(position.latitude, position.longitude);
     final driverLatLng = LatLng(position.latitude + 0.005, position.longitude + 0.005);
+    final colorScheme = Theme.of(context).colorScheme;
 
     // User Marker
     _markers.add(
@@ -93,7 +95,7 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
       Polyline(
         polylineId: const PolylineId('route_to_driver'),
         points: [userLatLng, driverLatLng],
-        color: AppColors.designYellow,
+        color: colorScheme.primary,
         width: 5,
         patterns: [PatternItem.dash(20), PatternItem.gap(10)],
       ),
@@ -102,23 +104,15 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Driver On Way 🚕',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 24,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -1,
-          ),
-        ),
-        backgroundColor: AppColors.designYellow,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
         ),
         centerTitle: false,
       ),
@@ -131,12 +125,13 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildStatusBadge("🚕 Main Driver Assigned", const Color(0xFFE8F5E9), textColor: const Color(0xFF2E7D32)),
+                  _buildStatusBadge(context, "🚕 Main Driver Assigned", AppColors.success, textColor: Colors.white),
                   const SizedBox(height: 24),
                   
-                  _buildSectionTitle("MAIN DRIVER DETAILS"),
+                  _buildSectionTitle(context, "MAIN DRIVER DETAILS"),
                   const SizedBox(height: 12),
                   _buildInfoCard(
+                    context: context,
                     child: Column(
                       children: [
                         Row(
@@ -144,14 +139,17 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
                             Container(
                               width: 70,
                               height: 70,
-                              decoration: const BoxDecoration(
-                                color: Colors.black,
+                              decoration: BoxDecoration(
+                                color: colorScheme.primary,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Center(
+                              child: Center(
                                 child: Text(
                                   "KA",
-                                  style: TextStyle(color: AppColors.designYellow, fontSize: 24, fontWeight: FontWeight.bold),
+                                  style: textTheme.headlineSmall?.copyWith(
+                                    color: colorScheme.onPrimary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
@@ -160,35 +158,35 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Khalid Al-Ameri',
-                                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                                    style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -0.5),
                                   ),
                                   const SizedBox(height: 4),
                                   Row(
-                                    children: const [
-                                      Icon(Icons.star, color: Colors.orange, size: 16),
+                                    children: [
+                                      const Icon(Icons.star, color: Colors.amber, size: 16),
                                       Expanded(
                                         child: Text(
                                           ' 4.9 · Main Driver · 620 trips',
-                                          style: TextStyle(color: Colors.grey, fontSize: 13),
+                                          style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  const Text(
+                                  Text(
                                     '2020 Toyota Camry · White',
-                                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                                    style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
                                   ),
                                 ],
                               ),
                             ),
                             Column(
                               children: [
-                                _buildMiniCircleButton(Icons.phone, const Color(0xFF2E7D32)),
+                                _buildMiniCircleButton(Icons.phone, AppColors.success),
                                 const SizedBox(height: 8),
-                                _buildMiniCircleButton(Icons.chat_bubble_rounded, Colors.grey.shade100, iconColor: Colors.grey),
+                                _buildMiniCircleButton(Icons.chat_bubble_rounded, colorScheme.primary.withOpacity(0.1), iconColor: colorScheme.primary),
                               ],
                             ),
                           ],
@@ -197,22 +195,22 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE8F5E9),
+                            color: AppColors.success.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.access_time_filled, color: Color(0xFF2E7D32), size: 24),
+                              const Icon(Icons.access_time_filled, color: AppColors.success, size: 24),
                               const SizedBox(width: 12),
-                              const Expanded(
+                              Expanded(
                                 child: Text(
                                   "Arriving in approximately",
-                                  style: TextStyle(color: Color(0xFF2E7D32), fontSize: 14, fontWeight: FontWeight.w600),
+                                  style: textTheme.bodySmall?.copyWith(color: AppColors.success, fontWeight: FontWeight.w600),
                                 ),
                               ),
-                              const Text(
+                              Text(
                                 "4 min",
-                                style: TextStyle(color: Color(0xFF2E7D32), fontSize: 32, fontWeight: FontWeight.w900),
+                                style: textTheme.headlineMedium?.copyWith(color: AppColors.success, fontWeight: FontWeight.w900),
                               ),
                             ],
                           ),
@@ -223,24 +221,20 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
 
                   const SizedBox(height: 24),
                   
-                  // LIVE MAP SECTION
-                  const Text(
-                    "LIVE TRACKING",
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blueGrey, letterSpacing: 1.2),
-                  ),
+                  _buildSectionTitle(context, "LIVE TRACKING"),
                   const SizedBox(height: 12),
                   Container(
                     height: 280,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.grey.shade200),
+                      border: Border.all(color: colorScheme.outlineVariant),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(24),
                       child: _currentPosition == null
-                          ? const Center(child: CircularProgressIndicator())
+                          ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
                           : GoogleMap(
                               initialCameraPosition: CameraPosition(
                                 target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
@@ -259,24 +253,16 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
-                    height: 60,
                     child: ElevatedButton(
                       onPressed: () {
-                        // Manual override for testing flow
                         Navigator.pushReplacementNamed(context, '/support_driver_arrived');
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: 0,
-                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: const [
-                          Icon(Icons.location_on, size: 20, color: Colors.pinkAccent),
+                          Icon(Icons.location_on, size: 20),
                           SizedBox(width: 8),
-                          Text('Track on Map', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+                          Text('Track on Map'),
                         ],
                       ),
                     ),
@@ -291,7 +277,8 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
     );
   }
 
-  Widget _buildStatusBadge(String text, Color bgColor, {Color textColor = Colors.white}) {
+  Widget _buildStatusBadge(BuildContext context, String text, Color bgColor, {Color textColor = Colors.white}) {
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
@@ -300,23 +287,33 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
       ),
       child: Text(
         text,
-        style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 14),
+        style: textTheme.labelMedium?.copyWith(color: textColor, fontWeight: FontWeight.bold),
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blueGrey, letterSpacing: 1.2));
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Text(
+      title, 
+      style: textTheme.labelSmall?.copyWith(
+        fontWeight: FontWeight.bold, 
+        color: colorScheme.onSurface.withOpacity(0.5), 
+        letterSpacing: 1.2,
+      ),
+    );
   }
 
-  Widget _buildInfoCard({required Widget child, Color bgColor = Colors.white}) {
+  Widget _buildInfoCard({required BuildContext context, required Widget child}) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade200),
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: child,
     );

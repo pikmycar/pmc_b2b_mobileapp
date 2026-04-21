@@ -4,7 +4,7 @@ import '../../../core/theme/app_theme.dart';
 import 'driver_on_way_screen.dart';
 
 class DriverAcceptedScreen extends StatefulWidget {
-  const DriverAcceptedScreen({Key? key}) : super(key: key);
+  const DriverAcceptedScreen({super.key});
 
   @override
   State<DriverAcceptedScreen> createState() => _DriverAcceptedScreenState();
@@ -35,23 +35,15 @@ class _DriverAcceptedScreenState extends State<DriverAcceptedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
-          'Main Driver Assigned',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 24,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -1,
-          ),
-        ),
-        backgroundColor: AppColors.designYellow,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+        title: Text(
+          'Driver Assigned',
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
         ),
         centerTitle: false,
       ),
@@ -61,12 +53,18 @@ class _DriverAcceptedScreenState extends State<DriverAcceptedScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Status Badge
-            _buildStatusBadge("🚕 Main Driver Accepted!", const Color(0xFFE8F5E9), textColor: const Color(0xFF2E7D32)),
+            _buildStatusBadge(
+              context, 
+              "🚕 Main Driver Accepted!", 
+              AppColors.success, 
+              textColor: Colors.white,
+            ),
             const SizedBox(height: 24),
 
-            _buildSectionTitle("MAIN DRIVER DETAILS"),
+            _buildSectionTitle(context, "MAIN DRIVER DETAILS"),
             const SizedBox(height: 12),
             _buildInfoCard(
+              context: context,
               child: Column(
                 children: [
                   Row(
@@ -74,14 +72,17 @@ class _DriverAcceptedScreenState extends State<DriverAcceptedScreen> {
                       Container(
                         width: 70,
                         height: 70,
-                        decoration: const BoxDecoration(
-                          color: Colors.black,
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary,
                           shape: BoxShape.circle,
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             "KA",
-                            style: TextStyle(color: AppColors.designYellow, fontSize: 24, fontWeight: FontWeight.bold),
+                            style: textTheme.headlineSmall?.copyWith(
+                              color: colorScheme.onPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -90,20 +91,26 @@ class _DriverAcceptedScreenState extends State<DriverAcceptedScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Khalid Al-Ameri',
-                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                              style: textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.5,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             Row(
-                              children: const [
-                                Icon(Icons.star, color: Colors.orange, size: 16),
-                                Text(' 4.9 · Main Driver · 620 trips', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                              children: [
+                                const Icon(Icons.star, color: Colors.amber, size: 16),
+                                Text(
+                                  ' 4.9 · Main Driver · 620 trips', 
+                                  style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
+                                ),
                               ],
                             ),
-                            const Text(
+                            Text(
                               '2020 Toyota Camry · White',
-                              style: TextStyle(color: Colors.grey, fontSize: 13),
+                              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
                             ),
                           ],
                         ),
@@ -111,43 +118,49 @@ class _DriverAcceptedScreenState extends State<DriverAcceptedScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  // CTA for impatient users (optional, but keep it automated as requested)
-                  const Text(
+                  Text(
                     "Assigning live tracking... Please wait",
-                    style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic, fontSize: 13),
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurface.withOpacity(0.5),
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
                 ],
               ),
             ),
 
             const SizedBox(height: 24),
-            _buildSectionTitle("TRIP SUMMARY"),
+            _buildSectionTitle(context, "TRIP SUMMARY"),
             const SizedBox(height: 12),
             _buildInfoCard(
+              context: context,
               child: Column(
                 children: [
-                   _buildLocationRow(Icons.location_on, Colors.pink, "Dubai Marina, Tower B", "Pickup Location"),
+                   _buildLocationRow(context, Icons.location_on, AppColors.error, "Dubai Marina, Tower B", "Pickup Location"),
                    const Divider(height: 32),
-                   _buildLocationRow(Icons.factory_outlined, Colors.blueGrey, "Al Quoz Auto Service", "Drop Location"),
+                   _buildLocationRow(context, Icons.factory_outlined, colorScheme.onSurface.withOpacity(0.5), "Al Quoz Auto Service", "Drop Location"),
                    const Divider(height: 32),
-                   _buildLocationRow(Icons.access_time_filled, const Color(0xFF2E7D32), "4 Minutes", "Estimated Arrival (ETA)"),
+                   _buildLocationRow(context, Icons.access_time_filled, AppColors.success, "4 Minutes", "Estimated Arrival (ETA)"),
                 ],
               ),
             ),
             
             const SizedBox(height: 48),
             // Progress Indicator
-            const Center(
+            Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.designYellow),
+                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
               ),
             ),
             const SizedBox(height: 24),
-            const Center(
+            Center(
               child: Text(
                 "Starting live tracking in a few moments",
                 textAlign: TextAlign.center,
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                style: textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface.withOpacity(0.6),
+                ),
               ),
             ),
           ],
@@ -156,7 +169,8 @@ class _DriverAcceptedScreenState extends State<DriverAcceptedScreen> {
     );
   }
 
-  Widget _buildStatusBadge(String text, Color bgColor, {Color textColor = Colors.white}) {
+  Widget _buildStatusBadge(BuildContext context, String text, Color bgColor, {Color textColor = Colors.white}) {
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
@@ -165,29 +179,44 @@ class _DriverAcceptedScreenState extends State<DriverAcceptedScreen> {
       ),
       child: Text(
         text,
-        style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 14),
+        style: textTheme.labelMedium?.copyWith(
+          color: textColor,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blueGrey, letterSpacing: 1.2));
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Text(
+      title,
+      style: textTheme.labelSmall?.copyWith(
+        fontWeight: FontWeight.bold,
+        color: colorScheme.onSurface.withOpacity(0.5),
+        letterSpacing: 1.2,
+      ),
+    );
   }
 
-  Widget _buildInfoCard({required Widget child, Color bgColor = Colors.white}) {
+  Widget _buildInfoCard({required BuildContext context, required Widget child}) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade200),
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: child,
     );
   }
 
-  Widget _buildLocationRow(IconData icon, Color color, String title, String subtitle) {
+  Widget _buildLocationRow(BuildContext context, IconData icon, Color color, String title, String subtitle) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Row(
       children: [
         Icon(icon, color: color, size: 24),
@@ -195,8 +224,8 @@ class _DriverAcceptedScreenState extends State<DriverAcceptedScreen> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+            Text(title, style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+            Text(subtitle, style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5))),
           ],
         ),
       ],

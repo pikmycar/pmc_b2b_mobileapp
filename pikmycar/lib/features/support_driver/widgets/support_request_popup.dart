@@ -21,6 +21,10 @@ class SupportRequestPopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Positioned(
       left: 16,
       right: 16,
@@ -38,11 +42,11 @@ class SupportRequestPopup extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(32),
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.15 : 0.4),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -56,9 +60,9 @@ class SupportRequestPopup extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(child: _buildBadge()),
+                  Expanded(child: _buildBadge(context)),
                   const SizedBox(width: 12),
-                  _buildTimerCircle(),
+                  _buildTimerCircle(context),
                 ],
               ),
               const SizedBox(height: 12),
@@ -66,29 +70,29 @@ class SupportRequestPopup extends StatelessWidget {
               // Title
               Text(
                 isExpanded ? "Expanded Area Request" : "New Car Pickup!",
-                style: const TextStyle(
-                  fontSize: 24,
+                style: textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                   letterSpacing: -0.5,
-                  color: Colors.black,
                 ),
               ),
               const SizedBox(height: 16),
 
               // Expansion Message (if applicable)
-              if (isExpanded) _buildExpansionMessage(),
+              if (isExpanded) _buildExpansionMessage(context),
 
               // Locations
               _buildLocationRow(
+                context,
                 icon: Icons.location_on,
-                iconColor: Colors.pinkAccent,
+                iconColor: colorScheme.primary,
                 title: tripData['pickup'] ?? 'N/A',
                 subtitle: "Pickup Location",
               ),
               const SizedBox(height: 12),
               _buildLocationRow(
+                context,
                 icon: Icons.factory_outlined,
-                iconColor: Colors.grey,
+                iconColor: colorScheme.onSurface.withOpacity(0.4),
                 title: tripData['drop'] ?? 'N/A',
                 subtitle:
                     isExpanded
@@ -100,14 +104,15 @@ class SupportRequestPopup extends StatelessWidget {
               // Stats Row
               Row(
                 children: [
-                  _buildStatCard(tripData['distance'] ?? '0km', "Distance"),
+                  _buildStatCard(context, tripData['distance'] ?? '0km', "Distance"),
                   const SizedBox(width: 8),
-                  _buildStatCard(tripData['eta'] ?? '0min', "ETA"),
+                  _buildStatCard(context, tripData['eta'] ?? '0min', "ETA"),
                   const SizedBox(width: 8),
                   _buildStatCard(
+                    context,
                     tripData['priority'] ?? 'LOW',
                     "Priority",
-                    valueColor: _getPriorityColor(tripData['priority']),
+                    valueColor: _getPriorityColor(context, tripData['priority']),
                   ),
                 ],
               ),
@@ -117,20 +122,16 @@ class SupportRequestPopup extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: _buildActionButton(
-                      label: "Decline",
+                    child: OutlinedButton(
                       onPressed: onDecline,
-                      isPrimary: false,
-                      icon: Icons.close,
+                      child: const Text("Decline"),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildActionButton(
-                      label: isExpanded ? "Accept" : "Accept Pickup",
+                    child: ElevatedButton(
                       onPressed: onAccept,
-                      isPrimary: true,
-                      icon: Icons.check,
+                      child: Text(isExpanded ? "Accept" : "Accept Pickup"),
                     ),
                   ),
                 ],
@@ -142,16 +143,17 @@ class SupportRequestPopup extends StatelessWidget {
     );
   }
 
-  Widget _buildBadge() {
+  Widget _buildBadge(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final badgeColor = isExpanded ? colorScheme.error : colorScheme.primary;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: isExpanded ? const Color(0xFFFFF7ED) : AppColors.designYellow,
+        color: badgeColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
-        border:
-            isExpanded
-                ? Border.all(color: Colors.orange.withOpacity(0.3))
-                : null,
+        border: Border.all(color: badgeColor.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -159,17 +161,16 @@ class SupportRequestPopup extends StatelessWidget {
           Icon(
             isExpanded ? Icons.notifications_none : Icons.directions_car,
             size: 16,
-            color: isExpanded ? Colors.orange : Colors.black,
+            color: badgeColor,
           ),
           const SizedBox(width: 6),
           Flexible(
             child: Text(
               "Pickup Request · ${isExpanded ? '10km' : '5km'} Radius",
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 13,
+              style: theme.textTheme.labelSmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: isExpanded ? Colors.orange : Colors.black,
+                color: badgeColor,
               ),
             ),
           ),
@@ -178,8 +179,12 @@ class SupportRequestPopup extends StatelessWidget {
     );
   }
 
-  Widget _buildTimerCircle() {
+  Widget _buildTimerCircle(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     double progress = secondsRemaining / totalSeconds;
+    final timerColor = isExpanded ? colorScheme.error : colorScheme.primary;
+
     return SizedBox(
       height: 60,
       width: 60,
@@ -189,18 +194,15 @@ class SupportRequestPopup extends StatelessWidget {
           CircularProgressIndicator(
             value: progress,
             strokeWidth: 4,
-            backgroundColor: Colors.grey.withOpacity(0.1),
-            valueColor: AlwaysStoppedAnimation<Color>(
-              isExpanded ? Colors.orange : AppColors.designYellow,
-            ),
+            backgroundColor: colorScheme.onSurface.withOpacity(0.1),
+            valueColor: AlwaysStoppedAnimation<Color>(timerColor),
           ),
           Text(
             "$secondsRemaining",
-            style: TextStyle(
-              fontSize: 22,
+            style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w900,
-              color: isExpanded ? Colors.orange : AppColors.designYellow,
-              fontFamily: 'Roboto', // Premium feel
+              color: timerColor,
+              fontFamily: 'Roboto',
             ),
           ),
         ],
@@ -208,24 +210,28 @@ class SupportRequestPopup extends StatelessWidget {
     );
   }
 
-  Widget _buildExpansionMessage() {
+  Widget _buildExpansionMessage(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Container(
+      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFEFCE8),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.designYellow.withOpacity(0.5)),
+        color: colorScheme.errorContainer.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.error.withOpacity(0.2)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.satellite_alt, color: Colors.blueGrey, size: 24),
+          Icon(Icons.satellite_alt, color: colorScheme.error, size: 24),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Text(
               "No driver accepted in 5km. Request expanded to 10km radius.",
-              style: TextStyle(
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onErrorContainer,
                 fontSize: 13,
-                color: Color(0xFF854D0E),
                 height: 1.4,
               ),
             ),
@@ -235,18 +241,22 @@ class SupportRequestPopup extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationRow({
+  Widget _buildLocationRow(
+    BuildContext context, {
     required IconData icon,
     required Color iconColor,
     required String title,
     required String subtitle,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.grey.withOpacity(0.05),
+            color: colorScheme.onSurface.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: iconColor, size: 24),
@@ -258,15 +268,13 @@ class SupportRequestPopup extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 16,
+                style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
                 ),
               ),
               Text(
                 subtitle,
-                style: const TextStyle(fontSize: 13, color: Colors.grey),
+                style: theme.textTheme.bodySmall,
               ),
             ],
           ),
@@ -275,33 +283,31 @@ class SupportRequestPopup extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard(String value, String label, {Color? valueColor}) {
+  Widget _buildStatCard(BuildContext context, String value, String label, {Color? valueColor}) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.03),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.withOpacity(0.1)),
+          color: colorScheme.onSurface.withOpacity(0.03),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: colorScheme.outlineVariant),
         ),
         child: Column(
           children: [
             Text(
               value,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 16,
+              style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: valueColor ?? Colors.black,
+                color: valueColor ?? colorScheme.onSurface,
               ),
             ),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 11,
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
-              ),
+              style: theme.textTheme.labelSmall,
             ),
           ],
         ),
@@ -309,44 +315,15 @@ class SupportRequestPopup extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton({
-    required String label,
-    required VoidCallback onPressed,
-    required bool isPrimary,
-    required IconData icon,
-  }) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor:
-            isPrimary ? AppColors.designYellow : Colors.grey.withOpacity(0.05),
-        foregroundColor: isPrimary ? Colors.black : Colors.black87,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(vertical: 18),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 18),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Color _getPriorityColor(String? priority) {
+  Color _getPriorityColor(BuildContext context, String? priority) {
+    final colorScheme = Theme.of(context).colorScheme;
     switch (priority?.toUpperCase()) {
       case 'HIGH':
-        return Colors.redAccent;
+        return colorScheme.error;
       case 'MED':
-        return Colors.blueAccent;
+        return AppColors.info;
       default:
-        return Colors.green;
+        return AppColors.success;
     }
   }
 }

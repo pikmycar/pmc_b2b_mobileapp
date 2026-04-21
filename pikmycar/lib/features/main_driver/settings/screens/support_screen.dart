@@ -5,36 +5,46 @@ class SupportScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Help & Support", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        title: Text(
+          "Help & Support",
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+        ),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               "How can we help you?",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1,
+              ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            const SizedBox(height: 12),
+            Text(
               "Our support team is available 24/7 to assist you with any issues or queries.",
-              style: TextStyle(color: Colors.grey, fontSize: 16),
+              style: textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.5),
+                height: 1.5,
+              ),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 40),
             
             _buildSupportOption(
               context,
-              icon: Icons.chat_bubble_outline,
+              icon: Icons.chat_bubble_outline_rounded,
               title: "Chat with Support",
               subtitle: "Start a conversation now",
-              color: Colors.blue,
+              color: colorScheme.primary,
               onTap: () {},
             ),
             const SizedBox(height: 16),
@@ -43,7 +53,7 @@ class SupportScreen extends StatelessWidget {
               icon: Icons.call_outlined,
               title: "Call Support",
               subtitle: "Talk to our customer executive",
-              color: Colors.green,
+              color: colorScheme.secondary,
               onTap: () {},
             ),
             const SizedBox(height: 16),
@@ -57,12 +67,15 @@ class SupportScreen extends StatelessWidget {
             ),
             
             const SizedBox(height: 48),
-            const Text("Common FAQs", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(
+              "Common FAQs", 
+              style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+            ),
             const SizedBox(height: 16),
-            _buildFAQItem("How to withdraw my earnings?"),
-            _buildFAQItem("What documents are required for verification?"),
-            _buildFAQItem("My trip was cancelled, what should I do?"),
-            _buildFAQItem("How to update my bank account details?"),
+            _buildFAQItem(context, "How to withdraw my earnings?"),
+            _buildFAQItem(context, "What documents are required for verification?"),
+            _buildFAQItem(context, "My trip was cancelled, what should I do?"),
+            _buildFAQItem(context, "How to update my bank account details?"),
           ],
         ),
       ),
@@ -70,6 +83,9 @@ class SupportScreen extends StatelessWidget {
   }
 
   Widget _buildSupportOption(BuildContext context, {required IconData icon, required String title, required String subtitle, required Color color, required VoidCallback onTap}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -84,39 +100,64 @@ class SupportScreen extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1), 
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Icon(icon, color: color),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 20),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  Text(subtitle, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                  Text(
+                    title, 
+                    style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle, 
+                    style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
+                  ),
                 ],
               ),
             ),
+            Icon(Icons.chevron_right_rounded, color: color.withOpacity(0.3), size: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFAQItem(String question) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ExpansionTile(
-        title: Text(question, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-        children: const [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              "You can find the detailed information about this in our help documentation. Typically, it takes 24 hours to process your request.",
-              style: TextStyle(color: Colors.grey, fontSize: 13),
-            ),
+  Widget _buildFAQItem(BuildContext context, String question) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          title: Text(
+            question, 
+            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
-        ],
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+              child: Text(
+                "You can find the detailed information about this in our help documentation. Typically, it takes 24 hours to process your request.",
+                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.6), height: 1.5),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

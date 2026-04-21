@@ -111,173 +111,149 @@ class _PinLoginScreenState extends State<PinLoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      body: Stack(
-        children: [
-          /// 🌈 PREMIUM GRADIENT BACKGROUND
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFFF8FAFF),
-                  Color(0xFFEFF3FF),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 60),
+
+              /// 🔥 TITLE
+              Center(
+                child: Text(
+                  "Welcome Back",
+                  style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
               ),
-            ),
-          ),
 
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 60),
+              const SizedBox(height: 48),
 
-                  /// 🔥 TITLE
-                  const Center(
-                    child: Text(
-                      "Welcome Back",
-                      style: AppTextStyles.heading2,
-                    ),
-                  ),
-
-                  const SizedBox(height: 48),
-
-                  /// 🔥 HEADING
-                  Text(
-                    "Enter your PIN",
-                    style: AppTextStyles.heading1.copyWith(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  const Text(
-                    "Fast & secure access to your driver account",
-                    style: AppTextStyles.caption,
-                  ),
-
-                  const SizedBox(height: 50),
-
-                  /// 🔥 PIN WITH SHAKE
-                  AnimatedBuilder(
-                    animation: _shakeAnimation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(_shakeAnimation.value, 0),
-                        child: child,
-                      );
-                    },
-                    child: Center(
-                      child: PinCodeTextField(
-                        appContext: context,
-                        controller: _pinController,
-                        length: 4,
-                        obscureText: true,
-                        animationType: AnimationType.fade,
-                        onChanged: (val) => setState(() => _pin = val),
-                        pinTheme: PinTheme(
-                          shape: PinCodeFieldShape.box,
-                          borderRadius: BorderRadius.circular(12),
-                          fieldHeight: 65,
-                          fieldWidth: 65,
-                          inactiveColor: Colors.grey.shade200,
-                          selectedColor: AppColors.accent,
-                          activeColor: AppColors.accent,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 50),
-
-                  /// 🔥 PREMIUM BUTTON
-                  SizedBox(
-                    width: double.infinity,
-                    height: 58,
-                    child: ElevatedButton(
-                      onPressed:
-                          _pin.length == 4 && !_isLoading ? _verifyPin : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accent,
-                        foregroundColor: Colors.black,
-                        elevation: 8,
-                        shadowColor: AppColors.accent.withOpacity(0.4),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(
-                              color: Colors.black,
-                            )
-                          : const Text(
-                              "Login",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  /// 🔐 BIOMETRIC
-                  Center(
-                    child: TextButton.icon(
-                      onPressed: _tryBiometric,
-                      icon: Icon(Icons.fingerprint,
-                          color: AppColors.accent),
-                      label: Text(
-                        "Use Biometric",
-                        style: TextStyle(
-                          color: AppColors.accent,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  /// 🔁 PASSWORD SWITCH
-                  Center(
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/login');
-                      },
-                      child: const Text(
-                        "Use Password Instead",
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  /// 💬 FOOTER
-                  const Center(
-                    child: Text(
-                      "Your data is securely encrypted 🔒",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-                ],
+              /// 🔥 HEADING
+              Text(
+                "Enter your PIN",
+                style: textTheme.displayLarge?.copyWith(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                "Fast & secure access to your driver account",
+                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
+              ),
+
+              const SizedBox(height: 50),
+
+              /// 🔥 PIN WITH SHAKE
+              AnimatedBuilder(
+                animation: _shakeAnimation,
+                builder: (context, child) {
+                  return Transform.translate(
+                    offset: Offset(_shakeAnimation.value, 0),
+                    child: child,
+                  );
+                },
+                child: Center(
+                  child: PinCodeTextField(
+                    appContext: context,
+                    controller: _pinController,
+                    length: 4,
+                    obscureText: true,
+                    animationType: AnimationType.fade,
+                    onChanged: (val) => setState(() => _pin = val),
+                    pinTheme: PinTheme(
+                      shape: PinCodeFieldShape.box,
+                      borderRadius: BorderRadius.circular(16),
+                      fieldHeight: 65,
+                      fieldWidth: 65,
+                      inactiveColor: colorScheme.outlineVariant,
+                      selectedColor: colorScheme.primary,
+                      activeColor: colorScheme.primary,
+                      activeFillColor: colorScheme.surface,
+                      inactiveFillColor: colorScheme.surface,
+                      selectedFillColor: colorScheme.surface,
+                    ),
+                    backgroundColor: Colors.transparent,
+                    cursorColor: colorScheme.primary,
+                    enableActiveFill: true,
+                    textStyle: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 50),
+
+              /// 🔥 PREMIUM BUTTON
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed:
+                      _pin.length == 4 && !_isLoading ? _verifyPin : null,
+                  child: _isLoading
+                      ? SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: colorScheme.onPrimary,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text("Login"),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              /// 🔐 BIOMETRIC
+              Center(
+                child: TextButton.icon(
+                  onPressed: _tryBiometric,
+                  icon: const Icon(Icons.fingerprint),
+                  label: const Text("Use Biometric"),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              /// 🔁 PASSWORD SWITCH
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                  child: Text(
+                    "Use Password Instead",
+                    style: textTheme.labelLarge?.copyWith(
+                      color: colorScheme.onSurface.withOpacity(0.5),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 40),
+
+              /// 💬 FOOTER
+              Center(
+                child: Text(
+                  "Your data is securely encrypted 🔒",
+                  style: textTheme.labelSmall?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

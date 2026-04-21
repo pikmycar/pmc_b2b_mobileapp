@@ -4,15 +4,15 @@ import '../widgets/transport_map_widget.dart';
 import '../widgets/transport_header_widget.dart';
 import '../widgets/transport_metrics_widget.dart';
 import '../widgets/transport_bottom_ui_widget.dart';
-import 'trip_completed_screen.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class InTripScreen extends StatelessWidget {
-  const InTripScreen({Key? key}) : super(key: key);
+  const InTripScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     const endPos = LatLng(25.0772, 55.1344); // Sample Dubai Marina Mall
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: Stack(
@@ -33,7 +33,7 @@ class InTripScreen extends StatelessWidget {
                   LatLng(25.0972, 55.1744),
                   LatLng(25.0772, 55.1344),
                 ],
-                color: AppColors.primary,
+                color: colorScheme.primary,
                 width: 5,
               ),
             },

@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/trip_bloc.dart';
-import '../bloc/trip_event.dart';
-import '../bloc/trip_state.dart';
-import '../../../../core/models/trip_models.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class TransportBottomUIWidget extends StatelessWidget {
@@ -15,25 +10,30 @@ class TransportBottomUIWidget extends StatelessWidget {
   final VoidCallback onActionPressed;
 
   const TransportBottomUIWidget({
-    Key? key,
+    super.key,
     required this.driverName,
     required this.driverPhoto,
     required this.locationLabel,
     required this.locationAddress,
     required this.buttonText,
     required this.onActionPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.05 : 0.2),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -44,60 +44,67 @@ class TransportBottomUIWidget extends StatelessWidget {
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundImage: driverPhoto.isNotEmpty ? NetworkImage(driverPhoto) : null,
-                child: driverPhoto.isEmpty ? const Icon(Icons.person) : null,
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                  image: driverPhoto.isNotEmpty ? DecorationImage(image: NetworkImage(driverPhoto), fit: BoxFit.cover) : null,
+                ),
+                child: driverPhoto.isEmpty ? Icon(Icons.person, color: colorScheme.primary, size: 28) : null,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       driverName,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
                     ),
-                    const Text("Support Driver", style: TextStyle(color: Colors.grey)),
+                    Text(
+                      "Support Driver",
+                      style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5), fontWeight: FontWeight.bold),
+                    ),
                   ],
                 ),
               ),
-              CircleAvatar(
-                backgroundColor: AppColors.success.withOpacity(0.1),
-                child: const Icon(Icons.phone, color: AppColors.success),
-              ),
-              const SizedBox(width: 8),
-              CircleAvatar(
-                backgroundColor: AppColors.primary.withOpacity(0.1),
-                child: const Icon(Icons.message, color: AppColors.primary),
-              ),
+              _buildIconButton(context, Icons.phone, colorScheme.secondary, () {}),
+              const SizedBox(width: 12),
+              _buildIconButton(context, Icons.message, colorScheme.primary, () {}),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
+              color: colorScheme.onSurface.withOpacity(0.03),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(color: colorScheme.outlineVariant),
             ),
             child: Row(
               children: [
-                const Icon(Icons.location_on, color: AppColors.error, size: 20),
-                const SizedBox(width: 12),
+                Icon(Icons.location_on, color: colorScheme.error, size: 24),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         locationAddress,
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      const SizedBox(height: 4),
                       Text(
-                        locationLabel,
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        locationLabel.toUpperCase(),
+                        style: textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onSurface.withOpacity(0.5),
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.0,
+                        ),
                       ),
                     ],
                   ),
@@ -105,23 +112,31 @@ class TransportBottomUIWidget extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
-            height: 56,
             child: ElevatedButton(
               onPressed: onActionPressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-              child: Text(
-                buttonText,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
+              child: Text(buttonText),
             ),
           ),
+          const SizedBox(height: 8),
         ],
+      ),
+    );
+  }
+
+  Widget _buildIconButton(BuildContext context, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: color, size: 20),
       ),
     );
   }

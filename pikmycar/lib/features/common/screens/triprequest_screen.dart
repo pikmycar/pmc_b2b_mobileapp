@@ -25,38 +25,37 @@ class _TripRequestScreenState extends State<TripRequestScreen> {
     _startTimer();
   }
 
-  // 🔥 FAKE API LOAD
   Future<void> _loadTrips() async {
     await Future.delayed(const Duration(milliseconds: 800));
 
+    if (!mounted) return;
     setState(() {
       trips = [
         {
-          "pickup": "Triplicane, Chennai",
-          "drop": "T Nagar, Chennai",
+          "pickup": "Dubai Marina, Tower A",
+          "drop": "Al Quoz, Auto Center",
           "name": "Mohamed Haja",
           "rating": "4.5",
-          "fare": "₹1544"
+          "fare": "AED 1,544"
         },
         {
-          "pickup": "Velachery, Chennai",
-          "drop": "OMR, Chennai",
+          "pickup": "Palm Jumeirah",
+          "drop": "Business Bay",
           "name": "Rahul",
           "rating": "4.2",
-          "fare": "₹320"
+          "fare": "AED 320"
         },
         {
-          "pickup": "Adyar, Chennai",
-          "drop": "Guindy, Chennai",
+          "pickup": "JLT Cluster V",
+          "drop": "DXB Terminal 1",
           "name": "Suresh",
           "rating": "4.8",
-          "fare": "₹210"
+          "fare": "AED 210"
         },
       ];
     });
   }
 
-  // 🔥 PULL TO REFRESH
   Future<void> _refreshTrips() async {
     currentIndex = 0;
     await _loadTrips();
@@ -98,7 +97,11 @@ class _TripRequestScreenState extends State<TripRequestScreen> {
   void _acceptTrip() {
     timer?.cancel();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Trip Accepted ✅")),
+      SnackBar(
+        content: const Text("Trip Accepted! Drive Safely. ✅"),
+        backgroundColor: Theme.of(context).colorScheme.secondary,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
     _nextTrip();
   }
@@ -123,48 +126,55 @@ class _TripRequestScreenState extends State<TripRequestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
-      backgroundColor: AppColors.designSurface,
       appBar: AppBar(
-        title: const Text("Trip Requests"),
-        backgroundColor: AppColors.designForestGreen,
+        title: Text(
+          "Trip Requests",
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+        ),
         centerTitle: true,
       ),
-
-      // 🔥 PULL TO REFRESH WRAPPER
-      body: RefreshIndicator(
-        onRefresh: _refreshTrips,
-        child: PageView.builder(
-          controller: _pageController,
-          scrollDirection: Axis.vertical,
-          onPageChanged: _onPageChanged,
-          itemCount: trips.length,
-          itemBuilder: (context, index) {
-            return _buildSwipeCard(trips[index], index);
-          },
-        ),
-      ),
+      body: trips.isEmpty 
+        ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
+        : RefreshIndicator(
+            onRefresh: _refreshTrips,
+            color: colorScheme.primary,
+            child: PageView.builder(
+              controller: _pageController,
+              scrollDirection: Axis.vertical,
+              onPageChanged: _onPageChanged,
+              itemCount: trips.length,
+              itemBuilder: (context, index) {
+                return _buildSwipeCard(trips[index], index);
+              },
+            ),
+          ),
     );
   }
 
-  // 🔥 SWIPE RIGHT TO REJECT
   Widget _buildSwipeCard(Map<String, dynamic> trip, int index) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Dismissible(
       key: ValueKey(trip["name"] + index.toString()),
-      direction: DismissDirection.startToEnd, // 👉 swipe right
+      direction: DismissDirection.startToEnd,
       onDismissed: (_) => _rejectTrip(),
       background: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        padding: const EdgeInsets.only(left: 20),
+        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: const EdgeInsets.only(left: 32),
         alignment: Alignment.centerLeft,
         decoration: BoxDecoration(
-          color: Colors.redAccent,
-          borderRadius: BorderRadius.circular(24),
+          color: colorScheme.error,
+          borderRadius: BorderRadius.circular(16),
         ),
-        child: const Icon(Icons.close, color: Colors.white, size: 30),
+        child: Icon(Icons.close, color: colorScheme.onError, size: 36),
       ),
       child: Center(
         child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           child: _buildCard(trip, index),
         ),
       ),
@@ -172,106 +182,142 @@ class _TripRequestScreenState extends State<TripRequestScreen> {
   }
 
   Widget _buildCard(Map<String, dynamic> trip, int index) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
     bool isActive = index == currentIndex;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.08 : 0.4),
+            blurRadius: 30,
+            offset: const Offset(0, 10),
           )
         ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
+          Text(
             "Swipe right to reject • Scroll down for next",
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+            style: textTheme.labelSmall?.copyWith(
+              color: colorScheme.onSurface.withOpacity(0.4),
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 32),
 
-          /// 📍 ROUTE
-          _locationRow(Icons.circle, trip["pickup"], Colors.green),
+          _locationRow(context, Icons.radio_button_checked, trip["pickup"], colorScheme.primary, "PICKUP"),
           const SizedBox(height: 8),
-          _dottedLine(),
+          _dottedLine(context),
           const SizedBox(height: 8),
-          _locationRow(Icons.location_on, trip["drop"], Colors.red),
+          _locationRow(context, Icons.location_on, trip["drop"], colorScheme.error, "DROP-OFF"),
 
-          const Divider(height: 35),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24.0),
+            child: Divider(),
+          ),
 
-          /// 👤 USER + FARE
           Row(
             children: [
-              const CircleAvatar(
-                radius: 25,
-                backgroundColor: Colors.grey,
-                child: Icon(Icons.person, color: Colors.white),
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Icon(Icons.person, color: colorScheme.primary, size: 28),
+                ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(trip["name"],
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(
+                      trip["name"],
+                      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+                    ),
                     Row(
                       children: [
-                        const Icon(Icons.star, size: 16, color: Colors.orange),
-                        Text(" ${trip["rating"]}",
-                            style: const TextStyle(color: Colors.grey))
+                        Icon(Icons.star, size: 14, color: colorScheme.secondary),
+                        Text(
+                          " ${trip["rating"]} Rating",
+                          style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5), fontWeight: FontWeight.bold),
+                        )
                       ],
                     )
                   ],
                 ),
               ),
-              Text(
-                trip["fare"],
-                style: TextStyle(
-                  fontSize: 20,
-                  color: AppColors.designForestGreen,
-                  fontWeight: FontWeight.bold,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    trip["fare"],
+                    style: textTheme.titleLarge?.copyWith(
+                      color: colorScheme.secondary,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  Text(
+                    "Est. Earnings",
+                    style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.4), fontWeight: FontWeight.bold),
+                  ),
+                ],
               )
             ],
           ),
 
-          const SizedBox(height: 25),
+          const SizedBox(height: 32),
 
           if (isActive)
-            Text(
-              "Auto reject in ${_time()}",
-              style: const TextStyle(
-                  color: Colors.red, fontWeight: FontWeight.bold),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: colorScheme.error.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                "Expiring in ${_time()}",
+                style: textTheme.labelLarge?.copyWith(
+                  color: colorScheme.error,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
             ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
-          /// 🔥 BUTTONS
           Row(
             children: [
               Expanded(
                 child: OutlinedButton(
                   onPressed: _rejectTrip,
-                  child: const Text("Reject"),
+                  child: const Text("REJECT"),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
                   onPressed: _acceptTrip,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.designForestGreen,
+                    backgroundColor: colorScheme.secondary,
+                    foregroundColor: colorScheme.onSecondary,
                   ),
-                  child: const Text("Accept"),
+                  child: const Text("ACCEPT"),
                 ),
               ),
             ],
@@ -281,29 +327,53 @@ class _TripRequestScreenState extends State<TripRequestScreen> {
     );
   }
 
-  Widget _locationRow(IconData icon, String text, Color color) {
+  Widget _locationRow(BuildContext context, IconData icon, String text, Color color, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 14, color: color),
-        const SizedBox(width: 12),
+        Icon(icon, size: 20, color: color),
+        const SizedBox(width: 16),
         Expanded(
-          child: Text(text,
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: textTheme.labelSmall?.copyWith(
+                  color: colorScheme.onSurface.withOpacity(0.4),
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              Text(
+                text,
+                style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
         )
       ],
     );
   }
 
-  Widget _dottedLine() {
-    return Column(
-      children: List.generate(
-        4,
-        (_) => Container(
-          margin: const EdgeInsets.symmetric(vertical: 2),
-          height: 4,
-          width: 2,
-          color: Colors.grey.shade300,
+  Widget _dottedLine(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(left: 9.0),
+      child: Column(
+        children: List.generate(
+          3,
+          (_) => Container(
+            margin: const EdgeInsets.symmetric(vertical: 2),
+            height: 4,
+            width: 2,
+            decoration: BoxDecoration(
+              color: colorScheme.outlineVariant,
+              borderRadius: BorderRadius.circular(1),
+            ),
+          ),
         ),
       ),
     );

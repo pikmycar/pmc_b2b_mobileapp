@@ -9,19 +9,22 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: colorScheme.primary, // Themed header background
       body: SafeArea(
         child: Column(
           children: [
-            _buildProfileHeader(),
+            _buildProfileHeader(context),
             Expanded(
               child: Container(
                 margin: const EdgeInsets.only(top: 12),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF5F5F5),
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(24),
+                decoration: BoxDecoration(
+                  color: theme.scaffoldBackgroundColor,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(32),
                   ),
                 ),
                 child: _buildMenuList(context),
@@ -33,75 +36,78 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // 🔹 HEADER
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       child: Column(
         children: [
           Row(
             children: [
               Container(
-                width: 70,
-                height: 70,
-                decoration: const BoxDecoration(
-                  color: AppColors.designYellow,
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: colorScheme.onPrimary,
                   shape: BoxShape.circle,
+                  border: Border.all(color: colorScheme.onPrimary.withOpacity(0.2), width: 4),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
                     "AR",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                    style: textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: colorScheme.primary,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 20),
 
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       "Abdul Rahman",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
+                      style: textTheme.headlineSmall?.copyWith(
+                        color: colorScheme.onPrimary,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       "Support Driver",
-                      style: TextStyle(
-                        color: Colors.white60,
-                        fontSize: 14,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onPrimary.withOpacity(0.7),
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
 
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E6B3F),
+                        color: colorScheme.secondary,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.check,
-                              color: Colors.white, size: 12),
-                          SizedBox(width: 4),
+                          Icon(Icons.verified,
+                              color: colorScheme.onSecondary, size: 14),
+                          const SizedBox(width: 6),
                           Text(
                             "VERIFIED",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
+                            style: textTheme.labelSmall?.copyWith(
+                              color: colorScheme.onSecondary,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ],
@@ -113,14 +119,16 @@ class ProfileScreen extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 32),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatItem("340", "Trips"),
-              _buildStatItem("4.9★", "Rating"),
-              _buildStatItem("98%", "Accept"),
+              _buildStatItem(context, "340", "Total Trips"),
+              _buildStatDivider(context),
+              _buildStatItem(context, "4.9★", "Rating"),
+              _buildStatDivider(context),
+              _buildStatItem(context, "98%", "Accept Rate"),
             ],
           ),
         ],
@@ -128,126 +136,158 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(String value, String label) {
+  Widget _buildStatItem(BuildContext context, String value, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Column(
       children: [
         Text(
           value,
-          style: const TextStyle(
-            color: AppColors.designYellow,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+          style: textTheme.titleLarge?.copyWith(
+            color: colorScheme.onPrimary,
+            fontWeight: FontWeight.w900,
           ),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 4),
         Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white54,
-            fontSize: 12,
+          label.toUpperCase(),
+          style: textTheme.labelSmall?.copyWith(
+            color: colorScheme.onPrimary.withOpacity(0.6),
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+            fontSize: 9,
           ),
         ),
       ],
     );
   }
 
-  // 🔹 MENU LIST
+  Widget _buildStatDivider(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      height: 24,
+      width: 1,
+      color: colorScheme.onPrimary.withOpacity(0.2),
+    );
+  }
+
   Widget _buildMenuList(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       children: [
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: colorScheme.outlineVariant),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-              ),
+                color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.04 : 0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              )
             ],
           ),
           child: Column(
             children: [
-
               _buildMenuItem(
-                icon: Icons.notifications_none,
+                context,
+                icon: Icons.notifications_none_rounded,
                 title: "Notifications",
-                badge: _buildBadge("3", Colors.red),
+                badge: _buildBadge(context, "3", colorScheme.error),
                 showChevron: true,
                 onTap: () {
                   Navigator.pushNamed(context, '/notifications');
                 },
               ),
-              _divider(),
+              _divider(context),
 
               _buildMenuItem(
-                icon: Icons.person_outline,
-                title: "My Profile",
+                context,
+                icon: Icons.person_outline_rounded,
+                title: "Personal Profile",
                 showChevron: true,
                 onTap: () {
                   Navigator.pushNamed(context, '/profile_details');
                 },
               ),
-              _divider(),
+              _divider(context),
 
               _buildMenuItem(
+                context,
                 icon: Icons.description_outlined,
-                title: "Documents",
-                badge: _buildBadge("VERIFIED",
-                    const Color(0xFF1E6B3F), isText: true),
+                title: "Driver Documents",
+                badge: _buildBadge(context, "ACTIVE", colorScheme.secondary, isText: true),
                 onTap: () {
                   Navigator.pushNamed(context, '/documents');
                 },
               ),
-              _divider(),
+              _divider(context),
 
               _buildMenuItem(
+                context,
                 icon: Icons.account_balance_outlined,
-                title: "Bank Account",
+                title: "Payout Settings",
                 showChevron: true,
                 onTap: () {
                   Navigator.pushNamed(context, '/bank_account');
                 },
               ),
-              _divider(),
+              _divider(context),
 
               _buildMenuItem(
+                context,
                 icon: Icons.settings_outlined,
-                title: "Settings",
+                title: "App Settings",
                 showChevron: true,
                 onTap: () {
                   Navigator.pushNamed(context, '/settings');
                 },
               ),
-              _divider(),
+              _divider(context),
 
               _buildMenuItem(
-                icon: Icons.help_outline,
+                context,
+                icon: Icons.headset_mic_outlined,
                 title: "Help & Support",
                 showChevron: true,
                 onTap: () {
                   Navigator.pushNamed(context, '/support');
                 },
               ),
-              _divider(),
+              _divider(context),
 
               _buildMenuItem(
-                icon: Icons.logout,
-                title: "Logout",
-                textColor: Colors.red,
-                iconColor: Colors.red,
+                context,
+                icon: Icons.logout_rounded,
+                title: "Log Out",
+                textColor: colorScheme.error,
+                iconColor: colorScheme.error,
                 onTap: () => _handleLogout(context),
               ),
             ],
+          ),
+        ),
+        const SizedBox(height: 32),
+        Center(
+          child: Text(
+            "Version 2.4.0 (Build 2026)",
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: colorScheme.onSurface.withOpacity(0.3),
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ],
     );
   }
 
-  // 🔹 MENU ITEM
-  Widget _buildMenuItem({
+  Widget _buildMenuItem(
+    BuildContext context, {
     required IconData icon,
     required String title,
     Widget? badge,
@@ -256,18 +296,26 @@ class ProfileScreen extends StatelessWidget {
     Color? iconColor,
     VoidCallback? onTap,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return ListTile(
-      dense: true,
       onTap: onTap,
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Icon(icon, size: 22, color: iconColor ?? Colors.black54),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: (iconColor ?? colorScheme.primary).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(icon, size: 20, color: iconColor ?? colorScheme.primary),
+      ),
       title: Text(
         title,
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-          color: textColor ?? Colors.black87,
+        style: textTheme.bodyLarge?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: textColor ?? colorScheme.onSurface,
         ),
       ),
       trailing: Row(
@@ -275,42 +323,42 @@ class ProfileScreen extends StatelessWidget {
         children: [
           if (badge != null) badge,
           if (showChevron) ...[
-            const SizedBox(width: 6),
-            const Icon(Icons.chevron_right,
-                size: 18, color: Colors.grey),
+            const SizedBox(width: 8),
+            Icon(Icons.chevron_right_rounded, size: 20, color: colorScheme.onSurface.withOpacity(0.2)),
           ],
         ],
       ),
     );
   }
 
-  Widget _divider() {
-    return Divider(height: 1, color: Colors.grey.shade200);
+  Widget _divider(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Divider(height: 1, color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.5)),
+    );
   }
 
-  Widget _buildBadge(String text, Color color,
-      {bool isText = false}) {
+  Widget _buildBadge(BuildContext context, String text, Color color, {bool isText = false}) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: isText ? 10 : 6,
-        vertical: 3,
+        horizontal: isText ? 12 : 8,
+        vertical: 4,
       ),
       decoration: BoxDecoration(
-        color: color,
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: color,
+          fontWeight: FontWeight.w900,
+          fontSize: isText ? 9 : 11,
         ),
       ),
     );
   }
 
-  // 🔹 LOGOUT
   void _handleLogout(BuildContext context) async {
     final storage = context.read<SecureStorageService>();
     await storage.logout();

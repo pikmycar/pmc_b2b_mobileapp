@@ -19,9 +19,8 @@ class CreatePinScreen extends StatefulWidget {
 class _CreatePinScreenState extends State<CreatePinScreen> {
   late TextEditingController _pinController;
 
-  // ✅ FIX: Use separate, stable variables that don't get wiped on mismatch
-  String _firstPin = ''; // Locked in after step 1
-  String _currentInput = ''; // Tracks live input for current step
+  String _firstPin = ''; 
+  String _currentInput = ''; 
   bool _isConfirm = false;
 
   @override
@@ -29,7 +28,6 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
     super.initState();
     _pinController = TextEditingController();
 
-    // ✅ SAFE FOCUS (after build)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         FocusScope.of(context).requestFocus(FocusNode());
@@ -127,8 +125,11 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(title: Text(_isConfirm ? "Confirm PIN" : "Create PIN")),
       body: SafeArea(
         child: Padding(
@@ -140,15 +141,11 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
 
               Text(
                 _isConfirm ? "Re-enter your PIN" : "Set a 4-digit PIN",
-                style: AppTextStyles.subtitle,
+                style: textTheme.titleLarge,
               ),
 
               const SizedBox(height: 30),
 
-              // ✅ FIX: Use a ValueKey so Flutter rebuilds the widget
-              // cleanly when switching between step 1 and step 2.
-              // Without this, the old controller's value leaks into
-              // the new field and triggers a phantom onChanged("").
               PinCodeTextField(
                 key: ValueKey(_isConfirm),
                 controller: _pinController,
@@ -166,24 +163,27 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
                   borderRadius: BorderRadius.circular(12),
                   fieldHeight: 65,
                   fieldWidth: 65,
-                  inactiveColor: AppColors.borderNeutral,
-                  selectedColor: AppColors.accent,
-                  activeColor: AppColors.primary,
+                  inactiveColor: colorScheme.outlineVariant,
+                  selectedColor: colorScheme.primary,
+                  activeColor: colorScheme.primary,
+                  activeFillColor: colorScheme.surface,
+                  inactiveFillColor: colorScheme.surface,
+                  selectedFillColor: colorScheme.surface,
                 ),
+                backgroundColor: Colors.transparent,
+                cursorColor: colorScheme.primary,
+                enableActiveFill: true,
+                textStyle: textTheme.titleLarge,
               ),
 
               const Spacer(),
 
               SizedBox(
                 width: double.infinity,
-                height: 55,
                 child: ElevatedButton(
                   onPressed: _currentInput.length == 4 ? _onSubmit : null,
                   child: Text(
                     _isConfirm ? "Confirm PIN" : "Continue",
-                    style: AppTextStyles.buttonText.copyWith(
-                      color: AppColors.textInversePrimary,
-                    ),
                   ),
                 ),
               ),

@@ -23,6 +23,9 @@ class _ResetPinScreenState extends State<ResetPinScreen> {
   }
 
   void _handleSave() async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     final pin = _pinController.text;
     final confirmPin = _confirmPinController.text;
 
@@ -44,9 +47,9 @@ class _ResetPinScreenState extends State<ResetPinScreen> {
     if (mounted) {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("PIN updated successfully"),
-          backgroundColor: Colors.green,
+        SnackBar(
+          content: const Text("PIN updated successfully"),
+          backgroundColor: colorScheme.secondary,
         ),
       );
       Navigator.pop(context);
@@ -57,35 +60,43 @@ class _ResetPinScreenState extends State<ResetPinScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.redAccent,
+        backgroundColor: Theme.of(context).colorScheme.error,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Reset PIN", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        title: Text(
+          "Reset PIN",
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+        ),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               "Set a new secure PIN for your account.",
-              style: TextStyle(color: Colors.grey, fontSize: 16),
+              style: textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.5),
+                height: 1.5,
+              ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 48),
             
             _buildPasswordField(
+              context,
               controller: _pinController,
-              label: "Enter New PIN",
+              label: "ENTER NEW PIN",
               obscure: _obscurePin,
               onToggle: () => setState(() => _obscurePin = !_obscurePin),
             ),
@@ -93,26 +104,22 @@ class _ResetPinScreenState extends State<ResetPinScreen> {
             const SizedBox(height: 24),
             
             _buildPasswordField(
+              context,
               controller: _confirmPinController,
-              label: "Confirm New PIN",
+              label: "CONFIRM NEW PIN",
               obscure: _obscureConfirm,
               onToggle: () => setState(() => _obscureConfirm = !_obscureConfirm),
             ),
             
-            const SizedBox(height: 60),
+            const SizedBox(height: 64),
             
             SizedBox(
               width: double.infinity,
-              height: 56,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _handleSave,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
                 child: _isLoading 
-                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text("SAVE PIN", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Text("UPDATE PIN"),
               ),
             ),
           ],
@@ -121,38 +128,43 @@ class _ResetPinScreenState extends State<ResetPinScreen> {
     );
   }
 
-  Widget _buildPasswordField({
+  Widget _buildPasswordField(
+    BuildContext context, {
     required TextEditingController controller,
     required String label,
     required bool obscure,
     required VoidCallback onToggle,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.blueGrey)),
-        const SizedBox(height: 10),
+        Text(
+          label, 
+          style: textTheme.labelSmall?.copyWith(
+            fontWeight: FontWeight.w900, 
+            color: colorScheme.onSurface.withOpacity(0.5),
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 12),
         TextField(
           controller: controller,
           obscureText: obscure,
           keyboardType: TextInputType.number,
           maxLength: 6,
+          style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, letterSpacing: 8),
           decoration: InputDecoration(
             counterText: "",
             suffixIcon: IconButton(
-              icon: Icon(obscure ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
+              icon: Icon(obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded, color: colorScheme.onSurface.withOpacity(0.3)),
               onPressed: onToggle,
             ),
-            filled: true,
-            fillColor: Colors.grey.shade50,
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: Colors.grey.shade200),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Colors.indigo, width: 2),
-            ),
+            hintText: "••••••",
+            hintStyle: TextStyle(letterSpacing: 8, color: colorScheme.onSurface.withOpacity(0.1)),
           ),
         ),
       ],

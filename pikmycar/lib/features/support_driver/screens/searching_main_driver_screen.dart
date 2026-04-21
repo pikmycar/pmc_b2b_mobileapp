@@ -6,7 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import 'driver_accepted_screen.dart';
 
 class SearchingMainDriverScreen extends StatefulWidget {
-  const SearchingMainDriverScreen({Key? key}) : super(key: key);
+  const SearchingMainDriverScreen({super.key});
 
   @override
   State<SearchingMainDriverScreen> createState() => _SearchingMainDriverScreenState();
@@ -31,7 +31,6 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
 
     _initLocationTracking();
 
-    // Auto-navigate to DriverAcceptedScreen after 8 seconds (Simulated search)
     _searchTimer = Timer(const Duration(seconds: 8), () {
       if (mounted) {
         Navigator.pushReplacement(
@@ -83,36 +82,28 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
-          'Searching for Main Driver...',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -0.5,
-          ),
-        ),
-        backgroundColor: AppColors.designYellow,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+        title: Text(
+          'Searching for Driver...',
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
         ),
         centerTitle: false,
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Radar Section (NOW WITH LIVE MAP)
+            // Radar Section
             Container(
               height: 350,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                color: colorScheme.onSurface.withOpacity(0.05),
+                border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
               ),
               child: Stack(
                 alignment: Alignment.center,
@@ -132,12 +123,12 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
                       myLocationButtonEnabled: false,
                     )
                   else
-                    const Center(child: CircularProgressIndicator()),
+                    Center(child: CircularProgressIndicator(color: colorScheme.primary)),
 
                   // RADAR RIPPLE OVERLAY
                   IgnorePointer(
                     child: Container(
-                      color: Colors.black.withOpacity(0.1), // Subtle map dimming
+                      color: Colors.black.withOpacity(0.1),
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
@@ -152,7 +143,7 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: AppColors.designYellow.withOpacity((1 - progress) * 0.5),
+                                      color: colorScheme.primary.withOpacity((1 - progress) * 0.5),
                                       width: 2,
                                     ),
                                   ),
@@ -169,23 +160,18 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
                   Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: AppColors.designYellow.withOpacity(0.3),
+                      color: colorScheme.primary.withOpacity(0.3),
                       shape: BoxShape.circle,
                     ),
                     child: Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: AppColors.designYellow,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.my_location, color: Colors.black, size: 24),
+                      child: Icon(Icons.my_location, color: colorScheme.onPrimary, size: 24),
                     ),
                   ),
-                  
-                  // Mock Car Echoes
-                  _buildMockCarIcon(120, -100),
-                  _buildMockCarIcon(-140, 80),
-                  _buildMockCarIcon(100, 110),
                 ],
               ),
             ),
@@ -196,71 +182,72 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildStatusBadge("Pickup Accepted", AppColors.designForestGreen),
+                  _buildStatusBadge(context, "Pickup Accepted", AppColors.success),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     "Searching for Main Driver...",
-                    style: TextStyle(
-                      fontSize: 22,
+                    style: textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w900,
-                      color: Colors.black,
                       letterSpacing: -0.5,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     "Connecting you with a nearby driver for your pickup.",
-                    style: TextStyle(color: Colors.blueGrey, fontSize: 14),
+                    style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
                   ),
                   const SizedBox(height: 24),
-                  _buildSectionTitle("TRIP DETAILS"),
+                  _buildSectionTitle(context, "TRIP DETAILS"),
                   const SizedBox(height: 12),
                   _buildInfoCard(
+                    context: context,
                     child: Column(
                       children: [
-                        _buildDetailRow(Icons.my_location, AppColors.designYellow, "Your Location", "Support Driver Location"),
+                        _buildDetailRow(context, Icons.my_location, colorScheme.primary, "Your Location", "Support Driver Location"),
                         const Divider(height: 24),
-                        _buildDetailRow(Icons.person, Colors.deepPurple, "Ahmed Al-Rashid", "Customer · +971 50 123 4567"),
+                        _buildDetailRow(context, Icons.person, colorScheme.secondary, "Ahmed Al-Rashid", "Customer · +971 50 123 4567"),
                         const Divider(height: 24),
-                        _buildLocationRow(Icons.location_on, Colors.pink, "Dubai Marina, Tower B", "Pickup · Today 10:30 AM"),
+                        _buildLocationRow(context, Icons.location_on, AppColors.error, "Dubai Marina, Tower B", "Pickup · Today 10:30 AM"),
                         const SizedBox(height: 12),
-                        _buildLocationRow(Icons.factory_outlined, Colors.blueGrey, "Al Quoz Auto Service", "Drop-off"),
+                        _buildLocationRow(context, Icons.factory_outlined, colorScheme.onSurface.withOpacity(0.5), "Al Quoz Auto Service", "Drop-off"),
                       ],
                     ),
                   ),
                   const SizedBox(height: 24),
-                  _buildSectionTitle("CAR DETAILS"),
+                  _buildSectionTitle(context, "CAR DETAILS"),
                   const SizedBox(height: 12),
                   _buildInfoCard(
-                    bgColor: const Color(0xFFE8F5E9),
+                    context: context,
+                    bgColor: colorScheme.primary.withOpacity(0.05),
                     child: Row(
                       children: [
-                        const Icon(Icons.directions_car, color: Colors.redAccent, size: 36),
+                        Icon(Icons.directions_car, color: AppColors.error, size: 36),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text("BMW 3 Series · Blue", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                              Text("M72528 · 2022", style: TextStyle(color: Colors.grey, fontSize: 13)),
+                            children: [
+                              Text("BMW 3 Series · Blue", style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                              Text("M72528 · 2022", style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5))),
                             ],
                           ),
                         ),
-                        _buildPlateBox("M72528"),
+                        _buildPlateBox(context, "M72528"),
                       ],
                     ),
                   ),
                   const SizedBox(height: 24),
                   _buildStatusBox(
+                    context: context,
                     emoji: "⏳",
                     text: "Pick Me request sent! Waiting for a Main Driver to confirm and pick you up from your location",
                   ),
                   const SizedBox(height: 24),
                   Row(
                     children: [
-                      Expanded(child: _buildActionButton("Call Customer", Icons.phone)),
+                      Expanded(child: _buildActionButton(context, "Call Customer", Icons.phone)),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildActionButton("Message", Icons.message)),
+                      Expanded(child: _buildActionButton(context, "Message", Icons.message)),
                     ],
                   ),
                   const SizedBox(height: 40),
@@ -273,16 +260,8 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
     );
   }
 
-  Widget _buildMockCarIcon(double x, double y) {
-    return Positioned(
-      child: Transform.translate(
-        offset: Offset(x, y),
-        child: const Icon(Icons.directions_car, color: Colors.black45, size: 24),
-      ),
-    );
-  }
-
-  Widget _buildStatusBadge(String text, Color bgColor) {
+  Widget _buildStatusBadge(BuildContext context, String text, Color bgColor) {
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
@@ -291,29 +270,41 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
       ),
       child: Text(
         text,
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+        style: textTheme.labelMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blueGrey, letterSpacing: 1.2));
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Text(
+      title,
+      style: textTheme.labelSmall?.copyWith(
+        fontWeight: FontWeight.bold,
+        color: colorScheme.onSurface.withOpacity(0.5),
+        letterSpacing: 1.2,
+      ),
+    );
   }
 
-  Widget _buildInfoCard({required Widget child, Color bgColor = Colors.white}) {
+  Widget _buildInfoCard({required BuildContext context, required Widget child, Color? bgColor}) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade200),
+        color: bgColor ?? colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: child,
     );
   }
 
-  Widget _buildDetailRow(IconData icon, Color color, String title, String subtitle) {
+  Widget _buildDetailRow(BuildContext context, IconData icon, Color color, String title, String subtitle) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
         Container(
@@ -325,15 +316,18 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-            if (subtitle.isNotEmpty) Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+            Text(title, style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+            if (subtitle.isNotEmpty) 
+              Text(subtitle, style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5))),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildLocationRow(IconData icon, Color color, String title, String subtitle) {
+  Widget _buildLocationRow(BuildContext context, IconData icon, Color color, String title, String subtitle) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
         Icon(icon, color: color, size: 20),
@@ -341,33 +335,38 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-            if (subtitle.isNotEmpty) Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            Text(title, style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+            if (subtitle.isNotEmpty) 
+              Text(subtitle, style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5))),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildPlateBox(String plate) {
+  Widget _buildPlateBox(BuildContext context, String plate) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.black, width: 1.5),
+        border: Border.all(color: colorScheme.onSurface, width: 1.5),
       ),
-      child: Text(plate, style: const TextStyle(fontWeight: FontWeight.bold)),
+      child: Text(plate, style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)),
     );
   }
 
-  Widget _buildStatusBox({required String emoji, required String text}) {
+  Widget _buildStatusBox({required BuildContext context, required String emoji, required String text}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBE6),
+        color: colorScheme.primary.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.designYellow.withOpacity(0.5)),
+        border: Border.all(color: colorScheme.primary.withOpacity(0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -377,7 +376,11 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(fontSize: 14, color: Color(0xFF854D0E), fontWeight: FontWeight.bold, height: 1.4),
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.bold,
+                height: 1.4,
+              ),
             ),
           ),
         ],
@@ -385,19 +388,22 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
     );
   }
 
-  Widget _buildActionButton(String label, IconData icon) {
+  Widget _buildActionButton(BuildContext context, String label, IconData icon) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       height: 56,
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: Colors.black, size: 20),
+          Icon(icon, color: colorScheme.primary, size: 20),
           const SizedBox(width: 8),
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+          Text(label, style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
         ],
       ),
     );

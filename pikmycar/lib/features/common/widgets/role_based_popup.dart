@@ -16,11 +16,15 @@ class RoleBasedPopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Container(
       padding: const EdgeInsets.all(24.0),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.95),
-        borderRadius: BorderRadius.circular(24),
+        color: colorScheme.primary,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -32,11 +36,11 @@ class RoleBasedPopup extends StatelessWidget {
               height: 100,
               width: 100,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withOpacity(0.1),
                     blurRadius: 20,
                     spreadRadius: 5,
                   )
@@ -46,7 +50,7 @@ class RoleBasedPopup extends StatelessWidget {
                 child: Icon(
                   request.title.contains('Alert') ? Icons.notification_important : Icons.person_pin_circle,
                   size: 50,
-                  color: AppColors.primary,
+                  color: colorScheme.primary,
                 ),
               ),
             ),
@@ -56,20 +60,20 @@ class RoleBasedPopup extends StatelessWidget {
           Text(
             request.title,
             textAlign: TextAlign.center,
-            style: AppTextStyles.heading2.copyWith(color: Colors.white),
+            style: textTheme.headlineMedium?.copyWith(color: colorScheme.onPrimary),
           ),
           const SizedBox(height: 8),
           Text(
             request.subtitle,
             textAlign: TextAlign.center,
-            style: AppTextStyles.labelSmall.copyWith(color: Colors.white70),
+            style: textTheme.bodyMedium?.copyWith(color: colorScheme.onPrimary.withOpacity(0.8)),
           ),
           const SizedBox(height: 32),
           
           // Request Card
           Card(
-            color: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            color: colorScheme.surface,
+            margin: EdgeInsets.zero,
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -84,11 +88,12 @@ class RoleBasedPopup extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(request.name, style: AppTextStyles.subtitle),
+                            Text(request.name, style: textTheme.titleMedium),
                             Row(
                               children: [
-                                const Icon(Icons.star, color: AppColors.warning, size: 14),
-                                Text(' 4.8 Rating', style: AppTextStyles.labelSmall)
+                                Icon(Icons.star, color: colorScheme.secondary, size: 14),
+                                const SizedBox(width: 4),
+                                Text('4.8 Rating', style: textTheme.labelSmall),
                               ],
                             )
                           ],
@@ -102,12 +107,12 @@ class RoleBasedPopup extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      Icon(Icons.my_location, color: AppColors.infoBlue, size: 20),
+                      Icon(Icons.my_location, color: colorScheme.primary, size: 20),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'From: ${request.location}',
-                          style: AppTextStyles.labelSmall.copyWith(fontWeight: FontWeight.w600),
+                          style: textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
@@ -115,12 +120,12 @@ class RoleBasedPopup extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.location_on, color: AppColors.success, size: 20),
+                      const Icon(Icons.location_on, color: AppColors.success, size: 20),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'To: ${request.destination}',
-                          style: AppTextStyles.labelSmall.copyWith(fontWeight: FontWeight.w600),
+                          style: textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
@@ -137,9 +142,8 @@ class RoleBasedPopup extends StatelessWidget {
               Expanded(
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: const BorderSide(color: Colors.white),
-                    foregroundColor: Colors.white,
+                    side: BorderSide(color: colorScheme.onPrimary),
+                    foregroundColor: colorScheme.onPrimary,
                   ),
                   onPressed: onDecline,
                   child: const Text('Decline'),
@@ -149,9 +153,8 @@ class RoleBasedPopup extends StatelessWidget {
               Expanded(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: colorScheme.secondary,
+                    foregroundColor: colorScheme.onSecondary,
                   ),
                   onPressed: onAccept,
                   child: const Text('Accept'),
@@ -164,3 +167,4 @@ class RoleBasedPopup extends StatelessWidget {
     );
   }
 }
+

@@ -34,7 +34,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    // PinCodeTextField disposes its controller automatically
+    _otpController.dispose();
     super.dispose();
   }
 
@@ -43,8 +43,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     FocusScope.of(context).unfocus();
 
     setState(() => _isLoading = true);
-
-    // Mock API Delay
     await Future.delayed(const Duration(seconds: 1));
 
     if (!mounted) return;
@@ -58,13 +56,14 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -75,55 +74,33 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 "Login with Email",
-                style: AppTextStyles.heading1,
+                style: textTheme.displayLarge,
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 "Enter your email address",
-                style: AppTextStyles.caption,
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
               ),
               const SizedBox(height: 16),
 
               // Email Field
-              Container(
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey.shade200),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                    hintText: "Enter your email address",
-                    hintStyle: TextStyle(color: Colors.black26, fontSize: 14),
-                  ),
+              TextField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  hintText: "Enter your email address",
                 ),
               ),
               const SizedBox(height: 16),
 
               // Password Field
-              Container(
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey.shade200),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                    hintText: "Enter your password",
-                    hintStyle: TextStyle(color: Colors.black26, fontSize: 14),
-                  ),
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  hintText: "Enter your password",
                 ),
               ),
               const SizedBox(height: 8),
@@ -135,16 +112,18 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                   onPressed: () {},
                   child: Text(
                     "Forgot Password?",
-                    style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w500),
+                    style: textTheme.labelLarge?.copyWith(
+                      color: colorScheme.onSurface.withOpacity(0.5),
+                    ),
                   ),
                 ),
               ),
 
               const SizedBox(height: 24),
 
-              const Text(
+              Text(
                 "Enter OTP instead",
-                style: AppTextStyles.heading4,
+                style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
 
@@ -164,17 +143,19 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                 },
                 pinTheme: PinTheme(
                   shape: PinCodeFieldShape.box,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(16),
                   fieldHeight: 50,
                   fieldWidth: 45,
-                  inactiveColor: Colors.grey.shade300,
-                  selectedColor: AppColors.accent,
-                  activeColor: _isOtpWrong ? Colors.red : Colors.grey.shade300,
+                  inactiveColor: colorScheme.outlineVariant,
+                  selectedColor: colorScheme.primary,
+                  activeColor: _isOtpWrong ? colorScheme.error : colorScheme.primary,
+                  activeFillColor: colorScheme.surface,
+                  inactiveFillColor: colorScheme.surface,
+                  selectedFillColor: colorScheme.surface,
                 ),
-                textStyle: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
+                cursorColor: colorScheme.primary,
+                enableActiveFill: true,
+                textStyle: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
 
               const SizedBox(height: 16),
@@ -184,18 +165,16 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   GestureDetector(
-                    onTap:
-                        _showResendButton
-                            ? () {
-                              setState(() => _showResendButton = false);
-                              // logic to resend
-                            }
-                            : null,
+                    onTap: _showResendButton
+                        ? () {
+                            setState(() => _showResendButton = false);
+                          }
+                        : null,
                     child: Text(
                       "Resend OTP",
-                      style: AppTextStyles.caption.copyWith(
-                        color: _showResendButton ? Colors.black : AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: _showResendButton ? colorScheme.primary : colorScheme.onSurface.withOpacity(0.5),
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -210,12 +189,11 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                       },
                     )
                   else
-                    const Text(
+                    Text(
                       "00 : 00",
-                      style: TextStyle(
-                        fontSize: 14,
+                      style: textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: Colors.black,
+                        color: colorScheme.onSurface.withOpacity(0.5),
                       ),
                     ),
                 ],
@@ -224,33 +202,18 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
               const SizedBox(height: 48),
 
               // Verify Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _verify,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
-                  ),
-                  child:
-                      _isLoading
-                          ? const CircularProgressIndicator(
-                            color: Colors.black,
-                            strokeWidth: 2,
-                          )
-                          : const Text(
-                            "Verify",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
-                          ),
-                ),
+              ElevatedButton(
+                onPressed: _isLoading ? null : _verify,
+                child: _isLoading
+                    ? SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: colorScheme.onPrimary,
+                        ),
+                      )
+                    : const Text("Verify"),
               ),
               const SizedBox(height: 24),
             ],

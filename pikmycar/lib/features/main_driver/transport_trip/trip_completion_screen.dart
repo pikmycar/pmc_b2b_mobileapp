@@ -3,43 +3,42 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/trip_bloc.dart';
 import 'bloc/trip_event.dart';
 import 'bloc/trip_state.dart';
+import '../../../core/theme/app_theme.dart';
 
 class TripCompletionScreen extends StatelessWidget {
-  const TripCompletionScreen({Key? key}) : super(key: key);
+  const TripCompletionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return BlocBuilder<TripBloc, TripState>(
       builder: (context, state) {
         final trip = state.activeTrip;
-        final driverName =
-            trip?.supportDrivers.first.name ?? "Abdul Rahman";
-        final earningsStr = trip != null
-            ? "AED ${trip.totalEarnings.toInt()}"
-            : "AED 45";
+        final driverName = trip?.supportDrivers.first.name ?? "Abdul Rahman";
+        final earningsStr = trip != null ? "AED ${trip.totalEarnings.toInt()}" : "AED 45";
 
         return Scaffold(
-          backgroundColor: Colors.white,
           body: SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 children: [
                   // Header
-                  const Align(
+                  Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Trip Summary',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 24,
+                      style: textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
 
-                  const Divider(
-                    color: Colors.black12,
+                  Divider(
+                    color: colorScheme.outlineVariant,
                     height: 40,
                   ),
 
@@ -53,21 +52,20 @@ class TripCompletionScreen extends StatelessWidget {
                         width: 120,
                         height: 120,
                         decoration: BoxDecoration(
-                          color:
-                              const Color(0xFFFFC107).withOpacity(0.1),
+                          color: colorScheme.primary.withOpacity(0.1),
                           shape: BoxShape.circle,
                         ),
                       ),
                       Container(
                         width: 80,
                         height: 80,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFFC107),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.check_box,
-                          color: Colors.green,
+                          color: colorScheme.onPrimary,
                           size: 40,
                         ),
                       ),
@@ -77,11 +75,9 @@ class TripCompletionScreen extends StatelessWidget {
                   const SizedBox(height: 32),
 
                   // Title
-                  const Text(
+                  Text(
                     'Pick Me Completed!',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 30,
+                    style: textTheme.displaySmall?.copyWith(
                       fontWeight: FontWeight.w900,
                     ),
                     textAlign: TextAlign.center,
@@ -90,11 +86,10 @@ class TripCompletionScreen extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   // Subtitle
-                  const Text(
+                  Text(
                     'Support driver dropped at customer location successfully',
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontSize: 14,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurface.withOpacity(0.6),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -106,36 +101,33 @@ class TripCompletionScreen extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF5F5F5),
-                      borderRadius: BorderRadius.circular(20),
+                      color: colorScheme.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: colorScheme.outlineVariant),
                     ),
                     child: Column(
                       children: [
-                        _summaryRow('Trip', '#PKM-2847'),
+                        _summaryRow(context, 'Trip', '#PKM-2847'),
                         const SizedBox(height: 12),
-                        _summaryRow('Support Driver', driverName),
+                        _summaryRow(context, 'Support Driver', driverName),
                         const SizedBox(height: 12),
-                        _summaryRow('Distance', '7.1 km'),
+                        _summaryRow(context, 'Distance', '7.1 km'),
 
                         const SizedBox(height: 20),
 
                         Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
+                            Text(
                               'Earnings',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
+                              style: textTheme.titleLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
                               earningsStr,
-                              style: const TextStyle(
-                                color: Color(0xFFFFC107),
-                                fontSize: 26,
+                              style: textTheme.headlineMedium?.copyWith(
+                                color: colorScheme.primary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -150,35 +142,16 @@ class TripCompletionScreen extends StatelessWidget {
                   // Button
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFFC107),
-                        foregroundColor: Colors.black,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(16),
-                        ),
-                      ),
                       onPressed: () {
-                        context
-                            .read<TripBloc>()
-                            .add(ResetToSearching());
+                        context.read<TripBloc>().add(ResetToSearching());
 
-                        Navigator.of(context)
-                            .pushNamedAndRemoveUntil(
+                        Navigator.of(context).pushNamedAndRemoveUntil(
                           '/main_driver_dashboard',
                           (route) => false,
                         );
                       },
-                      child: const Text(
-                        'Back to Home',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: const Text('Back to Home'),
                     ),
                   ),
                 ],
@@ -190,22 +163,22 @@ class TripCompletionScreen extends StatelessWidget {
     );
   }
 
-  Widget _summaryRow(String label, String value) {
+  Widget _summaryRow(BuildContext context, String label, String value) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.black54,
-            fontSize: 14,
+          style: textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurface.withOpacity(0.6),
           ),
         ),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.black,
-            fontSize: 14,
+          style: textTheme.bodySmall?.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),

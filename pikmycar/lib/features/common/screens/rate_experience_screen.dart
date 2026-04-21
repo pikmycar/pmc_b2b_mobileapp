@@ -21,20 +21,14 @@ class _RateExperienceScreenState extends State<RateExperienceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
-          "Rate Experience",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: AppColors.designForestGreen,
-        elevation: 0,
+        title: const Text("Rate Experience"),
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -45,38 +39,31 @@ class _RateExperienceScreenState extends State<RateExperienceScreen> {
               child: Container(
                 width: 100,
                 height: 100,
-                decoration: const BoxDecoration(
-                  color: AppColors.designYellow,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
                     "AA",
-                    style: TextStyle(
-                      fontSize: 32,
+                    style: textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w900,
-                      color: Colors.black,
+                      color: colorScheme.onPrimary,
                     ),
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               "How was Ahmed?",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+              style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               "BMW 3 · Dubai Marina pickup",
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
             const SizedBox(height: 40),
@@ -89,7 +76,7 @@ class _RateExperienceScreenState extends State<RateExperienceScreen> {
                   onPressed: () => setState(() => _selectedStars = index + 1),
                   icon: Icon(
                     Icons.star,
-                    color: index < _selectedStars ? Colors.amber : Colors.grey.shade300,
+                    color: index < _selectedStars ? Colors.amber : colorScheme.outlineVariant,
                     size: 40,
                   ),
                 ),
@@ -118,16 +105,16 @@ class _RateExperienceScreenState extends State<RateExperienceScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppColors.designMint : Colors.white,
+                        color: isSelected ? colorScheme.primary.withOpacity(0.1) : colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isSelected ? AppColors.designMint : Colors.grey.shade200,
+                          color: isSelected ? colorScheme.primary : colorScheme.outlineVariant,
                         ),
                       ),
                       child: Text(
                         "${isSelected ? '✓ ' : '+ '}$option",
-                        style: TextStyle(
-                          color: isSelected ? const Color(0xFF1E6B3F) : Colors.black54,
+                        style: textTheme.labelLarge?.copyWith(
+                          color: isSelected ? colorScheme.primary : colorScheme.onSurface.withOpacity(0.6),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -142,19 +129,8 @@ class _RateExperienceScreenState extends State<RateExperienceScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: TextField(
                 maxLines: 4,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: "Add a note (optional)...",
-                  hintStyle: const TextStyle(color: Colors.black26),
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide(color: Colors.grey.shade100),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide(color: Colors.grey.shade100),
-                  ),
                 ),
               ),
             ),
@@ -164,20 +140,9 @@ class _RateExperienceScreenState extends State<RateExperienceScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: SizedBox(
                 width: double.infinity,
-                height: 56,
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.designForestGreen,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: const Text(
-                    "Submit Rating",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                  child: const Text("Submit Rating"),
                 ),
               ),
             ),

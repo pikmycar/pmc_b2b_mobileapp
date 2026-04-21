@@ -6,20 +6,23 @@ class RatingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: AppColors.designYellow, // Header background color
+      backgroundColor: colorScheme.primary, // Header background color
       body: SafeArea(
         child: Column(
           children: [
-            _buildRatingHeader(),
+            _buildRatingHeader(context),
             Expanded(
               child: Container(
                 width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
+                decoration: BoxDecoration(
+                  color: theme.scaffoldBackgroundColor,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
                   ),
                 ),
                 child: SingleChildScrollView(
@@ -27,29 +30,31 @@ class RatingsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         "RECENT REVIEWS",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
+                        style: textTheme.labelLarge?.copyWith(
+                          color: colorScheme.onSurface.withOpacity(0.5),
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.2,
                         ),
                       ),
                       const SizedBox(height: 20),
                       _buildReviewCard(
+                        context,
                         "Ahmed A.",
                         "Very professional and careful with my car. Highly recommended!",
                         5,
                       ),
                       const SizedBox(height: 16),
                       _buildReviewCard(
+                        context,
                         "Fatima K.",
                         "On time, polite, great service overall.",
                         5,
                       ),
                       const SizedBox(height: 16),
                       _buildReviewCard(
+                        context,
                         "John D.",
                         "Good driver, knows the routes well.",
                         4,
@@ -66,17 +71,21 @@ class RatingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRatingHeader() {
+  Widget _buildRatingHeader(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 24),
       child: Column(
         children: [
-          const Text(
+          Text(
             "4.9",
-            style: TextStyle(
+            style: textTheme.displayLarge?.copyWith(
               fontSize: 64,
               fontWeight: FontWeight.w900,
-              color: Colors.black,
+              color: colorScheme.onPrimary,
               height: 1.0,
             ),
           ),
@@ -85,40 +94,45 @@ class RatingsScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
               5,
-              (index) => const Icon(Icons.star, color: Colors.black, size: 28),
+              (index) => Icon(Icons.star, color: colorScheme.onPrimary, size: 28),
             ),
           ),
-          const SizedBox(height: 8),
-          const Text(
+          const SizedBox(height: 12),
+          Text(
             "Based on 340 trips",
-            style: TextStyle(
-              color: Colors.black54,
-              fontSize: 16,
+            style: textTheme.bodyLarge?.copyWith(
+              color: colorScheme.onPrimary.withOpacity(0.7),
               fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 30),
           // Progress Bars
-          _buildRatingBar(5, 0.82, "82%"),
+          _buildRatingBar(context, 5, 0.82, "82%"),
           const SizedBox(height: 8),
-          _buildRatingBar(4, 0.12, "12%"),
+          _buildRatingBar(context, 4, 0.12, "12%"),
           const SizedBox(height: 8),
-          _buildRatingBar(3, 0.04, "4%"),
+          _buildRatingBar(context, 3, 0.04, "4%"),
           const SizedBox(height: 8),
-          _buildRatingBar(2, 0.01, "1%"),
+          _buildRatingBar(context, 2, 0.01, "1%"),
           const SizedBox(height: 8),
-          _buildRatingBar(1, 0.00, "0%"),
+          _buildRatingBar(context, 1, 0.00, "0%"),
         ],
       ),
     );
   }
 
-  Widget _buildRatingBar(int star, double progress, String percentage) {
+  Widget _buildRatingBar(BuildContext context, int star, double progress, String percentage) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Row(
       children: [
         Text(
           "$star",
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black),
+          style: textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onPrimary,
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -126,8 +140,8 @@ class RatingsScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: Colors.black12,
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.orange),
+              backgroundColor: colorScheme.onPrimary.withOpacity(0.1),
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
               minHeight: 12,
             ),
           ),
@@ -138,27 +152,27 @@ class RatingsScreen extends StatelessWidget {
           child: Text(
             percentage,
             textAlign: TextAlign.right,
-            style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.bold),
+            style: textTheme.labelLarge?.copyWith(
+              color: colorScheme.onPrimary.withOpacity(0.7),
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildReviewCard(String name, String comment, int rating) {
+  Widget _buildReviewCard(BuildContext context, String name, String comment, int rating) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,14 +182,14 @@ class RatingsScreen extends StatelessWidget {
             children: [
               Text(
                 name,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               Row(
                 children: List.generate(
                   5,
                   (index) => Icon(
                     Icons.star,
-                    color: index < rating ? Colors.amber : Colors.grey.shade300,
+                    color: index < rating ? Colors.amber : colorScheme.onSurface.withOpacity(0.1),
                     size: 16,
                   ),
                 ),
@@ -185,11 +199,10 @@ class RatingsScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             "\"$comment\"",
-            style: TextStyle(
-              color: Colors.grey.shade700,
-              fontSize: 15,
-              height: 1.5,
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurface.withOpacity(0.7),
               fontStyle: FontStyle.italic,
+              height: 1.5,
             ),
           ),
         ],

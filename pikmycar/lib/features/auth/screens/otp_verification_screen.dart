@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import 'create_pin_screen.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
-import '../../common/widgets/biometric_dialog.dart';
 import 'timer_text.dart';
 import '../../../core/theme/app_theme.dart';
 
@@ -41,6 +39,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   @override
   void dispose() {
+    otpController.dispose();
     super.dispose();
   }
 
@@ -48,65 +47,47 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     context.read<AuthBloc>().add(OtpVerified(otp: otpController.text));
   }
 
-  void _showBiometricPrompt(String role) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const BiometricDialog(),
-    ).then((_) {
-      if (mounted) {
-        final route = role == 'main_driver'
-            ? '/main_driver_dashboard'
-            : '/support_driver_dashboard';
-        Navigator.pushNamedAndRemoveUntil(context, route, (route) => false);
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.pop(context);
-        return false;
-      },
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    return PopScope(
+      canPop: true,
       child: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) async {
-       if (state is AuthAuthenticated) {
-final storage = context.read<SecureStorageService>();
+          if (state is AuthAuthenticated) {
+            final storage = context.read<SecureStorageService>();
+            await storage.setLoggedIn(true);
+            await storage.setBiometricEnabled(true);
+            final pin = await storage.getPin();
 
-await storage.setLoggedIn(true);
+            if (!mounted) return;
 
-// 🔥 ADD THIS
-await storage.setBiometricEnabled(true);
-  final pin = await storage.getPin();
-
-  if (!mounted) return;
-
-  if (pin == null) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const CreatePinScreen(),
-      ),
-    );
-  } else {
-    Navigator.pushReplacementNamed(context, '/pin_login');
-  }
-
+            if (pin == null) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CreatePinScreen(),
+                ),
+              );
+            } else {
+              Navigator.pushReplacementNamed(context, '/pin_login');
+            }
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: colorScheme.error,
+              ),
             );
           }
         },
         child: Scaffold(
-          backgroundColor: Colors.white,
           appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              icon: const Icon(Icons.arrow_back),
               onPressed: () => Navigator.pop(context),
             ),
           ),
@@ -117,24 +98,24 @@ await storage.setBiometricEnabled(true);
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     "Enter OTP",
-                    style: AppTextStyles.heading1,
+                    style: textTheme.displayLarge,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
+                  Text(
                     "An OTP has been sent to",
-                    style: AppTextStyles.caption,
+                    style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     widget.email,
-                    style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
+                    style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 32),
-                  const Text(
+                  Text(
                     "Enter OTP",
-                    style: AppTextStyles.caption,
+                    style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
                   ),
                   const SizedBox(height: 16),
                   PinCodeTextField(
@@ -152,17 +133,20 @@ await storage.setBiometricEnabled(true);
                     },
                     pinTheme: PinTheme(
                       shape: PinCodeFieldShape.box,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(16),
                       fieldHeight: 50,
                       fieldWidth: 45,
-                      inactiveColor: Colors.grey.shade300,
-                      selectedColor: AppColors.accent,
-                      activeColor: isOtpWrong ? Colors.red : Colors.grey.shade300,
+                      inactiveColor: colorScheme.outlineVariant,
+                      selectedColor: colorScheme.primary,
+                      activeColor: isOtpWrong ? colorScheme.error : colorScheme.primary,
+                      activeFillColor: colorScheme.surface,
+                      inactiveFillColor: colorScheme.surface,
+                      selectedFillColor: colorScheme.surface,
                     ),
-                    textStyle: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    backgroundColor: Colors.transparent,
+                    cursorColor: colorScheme.primary,
+                    enableActiveFill: true,
+                    textStyle: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
 
@@ -177,14 +161,12 @@ await storage.setBiometricEnabled(true);
                                 setState(() {
                                   showResendButton = false;
                                 });
-                                // Logic for resending OTP could be added here
                               },
                         child: Text(
                           "Resend OTP",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: showResendButton ? Colors.black : AppColors.textSecondary,
+                          style: textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: showResendButton ? colorScheme.primary : colorScheme.onSurface.withOpacity(0.5),
                           ),
                         ),
                       ),
@@ -199,12 +181,11 @@ await storage.setBiometricEnabled(true);
                           },
                         )
                       else
-                        const Text(
+                        Text(
                           "00 : 00",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
+                          style: textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: colorScheme.onSurface.withOpacity(0.5),
                           ),
                         ),
                     ],
@@ -215,29 +196,21 @@ await storage.setBiometricEnabled(true);
                   // Continue button
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
                     child: BlocBuilder<AuthBloc, AuthState>(
                       builder: (context, state) {
                         final bool isLoading = state is AuthLoading;
                         return ElevatedButton(
                           onPressed: isOtpComplete && !isLoading ? _onVerify : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.accent,
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            elevation: 0,
-                          ),
                           child: isLoading
-                              ? const CircularProgressIndicator(color: Colors.black, strokeWidth: 2)
-                              : const Text(
-                                  "Verify",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
+                              ? SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: colorScheme.onPrimary,
+                                    strokeWidth: 2,
                                   ),
-                                ),
+                                )
+                              : const Text("Verify"),
                         );
                       },
                     ),
@@ -251,4 +224,3 @@ await storage.setBiometricEnabled(true);
     );
   }
 }
-

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
 class SupportDriverGarageDeliveryScreen extends StatelessWidget {
-  const SupportDriverGarageDeliveryScreen({Key? key}) : super(key: key);
+  const SupportDriverGarageDeliveryScreen({super.key});
 
   void _completeTrip(BuildContext context) {
     showDialog(
@@ -26,20 +26,27 @@ class SupportDriverGarageDeliveryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Navigating to Garage')),
       body: Stack(
         children: [
           // Simulated Map Navigation Background
           Container(
-            color: Colors.grey[200],
-            child: const Center(
+            color: colorScheme.surface,
+            child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                   Icon(Icons.navigation, size: 100, color: Colors.blueAccent),
-                   SizedBox(height: 16),
-                   Text('Turn-by-turn Navigation Simulation', style: TextStyle(color: Colors.blueAccent, fontSize: 18, fontWeight: FontWeight.bold)),
+                   Icon(Icons.navigation, size: 100, color: colorScheme.primary),
+                   const SizedBox(height: 16),
+                   Text(
+                     'Turn-by-turn Navigation Simulation', 
+                     style: textTheme.titleMedium?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.bold),
+                   ),
                 ],
               ),
             ),
@@ -51,19 +58,24 @@ class SupportDriverGarageDeliveryScreen extends StatelessWidget {
             left: 16,
             right: 16,
             child: Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
                   children: [
-                    Icon(Icons.turn_right, size: 40),
-                    SizedBox(width: 16),
+                    const Icon(Icons.turn_right, size: 40),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('In 500 ft', style: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold)),
-                          Text('Turn right onto Main St', style: AppTextStyles.heading3),
+                          Text(
+                            'In 500 ft', 
+                            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            'Turn right onto Main St', 
+                            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                          ),
                         ],
                       ),
                     )
@@ -79,13 +91,13 @@ class SupportDriverGarageDeliveryScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(24.0),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
+                color: colorScheme.surface,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(24),
                   topRight: Radius.circular(24),
                 ),
-                boxShadow: const [
-                  BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 2),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, spreadRadius: 2),
                 ],
               ),
               child: Column(
@@ -97,15 +109,27 @@ class SupportDriverGarageDeliveryScreen extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('ETA', style: AppTextStyles.labelSmall),
-                          const Text('15 mins', style: AppTextStyles.heading2),
+                          Text(
+                            'ETA', 
+                            style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
+                          ),
+                          Text(
+                            '15 mins', 
+                            style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900),
+                          ),
                         ],
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const Text('Distance', style: AppTextStyles.labelSmall),
-                          const Text('4.2 miles', style: AppTextStyles.heading3),
+                          Text(
+                            'Distance', 
+                            style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
+                          ),
+                          Text(
+                            '4.2 miles', 
+                            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                          ),
                         ],
                       ),
                     ],

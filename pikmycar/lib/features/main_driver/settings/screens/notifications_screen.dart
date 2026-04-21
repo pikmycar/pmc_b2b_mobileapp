@@ -5,6 +5,10 @@ class NotificationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     final List<Map<String, String>> notifications = [
       {
         "title": "Trip Completed",
@@ -33,53 +37,58 @@ class NotificationsScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: const Text("Notifications", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        title: Text(
+          "Notifications",
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+        ),
+        centerTitle: true,
       ),
       body: notifications.isEmpty
-          ? _buildEmptyState()
+          ? _buildEmptyState(context)
           : ListView.separated(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(24),
               itemCount: notifications.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
                 final item = notifications[index];
-                return _buildNotificationCard(item);
+                return _buildNotificationCard(context, item);
               },
             ),
     );
   }
 
-  Widget _buildNotificationCard(Map<String, String> item) {
+  Widget _buildNotificationCard(BuildContext context, Map<String, String> item) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     IconData icon;
     Color color;
 
     switch (item['type']) {
       case 'trip':
-        icon = Icons.local_taxi;
-        color = Colors.indigo;
+        icon = Icons.directions_car_filled;
+        color = colorScheme.primary;
         break;
       case 'payment':
         icon = Icons.account_balance_wallet;
-        color = Colors.green;
+        color = colorScheme.secondary;
         break;
       default:
         icon = Icons.notifications;
-        color = Colors.orange;
+        color = Colors.orange; // System notification orange is standard
     }
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.04 : 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -89,12 +98,12 @@ class NotificationsScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 22),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -104,14 +113,27 @@ class NotificationsScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(item['title']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                    Text(item['time']!, style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                    Text(
+                      item['title']!,
+                      style: textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    Text(
+                      item['time']!,
+                      style: textTheme.labelSmall?.copyWith(
+                        color: colorScheme.onSurface.withOpacity(0.4),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
                   item['body']!,
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13, height: 1.4),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.6),
+                    height: 1.5,
+                  ),
                 ),
               ],
             ),
@@ -121,14 +143,30 @@ class NotificationsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.notifications_none, size: 80, color: Colors.grey.shade300),
-          const SizedBox(height: 16),
-          const Text("No Notifications yet", style: TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w600)),
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withOpacity(0.05),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.notifications_none_rounded, size: 80, color: colorScheme.primary.withOpacity(0.2)),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            "No Notifications yet",
+            style: textTheme.titleMedium?.copyWith(
+              color: colorScheme.onSurface.withOpacity(0.3),
+              fontWeight: FontWeight.w900,
+            ),
+          ),
         ],
       ),
     );
