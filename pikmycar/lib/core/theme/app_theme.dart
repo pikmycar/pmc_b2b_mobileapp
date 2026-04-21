@@ -118,7 +118,7 @@ class AppTheme {
         centerTitle: true,
         iconTheme: IconThemeData(color: AppColors.textPrimaryLight),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.surfaceLight,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -173,7 +173,7 @@ class AppTheme {
         ),
         hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondaryLight.withOpacity(0.5)),
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surfaceLight,
         elevation: 8,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_radiusLarge)),
@@ -232,7 +232,7 @@ class AppTheme {
         centerTitle: true,
         iconTheme: IconThemeData(color: AppColors.textPrimaryDark),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.surfaceDark,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -287,7 +287,7 @@ class AppTheme {
         ),
         hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondaryDark.withOpacity(0.5)),
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surfaceDark,
         elevation: 8,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_radiusLarge)),
