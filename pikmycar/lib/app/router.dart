@@ -106,7 +106,7 @@ class AppRouter {
         );
       case '/driver_home':
         return MaterialPageRoute(
-          builder: (_) => const MainWrapper(child: DriverHomeScreen()),
+          builder: (_) => const MainWrapper(child: MainDriverDashboard()),
         );
       case '/main_driver_transport':
         return MaterialPageRoute(

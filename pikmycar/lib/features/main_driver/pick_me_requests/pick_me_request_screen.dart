@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/theme/app_theme.dart';
 import '../transport_trip/bloc/trip_bloc.dart';
-import '../transport_trip/bloc/trip_event.dart';
 import '../transport_trip/bloc/trip_state.dart';
 import '../../../core/models/trip_models.dart';
 

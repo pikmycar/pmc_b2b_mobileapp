@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'email_login_screen.dart';
 import 'mobile_password_screen.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../core/models/user_role.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import 'package:provider/provider.dart';
@@ -38,35 +37,21 @@ class _LoginScreenState extends State<LoginScreen> {
   UserRole _selectedRole = UserRole.mainDriver;
 
   void _onContinue() async {
-    setState(() => _isLoading = true);
-    
-    final storage = context.read<SecureStorageService>();
-    await storage.setUserRole(_selectedRole.toString());
-
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() => _isLoading = false);
-
-    if (!mounted) return;
-    
-    if (_isMobileSelected) {
-      Navigator.push(
-        context, 
-        MaterialPageRoute(
-          builder: (context) => MobilePasswordScreen(
-            mobile: _mobileController.text.isNotEmpty ? _mobileController.text : '501234567',
-          )
-        )
+    if (_isMobileSelected && _mobileController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter your mobile number")),
       );
-    } else {
-      Navigator.push(
-        context, 
-        MaterialPageRoute(
-          builder: (context) => EmailLoginScreen(
-            email: _emailController.text.isNotEmpty ? _emailController.text : 'test@example.com',
-          )
-        )
-      );
+      return;
     }
+
+    Navigator.push(
+      context, 
+      MaterialPageRoute(
+        builder: (context) => MobilePasswordScreen(
+          mobile: _isMobileSelected ? _mobileController.text : _emailController.text,
+        )
+      )
+    );
   }
 
   @override
@@ -85,35 +70,15 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const SizedBox(height: 60),
               Center(
-                child: Text(
-                  "Choose Your Role",
-                  style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                child: Hero(
+                  tag: 'app_logo',
+                  child: Image.asset(
+                    'assets/Png/SplashLogo.png',
+                    height: 80,
+                  ),
                 ),
               ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: _roleCard(
-                      label: "Main Driver",
-                      icon: Icons.person,
-                      role: UserRole.mainDriver,
-                      activeColor: colorScheme.primary,
-                      onColor: colorScheme.onPrimary,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _roleCard(
-                      label: "Support Driver",
-                      icon: Icons.support_agent,
-                      role: UserRole.supportDriver,
-                      activeColor: colorScheme.secondary,
-                      onColor: colorScheme.onSecondary,
-                    ),
-                  ),
-                ],
-              ),
+           
               const SizedBox(height: 48),
               Center(
                 child: Text(

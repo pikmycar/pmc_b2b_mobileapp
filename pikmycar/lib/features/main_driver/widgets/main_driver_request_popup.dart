@@ -10,9 +10,9 @@ class MainDriverRequestPopup extends StatefulWidget {
   final Trip trip;
 
   const MainDriverRequestPopup({
-    Key? key,
+    super.key,
     required this.trip,
-  }) : super(key: key);
+  });
 
   @override
   State<MainDriverRequestPopup> createState() => _MainDriverRequestPopupState();

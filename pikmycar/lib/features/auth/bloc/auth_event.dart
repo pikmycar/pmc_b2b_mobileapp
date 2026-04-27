@@ -9,25 +9,22 @@ abstract class AuthEvent extends Equatable {
 
 class AppStarted extends AuthEvent {}
 
-class LoginRequested extends AuthEvent {
-  final String username;
+class LoginEvent extends AuthEvent {
+  final String mobile;
   final String password;
 
-  const LoginRequested({required this.username, required this.password});
+  const LoginEvent({required this.mobile, required this.password});
 
   @override
-  List<Object> get props => [username, password];
+  List<Object?> get props => [mobile, password];
 }
-
-class OtpVerified extends AuthEvent {
-  final String otp;
-
-  const OtpVerified({required this.otp});
-
-  @override
-  List<Object> get props => [otp];
-}
-
-class BiometricLoginRequested extends AuthEvent {}
 
 class LogoutRequested extends AuthEvent {}
+
+class PinCreated extends AuthEvent {
+  final String pin;
+  const PinCreated(this.pin);
+
+  @override
+  List<Object?> get props => [pin];
+}

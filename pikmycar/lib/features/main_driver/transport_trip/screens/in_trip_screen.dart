@@ -4,7 +4,6 @@ import '../widgets/transport_map_widget.dart';
 import '../widgets/transport_header_widget.dart';
 import '../widgets/transport_metrics_widget.dart';
 import '../widgets/transport_bottom_ui_widget.dart';
-import '../../../../core/theme/app_theme.dart';
 
 class InTripScreen extends StatelessWidget {
   const InTripScreen({super.key});

@@ -17,15 +17,38 @@ class TicketDetailScreen extends StatefulWidget {
 class _TicketDetailScreenState extends State<TicketDetailScreen> {
   bool _isSendingRequest = false;
 
+  Future<bool> _onBackPressed(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text("Cancel Trip?"),
+        content: const Text("Are you sure you want to cancel this trip?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("No"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Yes"),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      if (!mounted) return true;
+      Navigator.pushNamedAndRemoveUntil(context, '/support_driver_dashboard', (route) => false);
+      return true;
+    }
+    return false;
+  }
+
   Future<void> _handlePickMe() async {
     setState(() => _isSendingRequest = true);
-
-    // Simulate 2s sending request
     await Future.delayed(const Duration(seconds: 2));
-
     if (!mounted) return;
-
-    // Navigate to dedicated Searching Screen
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -40,228 +63,225 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Ticket #${widget.ticketId}",
-          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await _onBackPressed(context);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: Text(
+            "Ticket #${widget.ticketId}",
+            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+          ),
+          centerTitle: false,
         ),
-        centerTitle: false,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Status Badges
-            Row(
-              children: [
-                _buildStatusBadge(
-                  context: context,
-                  icon: Icons.check,
-                  label: "Accepted",
-                  bgColor: AppColors.success,
-                  textColor: Colors.white,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  "HIGH priority",
-                  style: textTheme.labelLarge?.copyWith(
-                    color: colorScheme.onSurface.withOpacity(0.5),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Customer InfoSection
-            _buildSectionHeader(context, "CUSTOMER INFO"),
-            const SizedBox(height: 12),
-            _buildInfoCard(
-              context: context,
-              child: Column(
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  _buildDetailRow(
+                  _buildStatusBadge(
                     context: context,
-                    icon: Icons.person,
-                    iconColor: colorScheme.primary,
-                    title: "Ahmed Al-Rashid",
-                    subtitle: "+971 50 123 4567",
+                    icon: Icons.check,
+                    label: "Accepted",
+                    bgColor: AppColors.success,
+                    textColor: Colors.white,
                   ),
-                  const Divider(height: 24),
-                  _buildDetailRow(
-                    context: context,
-                    icon: Icons.email,
-                    iconColor: colorScheme.secondary,
-                    title: "ahmed@example.ae",
-                    subtitle: "",
+                  const SizedBox(width: 12),
+                  Text(
+                    "HIGH priority",
+                    style: textTheme.labelLarge?.copyWith(
+                      color: colorScheme.onSurface.withOpacity(0.5),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 24),
-
-            // Pickup Details Section
-            _buildSectionHeader(context, "PICKUP DETAILS"),
-            const SizedBox(height: 12),
-            _buildInfoCard(
-              context: context,
-              child: Column(
-                children: [
-                  _buildDetailRow(
-                    context: context,
-                    icon: Icons.location_on,
-                    iconColor: AppColors.error,
-                    title: "Dubai Marina, Tower B",
-                    subtitle: "Today · 10:30 AM · Ahmed Al-Rashid",
-                  ),
-                  const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Container(
-                      margin: const EdgeInsets.only(left: 20),
-                      height: 30,
-                      width: 2,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          left: BorderSide(
-                            color: colorScheme.outlineVariant,
-                            width: 2,
+              const SizedBox(height: 24),
+              _buildSectionHeader(context, "CUSTOMER INFO"),
+              const SizedBox(height: 12),
+              _buildInfoCard(
+                context: context,
+                child: Column(
+                  children: [
+                    _buildDetailRow(
+                      context: context,
+                      icon: Icons.person,
+                      iconColor: colorScheme.primary,
+                      title: "Ahmed Al-Rashid",
+                      subtitle: "+971 50 123 4567",
+                    ),
+                    const Divider(height: 24),
+                    _buildDetailRow(
+                      context: context,
+                      icon: Icons.email,
+                      iconColor: colorScheme.secondary,
+                      title: "ahmed@example.ae",
+                      subtitle: "",
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildSectionHeader(context, "PICKUP DETAILS"),
+              const SizedBox(height: 12),
+              _buildInfoCard(
+                context: context,
+                child: Column(
+                  children: [
+                    _buildDetailRow(
+                      context: context,
+                      icon: Icons.location_on,
+                      iconColor: AppColors.error,
+                      title: "Dubai Marina, Tower B",
+                      subtitle: "Today · 10:30 AM · Ahmed Al-Rashid",
+                    ),
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        margin: const EdgeInsets.only(left: 20),
+                        height: 30,
+                        width: 2,
+                        decoration: BoxDecoration(
+                          border: Border(
+                            left: BorderSide(
+                              color: colorScheme.outlineVariant,
+                              width: 2,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildDetailRow(
-                    context: context,
-                    icon: Icons.factory_outlined,
-                    iconColor: colorScheme.onSurface.withOpacity(0.6),
-                    title: "Al Quoz Auto Service",
-                    subtitle: "Preferred delivery: Today by 4:00 PM",
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Car Details Section
-            _buildSectionHeader(context, "CAR DETAILS"),
-            const SizedBox(height: 12),
-            _buildInfoCard(
-              context: context,
-              bgColor: colorScheme.primary.withOpacity(0.05),
-              child: Stack(
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "BMW 3 Series · Blue",
-                        style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "2022 · Plate: M72528",
-                        style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
-                      ),
-                    ],
-                  ),
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: colorScheme.surface,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: colorScheme.onSurface, width: 1.5),
-                      ),
-                      child: Text(
-                        "M72528",
-                        style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
-                      ),
+                    const SizedBox(height: 12),
+                    _buildDetailRow(
+                      context: context,
+                      icon: Icons.factory_outlined,
+                      iconColor: colorScheme.onSurface.withOpacity(0.6),
+                      title: "Al Quoz Auto Service",
+                      subtitle: "Preferred delivery: Today by 4:00 PM",
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-
-            // Service Options Section
-            _buildSectionHeader(context, "SERVICE OPTIONS"),
-            const SizedBox(height: 12),
-            _buildInfoCard(
-              context: context,
-              bgColor: colorScheme.secondary.withOpacity(0.05),
-              child: Column(
-                children: [
-                  _buildDetailRow(
-                    context: context,
-                    icon: Icons.build_outlined,
-                    iconColor: colorScheme.onSurface.withOpacity(0.4),
-                    title: "Full Service",
-                    subtitle: "Oil change, filters, inspection",
-                  ),
-                  const SizedBox(height: 16),
-                  _buildDetailRow(
-                    context: context,
-                    icon: Icons.money,
-                    iconColor: AppColors.warning,
-                    title: "Pricing: AED 280",
-                    subtitle: "Peak-time + High priority",
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Footer Note
-            Text(
-              "Notes: Please handle with care – premium vehicle",
-              style: textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurface.withOpacity(0.5),
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-            const SizedBox(height: 100),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 20,
-              offset: const Offset(0, -10),
-            )
-          ],
-        ),
-        child: SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _isSendingRequest ? null : _handlePickMe,
-            child: _isSendingRequest
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+              const SizedBox(height: 24),
+              _buildSectionHeader(context, "CAR DETAILS"),
+              const SizedBox(height: 12),
+              _buildInfoCard(
+                context: context,
+                bgColor: colorScheme.primary.withOpacity(0.05),
+                child: Stack(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "BMW 3 Series · Blue",
+                          style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "2022 · Plate: M72528",
+                          style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
+                        ),
+                      ],
+                    ),
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: colorScheme.onSurface, width: 1.5),
+                        ),
+                        child: Text(
+                          "M72528",
+                          style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      const Text("Request sending..."),
-                    ],
-                  )
-                : const Text("Pick Me"),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildSectionHeader(context, "SERVICE OPTIONS"),
+              const SizedBox(height: 12),
+              _buildInfoCard(
+                context: context,
+                bgColor: colorScheme.secondary.withOpacity(0.05),
+                child: Column(
+                  children: [
+                    _buildDetailRow(
+                      context: context,
+                      icon: Icons.build_outlined,
+                      iconColor: colorScheme.onSurface.withOpacity(0.4),
+                      title: "Full Service",
+                      subtitle: "Oil change, filters, inspection",
+                    ),
+                    const SizedBox(height: 16),
+                    _buildDetailRow(
+                      context: context,
+                      icon: Icons.money,
+                      iconColor: AppColors.warning,
+                      title: "Pricing: AED 280",
+                      subtitle: "Peak-time + High priority",
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                "Notes: Please handle with care – premium vehicle",
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface.withOpacity(0.5),
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              const SizedBox(height: 100),
+            ],
+          ),
+        ),
+        bottomNavigationBar: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 20,
+                offset: const Offset(0, -10),
+              )
+            ],
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isSendingRequest ? null : _handlePickMe,
+              child: _isSendingRequest
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onPrimary),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text("Request sending..."),
+                      ],
+                    )
+                  : const Text("Pick Me"),
+            ),
           ),
         ),
       ),

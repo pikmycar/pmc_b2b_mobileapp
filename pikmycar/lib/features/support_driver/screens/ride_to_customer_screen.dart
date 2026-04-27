@@ -39,6 +39,34 @@ class _RideToCustomerScreenState extends State<RideToCustomerScreen> {
     super.dispose();
   }
 
+  Future<bool> _onBackPressed(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text("Cancel Trip?"),
+        content: const Text("Are you sure you want to cancel this trip?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("No"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Yes"),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      if (!mounted) return true;
+      Navigator.pushNamedAndRemoveUntil(context, '/support_driver_dashboard', (route) => false);
+      return true;
+    }
+    return false;
+  }
+
   Future<void> _initLocationTracking() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -143,167 +171,174 @@ class _RideToCustomerScreenState extends State<RideToCustomerScreen> {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    return Scaffold(
-      body: Column(
-        children: [
-          // Header Section
-          Container(
-            padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 24),
-            decoration: BoxDecoration(
-              color: colorScheme.primary,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "STATUS",
-                      style: textTheme.labelSmall?.copyWith(color: colorScheme.onPrimary.withOpacity(0.5), fontWeight: FontWeight.bold, letterSpacing: 1.2),
-                    ),
-                    Text(
-                      "Riding to\nCustomer",
-                      style: textTheme.displaySmall?.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.w900, height: 1.1),
-                    ),
-                  ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await _onBackPressed(context);
+      },
+      child: Scaffold(
+        body: Column(
+          children: [
+            // Header Section
+            Container(
+              padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 24),
+              decoration: BoxDecoration(
+                color: colorScheme.primary,
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: colorScheme.onPrimary.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.check_circle, color: AppColors.success, size: 18),
-                      const SizedBox(width: 8),
                       Text(
-                        "IN VEHICLE",
-                        style: textTheme.labelMedium?.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.bold),
+                        "STATUS",
+                        style: textTheme.labelSmall?.copyWith(color: colorScheme.onPrimary.withOpacity(0.5), fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                      ),
+                      Text(
+                        "Riding to\nCustomer",
+                        style: textTheme.displaySmall?.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.w900, height: 1.1),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          // Map Section
-          Expanded(
-            child: Stack(
-              children: [
-                _currentPosition == null
-                    ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
-                    : GoogleMap(
-                        initialCameraPosition: CameraPosition(
-                          target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                          zoom: 14,
-                        ),
-                        markers: _markers,
-                        polylines: _polylines,
-                        onMapCreated: (controller) => _mapController = controller,
-                        myLocationEnabled: true,
-                        zoomControlsEnabled: false,
-                        mapToolbarEnabled: false,
-                      ),
-                      
-                // Destination Label (Floating)
-                Positioned(
-                  top: 20,
-                  right: 20,
-                  child: Container(
+                  Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: colorScheme.outlineVariant),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4)),
-                      ],
+                      color: colorScheme.onPrimary.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Text("Dubai Marina", style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Bottom Info Card
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: colorScheme.surface,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(32),
-                topRight: Radius.circular(32),
-              ),
-              boxShadow: [
-                BoxShadow(color: Colors.black12, blurRadius: 20, offset: const Offset(0, -5)),
-              ],
-            ),
-            child: Column(
-              children: [
-                // Stats Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildStatItem(context, "6.2", "km left"),
-                    _buildStatDivider(context),
-                    _buildStatItem(context, "14", "min ETA"),
-                    _buildStatDivider(context),
-                    _buildStatItem(context, "78", "km/h"),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                
-                // Destination Address
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: colorScheme.onSurface.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.location_on, color: AppColors.error, size: 24),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          "Dubai Marina, Tower B — Customer Location",
-                          style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-
-                // Action Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isNavigating ? null : _startNavigation,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(_isNavigating ? Icons.navigation : Icons.location_on, size: 20),
+                        Icon(Icons.check_circle, color: AppColors.success, size: 18),
                         const SizedBox(width: 8),
                         Text(
-                          _isNavigating ? "Navigating to Customer..." : "Navigate to Customer",
+                          "IN VEHICLE",
+                          style: textTheme.labelMedium?.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+
+            // Map Section
+            Expanded(
+              child: Stack(
+                children: [
+                  _currentPosition == null
+                      ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
+                      : GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                            zoom: 14,
+                          ),
+                          markers: _markers,
+                          polylines: _polylines,
+                          onMapCreated: (controller) => _mapController = controller,
+                          myLocationEnabled: true,
+                          zoomControlsEnabled: false,
+                          mapToolbarEnabled: false,
+                        ),
+                        
+                  // Destination Label (Floating)
+                  Positioned(
+                    top: 20,
+                    right: 20,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: colorScheme.outlineVariant),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4)),
+                        ],
+                      ),
+                      child: Text("Dubai Marina", style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Bottom Info Card
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(32),
+                  topRight: Radius.circular(32),
+                ),
+                boxShadow: [
+                  BoxShadow(color: Colors.black12, blurRadius: 20, offset: const Offset(0, -5)),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Stats Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildStatItem(context, "6.2", "km left"),
+                      _buildStatDivider(context),
+                      _buildStatItem(context, "14", "min ETA"),
+                      _buildStatDivider(context),
+                      _buildStatItem(context, "78", "km/h"),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // Destination Address
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: colorScheme.onSurface.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.location_on, color: AppColors.error, size: 24),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            "Dubai Marina, Tower B — Customer Location",
+                            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Action Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isNavigating ? null : _startNavigation,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(_isNavigating ? Icons.navigation : Icons.location_on, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            _isNavigating ? "Navigating to Customer..." : "Navigate to Customer",
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -56,10 +56,10 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                 CircleAvatar(
                   radius: 60,
                   backgroundColor: colorScheme.primary.withOpacity(0.1),
-                  backgroundImage: user?.profilePicture != null && user!.profilePicture!.isNotEmpty
-                      ? NetworkImage(user.profilePicture!)
+                  backgroundImage: user?.profilePicture != null && user!.profilePicture.isNotEmpty
+                      ? NetworkImage(user.profilePicture)
                       : null,
-                  child: user?.profilePicture == null || user!.profilePicture!.isEmpty
+                  child: user?.profilePicture == null || user!.profilePicture.isEmpty
                       ? Icon(Icons.person, size: 60, color: colorScheme.primary)
                       : null,
                 ),

@@ -25,24 +25,52 @@ class SecureStorageService {
   }
 
   // ===============================
-  // 🔹 AUTH TOKEN
+  // 🔹 AUTH TOKENS
   // ===============================
 
-  Future<void> saveAuthToken(String token) async {
+  Future<void> saveToken(String token) async {
     await write(AuthConstants.authToken, token);
   }
 
-  Future<String?> getAuthToken() async {
+  Future<String?> getToken() async {
     return await read(AuthConstants.authToken);
   }
 
-  Future<void> removeAuthToken() async {
-    await delete(AuthConstants.authToken);
+  Future<void> saveRefreshToken(String token) async {
+    await write(AuthConstants.refreshToken, token);
+  }
+
+  Future<String?> getRefreshToken() async {
+    return await read(AuthConstants.refreshToken);
   }
 
   // ===============================
-  // 🔹 LOGIN STATUS
+  // 🔹 DRIVER METADATA
   // ===============================
+
+  Future<void> saveRole(String role) async {
+    await write(AuthConstants.userRole, role);
+  }
+
+  Future<String?> getRole() async {
+    return await read(AuthConstants.userRole);
+  }
+
+  Future<void> saveDriverId(String id) async {
+    await write(AuthConstants.driverId, id);
+  }
+
+  Future<String?> getDriverId() async {
+    return await read(AuthConstants.driverId);
+  }
+
+  Future<void> saveUserName(String name) async {
+    await write(AuthConstants.userName, name);
+  }
+
+  Future<String?> getUserName() async {
+    return await read(AuthConstants.userName);
+  }
 
   Future<void> setLoggedIn(bool isLoggedIn) async {
     await write(AuthConstants.isLoggedIn, isLoggedIn.toString());
@@ -54,63 +82,24 @@ class SecureStorageService {
   }
 
   // ===============================
-  // 🔹 BIOMETRIC
+  // 🔹 FULL LOGOUT
   // ===============================
 
-  Future<void> setBiometricEnabled(bool enabled) async {
-    await write(AuthConstants.biometricEnabled, enabled.toString());
+  Future<void> logout() async {
+    await clearAll();
+    await setLoggedIn(false);
   }
 
+  // Legacy support for refactoring
+  Future<void> saveAuthToken(String token) => saveToken(token);
+  Future<String?> getAuthToken() => getToken();
+  Future<void> setUserRole(String role) => saveRole(role);
+  Future<String?> getUserRole() => getRole();
+  Future<void> savePin(String pin) => write(AuthConstants.userPin, pin);
+  Future<String?> getPin() => read(AuthConstants.userPin);
   Future<bool> isBiometricEnabled() async {
     final value = await read(AuthConstants.biometricEnabled);
     return value == 'true';
   }
-
-  Future<void> removeBiometric() async {
-    await delete(AuthConstants.biometricEnabled);
-  }
-
-  // ===============================
-  // 🔹 PIN (NEW 🔥)
-  // ===============================
-
-  Future<void> savePin(String pin) async {
-    await write(AuthConstants.userPin, pin);
-  }
-
-  Future<String?> getPin() async {
-    return await read(AuthConstants.userPin);
-  }
-
-  Future<void> removePin() async {
-    await delete(AuthConstants.userPin);
-  }
-
-  // ===============================
-  // 🔹 ROLE (NEW 🔥)
-  // ===============================
-
-  Future<void> setUserRole(String role) async {
-    await write(AuthConstants.userRole, role);
-  }
-
-  Future<String?> getUserRole() async {
-    return await read(AuthConstants.userRole);
-  }
-
-  Future<void> removeUserRole() async {
-    await delete(AuthConstants.userRole);
-  }
-
-  // ===============================
-  // 🔹 FULL LOGOUT (IMPORTANT 🔥)
-  // ===============================
-
-  Future<void> logout() async {
-    await removeAuthToken();
-    await removePin();
-    await removeBiometric();
-    await removeUserRole();
-    await setLoggedIn(false);
-  }
+  Future<void> setBiometricEnabled(bool enabled) => write(AuthConstants.biometricEnabled, enabled.toString());
 }

@@ -4,7 +4,6 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 
 import '../../../core/services/biometric_service.dart';
 import '../../../core/storage/secure_storage_service.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../core/models/user_role.dart';
 
 class PinLoginScreen extends StatefulWidget {

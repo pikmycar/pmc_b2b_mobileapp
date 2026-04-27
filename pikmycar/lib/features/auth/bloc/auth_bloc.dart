@@ -1,109 +1,84 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
-import '../repository/auth_repository.dart';
+import '../data/repository/auth_repository.dart';
 import '../../../core/storage/secure_storage_service.dart';
-import '../../../core/services/biometric_service.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
-  final SecureStorageService storageService;
-  final BiometricService biometricService;
+  final SecureStorageService storage;
 
   AuthBloc({
     required this.authRepository,
-    required this.storageService,
-    required this.biometricService,
+    required this.storage,
   }) : super(AuthInitial()) {
     on<AppStarted>(_onAppStarted);
-    on<LoginRequested>(_onLoginRequested);
-    on<OtpVerified>(_onOtpVerified);
-    on<BiometricLoginRequested>(_onBiometricLoginRequested);
+    on<LoginEvent>(_onLoginEvent);
     on<LogoutRequested>(_onLogoutRequested);
+    on<PinCreated>(_onPinCreated);
   }
 
   Future<void> _onAppStarted(AppStarted event, Emitter<AuthState> emit) async {
-    final bool loggedIn = await storageService.isLoggedIn();
+    final bool loggedIn = await storage.isLoggedIn();
     if (!loggedIn) {
       emit(AuthUnauthenticated());
       return;
     }
 
-    final String? token = await storageService.getAuthToken();
-    if (token == null) {
-      emit(AuthUnauthenticated());
-      return;
-    }
+    final String? token = await storage.getToken();
+    final String? role = await storage.getRole();
+    final String? pin = await storage.getPin();
 
-    // Validate token first
-    final bool isTokenValid = await authRepository.validateToken(token);
-    if (!isTokenValid) {
-      await storageService.clearAll();
-      emit(AuthUnauthenticated());
-      return;
-    }
-
-    final bool bioEnabled = await storageService.isBiometricEnabled();
-    final bool bioAvailable = await biometricService.isBiometricAvailable();
-
-    if (bioEnabled && bioAvailable) {
-      // Trigger biometric login flow
-      add(BiometricLoginRequested());
+    if (token != null && role != null) {
+      if (pin == null || pin.isEmpty) {
+        emit(AuthPinRequired(role));
+      } else {
+        emit(AuthAuthenticated(role));
+      }
     } else {
-      // If biometric not enabled/available but already logged in with successful token validation,
-      // navigate directly to dashboard (Auto-login)
-      emit(const AuthAuthenticated(role: 'support_driver', isFirstLogin: false));
-    }
-  }
-
-  Future<void> _onLoginRequested(LoginRequested event, Emitter<AuthState> emit) async {
-    emit(AuthLoading());
-    try {
-      final response = await authRepository.login(event.username, event.password);
-      emit(AuthOtpRequired(response['message']));
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
-  }
-
-  Future<void> _onOtpVerified(OtpVerified event, Emitter<AuthState> emit) async {
-    emit(AuthLoading());
-    try {
-      final response = await authRepository.verifyOtp(event.otp);
-      
-      final String token = response['token'];
-      final String role = response['role'];
-      
-      await storageService.saveAuthToken(token);
-      await storageService.setLoggedIn(true);
-      
-      emit(AuthAuthenticated(role: role, isFirstLogin: true));
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
-  }
-
-  Future<void> _onBiometricLoginRequested(BiometricLoginRequested event, Emitter<AuthState> emit) async {
-    emit(AuthLoading());
-    
-    final bool bioAvailable = await biometricService.isBiometricAvailable();
-    if (!bioAvailable) {
       emit(AuthUnauthenticated());
-      return;
     }
+  }
 
-    final bool authenticated = await biometricService.authenticate();
-    if (authenticated) {
-      // For mock purposes, we'll assume support_driver role
-      emit(const AuthAuthenticated(role: 'support_driver'));
-    } else {
-      // Fallback to login screen
-      emit(AuthUnauthenticated());
+  Future<void> _onLoginEvent(LoginEvent event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+
+    try {
+      final res = await authRepository.login(event.mobile, event.password);
+
+      // SAVE DATA
+      await storage.saveToken(res.token);
+      await storage.saveRefreshToken(res.refreshToken);
+      await storage.saveDriverId(res.driverId);
+      await storage.saveUserName(res.userName);
+      await storage.saveRole(res.role);
+      await storage.write("is_verified", res.isDocumentVerified.toString());
+      await storage.setLoggedIn(true);
+
+      // Check PIN after login
+      final String? existingPin = await storage.getPin();
+      if (existingPin == null || existingPin.isEmpty) {
+        emit(AuthPinRequired(res.role));
+      } else {
+        emit(AuthAuthenticated(res.role));
+      }
+    } catch (e) {
+      emit(AuthError(e.toString().replaceAll("Exception: ", "")));
+    }
+  }
+
+  Future<void> _onPinCreated(PinCreated event, Emitter<AuthState> emit) async {
+    try {
+      await storage.savePin(event.pin);
+      final role = await storage.getRole();
+      emit(AuthAuthenticated(role ?? "main_driver"));
+    } catch (e) {
+      emit(AuthError("Failed to save PIN: $e"));
     }
   }
 
   Future<void> _onLogoutRequested(LogoutRequested event, Emitter<AuthState> emit) async {
-    await storageService.clearAll();
+    await storage.logout();
     emit(AuthUnauthenticated());
   }
 }

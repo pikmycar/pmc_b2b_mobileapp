@@ -11,30 +11,26 @@ class AuthInitial extends AuthState {}
 
 class AuthLoading extends AuthState {}
 
-class AuthUnauthenticated extends AuthState {}
-
 class AuthAuthenticated extends AuthState {
   final String role;
-  final bool isFirstLogin; // To trigger biometric dialog if true
-
-  const AuthAuthenticated({required this.role, this.isFirstLogin = false});
+  const AuthAuthenticated(this.role);
 
   @override
-  List<Object?> get props => [role, isFirstLogin];
+  List<Object?> get props => [role];
 }
 
-class AuthOtpRequired extends AuthState {
-  final String message;
-
-  const AuthOtpRequired(this.message);
+class AuthPinRequired extends AuthState {
+  final String role;
+  const AuthPinRequired(this.role);
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [role];
 }
+
+class AuthUnauthenticated extends AuthState {}
 
 class AuthError extends AuthState {
   final String message;
-
   const AuthError(this.message);
 
   @override

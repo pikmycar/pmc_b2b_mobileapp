@@ -5,7 +5,7 @@ import '../bloc/settings_event.dart';
 import '../models/settings_models.dart';
 
 class BankAccountScreen extends StatefulWidget {
-  const BankAccountScreen({Key? key}) : super(key: key);
+  const BankAccountScreen({super.key});
 
   @override
   State<BankAccountScreen> createState() => _BankAccountScreenState();

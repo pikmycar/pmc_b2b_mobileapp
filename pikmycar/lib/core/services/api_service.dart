@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 
 class ApiService {
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: 'https://api.example.com', // Replace with your actual API URL
+    baseUrl: 'https://api.pikmycar.com/api-docs/', // Replace with your actual API URL
     connectTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 10),
   ));

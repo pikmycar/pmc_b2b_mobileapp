@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import '../../../app/main_wrapper.dart';
+import '../bloc/auth_bloc.dart';
+import '../bloc/auth_event.dart';
+import '../bloc/auth_state.dart';
 import '../../common/widgets/biometric_dialog.dart';
-import '../../../core/storage/secure_storage_service.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../core/models/user_role.dart';
-import '../../main_driver/dashboard/main_driver_dashboard.dart';
-import '../../support_driver/dashboard/support_driver_dashboard.dart';
 
 class CreatePinScreen extends StatefulWidget {
   const CreatePinScreen({super.key});
@@ -27,12 +24,6 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
   void initState() {
     super.initState();
     _pinController = TextEditingController();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        FocusScope.of(context).requestFocus(FocusNode());
-      }
-    });
   }
 
   @override
@@ -60,65 +51,20 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
       }
     } else {
       if (_currentInput.length == 4) {
-        await _validate();
-      }
-    }
-  }
-
-  Future<void> _validate() async {
-    if (_firstPin == _currentInput) {
-      final storage = context.read<SecureStorageService>();
-
-      await storage.savePin(_firstPin);
-      await storage.setLoggedIn(true);
-
-      if (!mounted) return;
-
-      await showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const BiometricDialog(),
-      );
-
-      if (!mounted) return;
-
-      await Future.delayed(const Duration(milliseconds: 150));
-
-      if (!mounted) return;
-      final role = await storage.getUserRole();
-
-      if (!mounted) return;
-
-      FocusManager.instance.primaryFocus?.unfocus();
-
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder:
-              (_) => MainWrapper(
-                child:
-                    role == UserRole.supportDriver.toString()
-                        ? const SupportDriverDashboard()
-                        : const MainDriverDashboard(),
-              ),
-        ),
-        (route) => false,
-      );
-    } else {
-      if (mounted) {
-        _pinController.clear();
-
-        setState(() {
-          _firstPin = '';
-          _currentInput = '';
-          _isConfirm = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("PIN mismatch. Please try again.")),
-        );
+        if (_firstPin == _currentInput) {
+          // Trigger BLoC event
+          context.read<AuthBloc>().add(PinCreated(_currentInput));
+        } else {
+          _pinController.clear();
+          setState(() {
+            _firstPin = '';
+            _currentInput = '';
+            _isConfirm = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("PIN mismatch. Please try again.")),
+          );
+        }
       }
     }
   }
@@ -129,67 +75,84 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(_isConfirm ? "Confirm PIN" : "Create PIN")),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) async {
+        if (state is AuthAuthenticated) {
+          // Show biometric dialog before going home (Optional but kept as per existing flow)
+          await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => const BiometricDialog(),
+          );
 
-              Text(
-                _isConfirm ? "Re-enter your PIN" : "Set a 4-digit PIN",
-                style: textTheme.titleLarge,
-              ),
-
-              const SizedBox(height: 30),
-
-              PinCodeTextField(
-                key: ValueKey(_isConfirm),
-                controller: _pinController,
-                appContext: context,
-                length: 4,
-                autoDisposeControllers: false,
-                keyboardType: TextInputType.number,
-                obscureText: true,
-                autoFocus: false,
-                animationType: AnimationType.fade,
-                beforeTextPaste: (text) => false,
-                onChanged: _onChanged,
-                pinTheme: PinTheme(
-                  shape: PinCodeFieldShape.box,
-                  borderRadius: BorderRadius.circular(12),
-                  fieldHeight: 65,
-                  fieldWidth: 65,
-                  inactiveColor: colorScheme.outlineVariant,
-                  selectedColor: colorScheme.primary,
-                  activeColor: colorScheme.primary,
-                  activeFillColor: colorScheme.surface,
-                  inactiveFillColor: colorScheme.surface,
-                  selectedFillColor: colorScheme.surface,
+          if (!mounted) return;
+          
+          if (state.role == "main_driver") {
+            Navigator.pushNamedAndRemoveUntil(context, '/driver_home', (route) => false);
+          } else {
+            Navigator.pushNamedAndRemoveUntil(context, '/support_driver_dashboard', (route) => false);
+          }
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: Text(_isConfirm ? "Confirm PIN" : "Create PIN")),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                Text(
+                  _isConfirm ? "Re-enter your PIN" : "Set a 4-digit PIN",
+                  style: textTheme.titleLarge,
                 ),
-                backgroundColor: Colors.transparent,
-                cursorColor: colorScheme.primary,
-                enableActiveFill: true,
-                textStyle: textTheme.titleLarge,
-              ),
-
-              const Spacer(),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _currentInput.length == 4 ? _onSubmit : null,
-                  child: Text(
-                    _isConfirm ? "Confirm PIN" : "Continue",
+                const SizedBox(height: 30),
+                PinCodeTextField(
+                  key: ValueKey(_isConfirm),
+                  controller: _pinController,
+                  appContext: context,
+                  length: 4,
+                  autoDisposeControllers: false,
+                  keyboardType: TextInputType.number,
+                  obscureText: true,
+                  animationType: AnimationType.fade,
+                  onChanged: _onChanged,
+                  pinTheme: PinTheme(
+                    shape: PinCodeFieldShape.box,
+                    borderRadius: BorderRadius.circular(12),
+                    fieldHeight: 65,
+                    fieldWidth: 65,
+                    inactiveColor: colorScheme.outlineVariant,
+                    selectedColor: colorScheme.primary,
+                    activeColor: colorScheme.primary,
+                    activeFillColor: colorScheme.surface,
+                    inactiveFillColor: colorScheme.surface,
+                    selectedFillColor: colorScheme.surface,
+                  ),
+                  backgroundColor: Colors.transparent,
+                  cursorColor: colorScheme.primary,
+                  enableActiveFill: true,
+                  textStyle: textTheme.titleLarge,
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  child: BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, state) {
+                      final bool isLoading = state is AuthLoading;
+                      return ElevatedButton(
+                        onPressed: (_currentInput.length == 4 && !isLoading) ? _onSubmit : null,
+                        child: isLoading 
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : Text(_isConfirm ? "Confirm PIN" : "Continue"),
+                      );
+                    },
                   ),
                 ),
-              ),
-
-              const SizedBox(height: 20),
-            ],
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

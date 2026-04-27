@@ -7,7 +7,7 @@ import '../widgets/transport_bottom_ui_widget.dart';
 import 'in_trip_screen.dart';
 
 class PickupReachedScreen extends StatelessWidget {
-  const PickupReachedScreen({Key? key}) : super(key: key);
+  const PickupReachedScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

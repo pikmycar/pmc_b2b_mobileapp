@@ -4,12 +4,14 @@ class TransportHeaderWidget extends StatelessWidget {
   final String title;
   final String? subtitle;
   final VoidCallback onBackTap;
+  final bool showBackButton;
 
   const TransportHeaderWidget({
     super.key,
     required this.title,
     this.subtitle,
     required this.onBackTap,
+    this.showBackButton = true,
   });
 
   @override
@@ -32,14 +34,15 @@ class TransportHeaderWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            backgroundColor: colorScheme.surface,
-            child: IconButton(
-              icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
-              onPressed: onBackTap,
+          if (showBackButton)
+            CircleAvatar(
+              backgroundColor: colorScheme.surface,
+              child: IconButton(
+                icon: Icon(Icons.arrow_back, color: colorScheme.onSurface),
+                onPressed: onBackTap,
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
+          if (showBackButton) const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

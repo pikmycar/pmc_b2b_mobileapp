@@ -4,7 +4,7 @@ import 'package:pikmycar/core/services/biometric_service.dart';
 import '../../../core/storage/secure_storage_service.dart';
 
 class BiometricDialog extends StatelessWidget {
-  const BiometricDialog({Key? key}) : super(key: key);
+  const BiometricDialog({super.key});
 
   @override
   Widget build(BuildContext context) {

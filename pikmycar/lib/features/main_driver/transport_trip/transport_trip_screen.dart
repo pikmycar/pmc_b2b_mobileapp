@@ -15,7 +15,7 @@ import 'widgets/transport_metrics_widget.dart';
 import 'widgets/transport_bottom_ui_widget.dart';
 
 class MainDriverTransportScreen extends StatefulWidget {
-  const MainDriverTransportScreen({Key? key}) : super(key: key);
+  const MainDriverTransportScreen({super.key});
 
   @override
   State<MainDriverTransportScreen> createState() => _MainDriverTransportScreenState();
@@ -26,6 +26,35 @@ class _MainDriverTransportScreenState extends State<MainDriverTransportScreen> {
   final Set<Marker> _markers = {};
   final Set<Polyline> _polylines = {};
   bool _isRequestSheetShown = false;
+
+  Future<bool> _onBackPressed(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text("Cancel Trip?"),
+        content: const Text("Are you sure you want to cancel this trip?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("No"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Yes"),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      if (!mounted) return true;
+      // Optional: Call cancel API here
+      Navigator.pushNamedAndRemoveUntil(context, '/driver_home', (route) => false);
+      return true;
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,57 +79,75 @@ class _MainDriverTransportScreenState extends State<MainDriverTransportScreen> {
       },
       builder: (context, state) {
         final trip = state.activeTrip;
+        final bool isTripActive = state.status != TripStatus.searching && state.status != TripStatus.requestReceived;
 
-        return Scaffold(
-          body: Stack(
-            children: [
-              // Google Map
-              TransportMapWidget(
-                markers: _markers,
-                polylines: _polylines,
-                initialPosition: _getInitialPosition(state),
-                onMapCreated: (controller) => _mapController = controller,
-              ),
-
-              // Header Overlay
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: TransportHeaderWidget(
-                  title: _getTitle(state.status),
-                  subtitle: state.status == TripStatus.searching ? "Online & Ready" : null,
-                  onBackTap: () => Navigator.pop(context),
+        return PopScope(
+          canPop: !isTripActive,
+          onPopInvokedWithResult: (didPop, result) async {
+            if (didPop) return;
+            final shouldPop = await _onBackPressed(context);
+            if (shouldPop && context.mounted) {
+              // Navigation handled inside _onBackPressed
+            }
+          },
+          child: Scaffold(
+            body: Stack(
+              children: [
+                // Google Map
+                TransportMapWidget(
+                  markers: _markers,
+                  polylines: _polylines,
+                  initialPosition: _getInitialPosition(state),
+                  onMapCreated: (controller) => _mapController = controller,
                 ),
-              ),
 
-              // Metrics Overlay (Floating)
-              if (state.status == TripStatus.navigatingToPickup || state.status == TripStatus.inTrip)
-                const Positioned(
-                  top: 120,
-                  left: 16,
-                  right: 16,
-                  child: TransportMetricsWidget(
-                    distance: "2.1 km",
-                    eta: "6 mins",
-                    speed: "58 km/h",
+                // Header Overlay
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: TransportHeaderWidget(
+                    title: _getTitle(state.status),
+                    subtitle: state.status == TripStatus.searching ? "Online & Ready" : null,
+                    showBackButton: !isTripActive,
+                    onBackTap: () async {
+                      if (isTripActive) {
+                        await _onBackPressed(context);
+                      } else {
+                        Navigator.pop(context);
+                      }
+                    },
                   ),
                 ),
 
-              // Bottom UI
-              if (state.status != TripStatus.requestReceived && trip != null)
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: TransportBottomUIWidget(
-                    driverName: _getCurrentTarget(trip).name,
-                    driverPhoto: _getCurrentTarget(trip).photo ?? "",
-                    locationLabel: state.status == TripStatus.inTrip ? "Dropping at" : "Pickup from",
-                    locationAddress: state.status == TripStatus.inTrip ? _getCurrentTarget(trip).dropLocation : _getCurrentTarget(trip).pickupLocation,
-                    buttonText: _getActionText(state.status),
-                    onActionPressed: () => _handleMainAction(context, state, _getCurrentTarget(trip)),
+                // Metrics Overlay (Floating)
+                if (state.status == TripStatus.navigatingToPickup || state.status == TripStatus.inTrip)
+                  const Positioned(
+                    top: 120,
+                    left: 16,
+                    right: 16,
+                    child: TransportMetricsWidget(
+                      distance: "2.1 km",
+                      eta: "6 mins",
+                      speed: "58 km/h",
+                    ),
                   ),
-                ),
-            ],
+
+                // Bottom UI
+                if (state.status != TripStatus.requestReceived && trip != null)
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: TransportBottomUIWidget(
+                      driverName: _getCurrentTarget(trip).name,
+                      driverPhoto: _getCurrentTarget(trip).photo ?? "",
+                      locationLabel: state.status == TripStatus.inTrip ? "Dropping at" : "Pickup from",
+                      locationAddress: state.status == TripStatus.inTrip ? _getCurrentTarget(trip).dropLocation : _getCurrentTarget(trip).pickupLocation,
+                      buttonText: _getActionText(state.status),
+                      onActionPressed: () => _handleMainAction(context, state, _getCurrentTarget(trip)),
+                    ),
+                  ),
+              ],
+            ),
           ),
         );
       },
@@ -233,12 +280,14 @@ class _MainDriverTransportScreenState extends State<MainDriverTransportScreen> {
       );
     }
 
-    setState(() {
-      _markers.clear();
-      _markers.addAll(newMarkers);
-      _polylines.clear();
-      _polylines.addAll(newPolylines);
-    });
+    if (mounted) {
+      setState(() {
+        _markers.clear();
+        _markers.addAll(newMarkers);
+        _polylines.clear();
+        _polylines.addAll(newPolylines);
+      });
+    }
 
     // Zoom to fit bounds
     if (_mapController != null && newMarkers.isNotEmpty) {

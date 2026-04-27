@@ -7,7 +7,7 @@ import '../widgets/transport_bottom_ui_widget.dart';
 import 'pickup_reached_screen.dart';
 
 class NavigateToPickupScreen extends StatelessWidget {
-  const NavigateToPickupScreen({Key? key}) : super(key: key);
+  const NavigateToPickupScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

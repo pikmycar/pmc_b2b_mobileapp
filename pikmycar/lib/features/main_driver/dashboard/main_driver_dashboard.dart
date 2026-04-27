@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
-import '../../../core/theme/app_theme.dart';
 import '../transport_trip/bloc/trip_bloc.dart';
 import '../transport_trip/bloc/trip_event.dart';
 import '../transport_trip/bloc/trip_state.dart';
 import '../../../core/models/trip_models.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../common/widgets/app_drawer.dart';
 import '../../../app/main_wrapper.dart';
 import '../../common/widgets/modern_home_dashboard.dart';
 import '../../common/widgets/custom_top_header_bar.dart';
 import '../../common/widgets/offline_screen_body.dart';
-import 'dart:async';
 
 class MainDriverDashboard extends StatefulWidget {
   const MainDriverDashboard({super.key});

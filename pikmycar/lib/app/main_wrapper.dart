@@ -9,7 +9,7 @@ import '../features/common/screens/profile_screen.dart';
 class MainWrapper extends StatefulWidget {
   final Widget child;
   
-  const MainWrapper({Key? key, required this.child}) : super(key: key);
+  const MainWrapper({super.key, required this.child});
 
   // static access to toggle bottom bar visibility for demo purposes
   static final ValueNotifier<bool> isOnlineNotifier = ValueNotifier<bool>(true);

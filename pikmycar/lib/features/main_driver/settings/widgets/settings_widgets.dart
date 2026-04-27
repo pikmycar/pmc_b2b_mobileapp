@@ -9,14 +9,14 @@ class SettingsItem extends StatelessWidget {
   final Color? iconColor;
 
   const SettingsItem({
-    Key? key,
+    super.key,
     required this.icon,
     required this.title,
     this.subtitle,
     required this.onTap,
     this.trailing,
     this.iconColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +42,7 @@ class SettingsItem extends StatelessWidget {
 
 class SettingsHeader extends StatelessWidget {
   final String title;
-  const SettingsHeader({Key? key, required this.title}) : super(key: key);
+  const SettingsHeader({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {

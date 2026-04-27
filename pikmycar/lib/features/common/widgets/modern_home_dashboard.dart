@@ -4,7 +4,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 
-import '../../../core/theme/app_theme.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import '../../../core/models/user_role.dart';
 import 'custom_top_header_bar.dart';
@@ -108,7 +107,7 @@ Future<void> _loadRole() async {
   final roleStr = await storage.getUserRole();
 
   setState(() {
-    _role = roleStr == UserRole.supportDriver.toString()
+    _role = (roleStr == "support_driver" || roleStr == UserRole.supportDriver.toString())
         ? UserRole.supportDriver
         : UserRole.mainDriver;
 

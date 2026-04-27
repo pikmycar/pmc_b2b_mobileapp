@@ -8,12 +8,12 @@ class TransportMapWidget extends StatelessWidget {
   final Function(GoogleMapController) onMapCreated;
 
   const TransportMapWidget({
-    Key? key,
+    super.key,
     required this.markers,
     required this.polylines,
     required this.initialPosition,
     required this.onMapCreated,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

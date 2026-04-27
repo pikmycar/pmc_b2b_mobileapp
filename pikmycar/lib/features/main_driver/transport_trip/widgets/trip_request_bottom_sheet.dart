@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_theme.dart';
 
 class TripRequestBottomSheet extends StatefulWidget {
   final String customerName;

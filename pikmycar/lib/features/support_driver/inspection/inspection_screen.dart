@@ -45,6 +45,34 @@ class _SupportDriverInspectionScreenState
 
   int get _photosCount => _capturedPhotos.values.where((f) => f != null).length;
 
+  Future<bool> _onBackPressed(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text("Cancel Trip?"),
+        content: const Text("Are you sure you want to cancel this trip?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("No"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Yes"),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      if (!mounted) return true;
+      Navigator.pushNamedAndRemoveUntil(context, '/support_driver_dashboard', (route) => false);
+      return true;
+    }
+    return false;
+  }
+
   void _nextPage() {
     if (_currentStep < 2) {
       _pageController.nextPage(
@@ -57,14 +85,14 @@ class _SupportDriverInspectionScreenState
     }
   }
 
-  void _previousPage() {
+  void _previousPage() async {
     if (_currentStep > 0) {
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     } else {
-      Navigator.pop(context);
+      await _onBackPressed(context);
     }
   }
 
@@ -93,7 +121,7 @@ class _SupportDriverInspectionScreenState
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
+      onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
         _previousPage();
       },
@@ -337,7 +365,7 @@ class _SupportDriverInspectionScreenState
         secondary: Icon(icon, color: colorScheme.onSurface.withOpacity(0.3)),
         title: Text(label, style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700)),
         value: value,
-        activeColor: AppColors.success,
+        activeThumbColor: AppColors.success,
         onChanged: onChanged,
       ),
     );

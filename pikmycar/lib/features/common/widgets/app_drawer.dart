@@ -45,9 +45,9 @@ class AppDrawer extends StatelessWidget {
                     builder: (context, snapshot) {
                       final roleStr = snapshot.data;
                       String roleDisplay = 'Driver';
-                      if (roleStr == UserRole.mainDriver.toString()) {
+                      if (roleStr == "main_driver" || roleStr == UserRole.mainDriver.toString()) {
                         roleDisplay = 'Main Driver';
-                      } else if (roleStr == UserRole.supportDriver.toString()) {
+                      } else if (roleStr == "support_driver" || roleStr == UserRole.supportDriver.toString()) {
                         roleDisplay = 'Support Driver';
                       }
 

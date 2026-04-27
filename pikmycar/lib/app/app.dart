@@ -4,9 +4,16 @@ import '../core/theme/app_theme.dart';
 import '../core/theme/theme_cubit.dart';
 import '../core/services/theme_service.dart';
 import '../core/services/trip_storage_service.dart';
-import '../features/auth/bloc/auth_bloc.dart';
-import '../features/auth/repository/auth_repository.dart';
+import '../features/auth/data/repository/auth_repository.dart';
+import '../features/auth/data/datasource/auth_api.dart';
+import '../core/network/api_client.dart';
 import '../core/storage/secure_storage_service.dart';
+import '../features/auth/bloc/auth_bloc.dart';
+import '../features/auth/bloc/auth_event.dart';
+import '../core/theme/app_theme.dart';
+import '../core/theme/theme_cubit.dart';
+import '../core/services/theme_service.dart';
+import '../core/services/trip_storage_service.dart';
 import '../core/services/biometric_service.dart';
 import 'router.dart';
 import '../features/main_driver/transport_trip/bloc/trip_bloc.dart';
@@ -14,14 +21,16 @@ import '../features/main_driver/settings/bloc/settings_bloc.dart';
 import '../features/main_driver/settings/bloc/settings_event.dart';
 
 class PikMyCarApp extends StatelessWidget {
-  const PikMyCarApp({Key? key}) : super(key: key);
+  const PikMyCarApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
-        RepositoryProvider(create: (_) => AuthRepository()),
         RepositoryProvider(create: (_) => SecureStorageService()),
+        RepositoryProvider(create: (context) => ApiClient(context.read<SecureStorageService>())),
+        RepositoryProvider(create: (context) => AuthApi(context.read<ApiClient>())),
+        RepositoryProvider(create: (context) => AuthRepository(context.read<AuthApi>())),
         RepositoryProvider(create: (_) => BiometricService()),
         RepositoryProvider(create: (_) => ThemeService()),
         RepositoryProvider(create: (_) => TripStorageService()),
@@ -31,9 +40,8 @@ class PikMyCarApp extends StatelessWidget {
           BlocProvider(
             create: (context) => AuthBloc(
               authRepository: context.read<AuthRepository>(),
-              storageService: context.read<SecureStorageService>(),
-              biometricService: context.read<BiometricService>(),
-            ),
+              storage: context.read<SecureStorageService>(),
+            )..add(AppStarted()),
           ),
           BlocProvider(
             create: (context) => ThemeCubit(context.read<ThemeService>()),

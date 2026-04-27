@@ -40,67 +40,103 @@ class _HandoverScreenState extends State<HandoverScreen> {
     super.dispose();
   }
 
+  Future<bool> _onBackPressed(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text("Cancel Trip?"),
+        content: const Text("Are you sure you want to cancel this trip?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("No"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Yes"),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      if (!mounted) return true;
+      Navigator.pushNamedAndRemoveUntil(context, '/support_driver_dashboard', (route) => false);
+      return true;
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: colorScheme.primary,
-        iconTheme: IconThemeData(color: colorScheme.onPrimary),
-        title: Text(
-          'Handover',
-          style: textTheme.titleLarge?.copyWith(
-            color: colorScheme.onPrimary,
-            fontWeight: FontWeight.w900,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await _onBackPressed(context);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: colorScheme.primary,
+          iconTheme: IconThemeData(color: colorScheme.onPrimary),
+          title: Text(
+            'Handover',
+            style: textTheme.titleLarge?.copyWith(
+              color: colorScheme.onPrimary,
+              fontWeight: FontWeight.w900,
+            ),
           ),
+          centerTitle: true,
+          elevation: 0,
         ),
-        centerTitle: true,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32),
-        child: Column(
-          children: [
-            // Customer Confirmation Card
-            _buildCustomerCard(context),
-            const SizedBox(height: 24),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32),
+          child: Column(
+            children: [
+              // Customer Confirmation Card
+              _buildCustomerCard(context),
+              const SizedBox(height: 24),
 
-            // Signature Card
-            _buildSignatureCard(context),
-            const SizedBox(height: 32),
+              // Signature Card
+              _buildSignatureCard(context),
+              const SizedBox(height: 32),
 
-            // Confirm Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _canConfirm
-                    ? () {
-                        Navigator.pushReplacementNamed(
-                          context,
-                          '/support_driver_drive_to_garage',
-                        );
-                      }
-                    : null,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.check, size: 24),
-                    SizedBox(width: 12),
-                    Text("Confirm & Start Drive to Garage"),
-                  ],
+              // Confirm Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _canConfirm
+                      ? () {
+                          Navigator.pushReplacementNamed(
+                            context,
+                            '/support_driver_drive_to_garage',
+                          );
+                        }
+                      : null,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.check, size: 24),
+                      SizedBox(width: 12),
+                      Text("Confirm & Start Drive to Garage"),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              "By confirming you acknowledge the car condition report",
-              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
-              textAlign: TextAlign.center,
-            ),
-          ],
+              const SizedBox(height: 12),
+              Text(
+                "By confirming you acknowledge the car condition report",
+                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -216,7 +252,7 @@ class _HandoverScreenState extends State<HandoverScreen> {
           style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         value: value,
-        activeColor: AppColors.success,
+        activeThumbColor: AppColors.success,
         onChanged: onChanged,
         dense: true,
       ),

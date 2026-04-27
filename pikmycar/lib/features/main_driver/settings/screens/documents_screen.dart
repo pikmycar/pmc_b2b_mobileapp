@@ -5,7 +5,7 @@ import '../bloc/settings_state.dart';
 import '../models/settings_models.dart';
 
 class DocumentsScreen extends StatelessWidget {
-  const DocumentsScreen({Key? key}) : super(key: key);
+  const DocumentsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

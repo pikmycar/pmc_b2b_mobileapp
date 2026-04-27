@@ -32,6 +32,34 @@ class _GarageHandoverScreenState extends State<GarageHandoverScreen> {
     super.dispose();
   }
 
+  Future<bool> _onBackPressed(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text("Cancel Trip?"),
+        content: const Text("Are you sure you want to cancel this trip?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("No"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Yes"),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      if (!mounted) return true;
+      Navigator.pushNamedAndRemoveUntil(context, '/support_driver_dashboard', (route) => false);
+      return true;
+    }
+    return false;
+  }
+
   void _submitHandover() {
     // Capture the dispatcher and context-dependent data before navigation
     final messenger = ScaffoldMessenger.of(context);
@@ -56,88 +84,96 @@ class _GarageHandoverScreenState extends State<GarageHandoverScreen> {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: colorScheme.primary,
-        iconTheme: IconThemeData(color: colorScheme.onPrimary),
-        title: Text(
-          'Garage Handover',
-          style: textTheme.titleLarge?.copyWith(
-            color: colorScheme.onPrimary, 
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        centerTitle: true,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          _buildTopProgressBar(context),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Card 1: Arrival Confirmation
-                  _buildArrivalCard(context),
-                  const SizedBox(height: 24),
-
-                  // Card 2: Handover Checklist
-                  _buildChecklistCard(context),
-                  const SizedBox(height: 24),
-
-                  // Form Section: Tech & Notes
-                  Text(
-                    "TECHNICIAN DETAILS", 
-                    style: textTheme.labelSmall?.copyWith(
-                      fontWeight: FontWeight.w900, 
-                      color: colorScheme.onSurface.withOpacity(0.5), 
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildTextField(context, _techNameController, "Technician Name (Optional)", Icons.person_outline),
-                  
-                  const SizedBox(height: 24),
-                  Text(
-                    "ADDITIONAL NOTES", 
-                    style: textTheme.labelSmall?.copyWith(
-                      fontWeight: FontWeight.w900, 
-                      color: colorScheme.onSurface.withOpacity(0.5), 
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildTextField(context, _notesController, "Special instructions or parking details...", Icons.notes, isMultiline: true),
-                  
-                  const SizedBox(height: 40),
-
-                  // Final Action Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _canSubmit ? _submitHandover : null,
-                      child: const Text("Close Ride & Submit"),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  if (!_canSubmit)
-                    Center(
-                      child: Text(
-                        "Please complete the checklist to proceed",
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.error.withOpacity(0.7),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  const SizedBox(height: 24),
-                ],
-              ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await _onBackPressed(context);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: colorScheme.primary,
+          iconTheme: IconThemeData(color: colorScheme.onPrimary),
+          title: Text(
+            'Garage Handover',
+            style: textTheme.titleLarge?.copyWith(
+              color: colorScheme.onPrimary, 
+              fontWeight: FontWeight.w900,
             ),
           ),
-        ],
+          centerTitle: true,
+          elevation: 0,
+        ),
+        body: Column(
+          children: [
+            _buildTopProgressBar(context),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Card 1: Arrival Confirmation
+                    _buildArrivalCard(context),
+                    const SizedBox(height: 24),
+
+                    // Card 2: Handover Checklist
+                    _buildChecklistCard(context),
+                    const SizedBox(height: 24),
+
+                    // Form Section: Tech & Notes
+                    Text(
+                      "TECHNICIAN DETAILS", 
+                      style: textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w900, 
+                        color: colorScheme.onSurface.withOpacity(0.5), 
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextField(context, _techNameController, "Technician Name (Optional)", Icons.person_outline),
+                    
+                    const SizedBox(height: 24),
+                    Text(
+                      "ADDITIONAL NOTES", 
+                      style: textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w900, 
+                        color: colorScheme.onSurface.withOpacity(0.5), 
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextField(context, _notesController, "Special instructions or parking details...", Icons.notes, isMultiline: true),
+                    
+                    const SizedBox(height: 40),
+
+                    // Final Action Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _canSubmit ? _submitHandover : null,
+                        child: const Text("Close Ride & Submit"),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (!_canSubmit)
+                      Center(
+                        child: Text(
+                          "Please complete the checklist to proceed",
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.error.withOpacity(0.7),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -279,7 +315,7 @@ class _GarageHandoverScreenState extends State<GarageHandoverScreen> {
           ],
         ),
         value: value,
-        activeColor: colorScheme.secondary,
+        activeThumbColor: colorScheme.secondary,
         onChanged: onChanged,
         dense: true,
       ),

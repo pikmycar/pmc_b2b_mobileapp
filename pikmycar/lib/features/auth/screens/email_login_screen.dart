@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'timer_text.dart';
 import 'thank_you_screen.dart';
-import '../../../core/theme/app_theme.dart';
 
 class EmailLoginScreen extends StatefulWidget {
   final String email;
@@ -178,24 +176,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                       ),
                     ),
                   ),
-                  if (!_showResendButton)
-                    TimerText(
-                      durationSeconds: 55,
-                      onTimerComplete: () {
-                        if (!mounted) return;
-                        setState(() {
-                          _showResendButton = true;
-                        });
-                      },
-                    )
-                  else
-                    Text(
-                      "00 : 00",
-                      style: textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: colorScheme.onSurface.withOpacity(0.5),
-                      ),
-                    ),
+                 
                 ],
               ),
 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_theme.dart';
 import '../screens/rate_experience_screen.dart';
 
 class TripHistoryScreen extends StatefulWidget {

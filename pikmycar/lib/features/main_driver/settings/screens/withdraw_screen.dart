@@ -5,7 +5,7 @@ import '../bloc/settings_event.dart';
 import '../bloc/settings_state.dart';
 
 class WithdrawScreen extends StatefulWidget {
-  const WithdrawScreen({Key? key}) : super(key: key);
+  const WithdrawScreen({super.key});
 
   @override
   State<WithdrawScreen> createState() => _WithdrawScreenState();

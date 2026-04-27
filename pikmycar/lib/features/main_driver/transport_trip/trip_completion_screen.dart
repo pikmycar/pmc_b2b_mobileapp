@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/trip_bloc.dart';
 import 'bloc/trip_event.dart';
 import 'bloc/trip_state.dart';
-import '../../../core/theme/app_theme.dart';
 
 class TripCompletionScreen extends StatelessWidget {
   const TripCompletionScreen({super.key});

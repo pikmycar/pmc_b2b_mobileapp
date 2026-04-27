@@ -8,11 +8,11 @@ class RoleBasedPopup extends StatelessWidget {
   final VoidCallback onDecline;
 
   const RoleBasedPopup({
-    Key? key,
+    super.key,
     required this.request,
     required this.onAccept,
     required this.onDecline,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

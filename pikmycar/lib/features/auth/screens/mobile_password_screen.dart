@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/storage/secure_storage_service.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
-import 'otp_verification_screen.dart';
-import '../../../core/theme/app_theme.dart';
 
 class MobilePasswordScreen extends StatefulWidget {
   final String mobile;
@@ -24,21 +21,11 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen> {
 
   void _onLogin() {
     context.read<AuthBloc>().add(
-          LoginRequested(
-            username: widget.mobile,
+          LoginEvent(
+            mobile: widget.mobile,
             password: _passwordController.text,
           ),
         );
-  }
-
-  void _onLoginWithOtpInstead() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-          builder: (context) => OtpVerificationScreen(
-                email: "+91 ${widget.mobile}",
-              )),
-    );
   }
 
   @override
@@ -48,26 +35,15 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen> {
     final textTheme = theme.textTheme;
 
     return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) async {
-        if (state is AuthOtpRequired) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => OtpVerificationScreen(
-                email: "+91 ${widget.mobile}",
-              ),
-            ),
-          );
-        } else if (state is AuthAuthenticated) {
-          final storage = context.read<SecureStorageService>();
-          final pin = await storage.getPin();
-          if (!mounted) return;
-
-          if (pin == null) {
-            Navigator.pushReplacementNamed(context, '/create_pin');
-          } else {
-            Navigator.pushReplacementNamed(context, '/pin_login');
+      listener: (context, state) {
+        if (state is AuthAuthenticated) {
+          if (state.role == "main_driver") {
+            Navigator.pushNamedAndRemoveUntil(context, '/driver_home', (route) => false);
+          } else if (state.role == "support_driver") {
+            Navigator.pushNamedAndRemoveUntil(context, '/support_driver_dashboard', (route) => false);
           }
+        } else if (state is AuthPinRequired) {
+          Navigator.pushNamedAndRemoveUntil(context, '/create_pin', (route) => false);
         } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -97,7 +73,7 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  "An OTP has been sent to",
+                  "Enter your password to continue login",
                   style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
                 ),
                 const SizedBox(height: 8),
@@ -117,24 +93,18 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen> {
                 ),
                 const SizedBox(height: 8),
 
-                // Forgot Password & Login with OTP row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton(
-                      onPressed: _onLoginWithOtpInstead,
-                      child: const Text("Login with OTP instead"),
-                    ),
-                    TextButton(
-                      onPressed: () {},
-                      child: Text(
-                        "Forgot Password?",
-                        style: textTheme.labelLarge?.copyWith(
-                          color: colorScheme.onSurface.withOpacity(0.5),
-                        ),
+                // Forgot Password row
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {},
+                    child: Text(
+                      "Forgot Password?",
+                      style: textTheme.labelLarge?.copyWith(
+                        color: colorScheme.onSurface.withOpacity(0.5),
                       ),
                     ),
-                  ],
+                  ),
                 ),
 
                 const SizedBox(height: 48),

@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import '../../../../core/models/trip_models.dart';
 
 abstract class TripEvent extends Equatable {
   const TripEvent();
