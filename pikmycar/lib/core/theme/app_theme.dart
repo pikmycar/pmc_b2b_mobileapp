@@ -5,10 +5,10 @@ class AppColors {
   AppColors._();
 
   // Primary Palette
-  static const Color primary = Color(0xFF6366F1);
-  static const Color primaryDark = Color(0xFF4F46E5);
+  static const Color primary = Color(0xFFF9C900); // Rapido Yellow
+  static const Color primaryDark = Color(0xFFF5B300);
   static const Color secondary = Color(0xFF10B981);
-  static const Color accent = Color(0xFFF59E0B);
+  static const Color accent = Color(0xFF1E293B);
   
   // Neutral Palette - Light
   static const Color bgLight = Color(0xFFF8FAFC);
@@ -52,8 +52,8 @@ class AppColors {
   static const Color primaryBlue = Color(0xFF3B82F6);
   static const Color surface = Colors.white;
   
-  static const Color splashGradientStart = Color(0xFF6366F1);
-  static const Color splashGradientEnd = Color(0xFF4F46E5);
+  static const Color splashGradientStart = Color(0xFFF9C900);
+  static const Color splashGradientEnd = Color(0xFFF5B300);
   
   static const Color infoLight = Color(0xFFDBEAFE);
   static const Color errorLight = Color(0xFFFEE2E2);
@@ -89,7 +89,7 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.bgLight,
       colorScheme: const ColorScheme.light(
         primary: AppColors.primary,
-        onPrimary: Colors.white,
+        onPrimary: Colors.black,
         secondary: AppColors.secondary,
         onSecondary: Colors.white,
         surface: AppColors.surfaceLight,
@@ -129,7 +129,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: Colors.black,
           minimumSize: const Size.fromHeight(56),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_radiusLarge)),
           elevation: 0,
@@ -203,7 +203,7 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.bgDark,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primary,
-        onPrimary: Colors.white,
+        onPrimary: Colors.black,
         secondary: AppColors.secondary,
         onSecondary: Colors.white,
         surface: AppColors.surfaceDark,
@@ -243,7 +243,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: Colors.black,
           minimumSize: const Size.fromHeight(56),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_radiusLarge)),
           elevation: 0,

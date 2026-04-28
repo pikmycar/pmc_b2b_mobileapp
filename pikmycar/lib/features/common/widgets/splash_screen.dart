@@ -34,10 +34,10 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _scaleAnim = Tween<double>(
-      begin: 0.92,
+      begin: 0.4,
       end: 1.0,
     ).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
     );
 
     _controller.forward();
@@ -97,15 +97,8 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.splashGradientStart,
-              AppColors.splashGradientEnd,
-            ],
-          ),
+        decoration: const BoxDecoration(
+          color: Colors.white,
         ),
         child: Stack(
           children: [
@@ -122,40 +115,35 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
 
-            // 🚗 Logo animation
+            // 🚗 Logo animation & Text
             Center(
               child: FadeTransition(
                 opacity: _fadeAnim,
                 child: ScaleTransition(
                   scale: _scaleAnim,
-                  child: Image.asset(
-                    'assets/Png/SplashLogo.png',
-                    height: 160,
-                    errorBuilder: (_, __, ___) => const Icon(
-                      Icons.local_taxi,
-                      size: 100,
-                      color: Color(0xFFFFCA20),
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
+                        'assets/Png/SplashLogo.png',
+                        height: 240, // Increased logo size
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.local_taxi,
+                          size: 100,
+                          color: Color(0xFFFFCA20),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        "Made In Dubai 🇦🇪",
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ),
-            ),
-
-            // 📍 Footer
-            Positioned(
-              bottom: 40,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Image.asset(
-                  'assets/Png/Bottomimage.png',
-                  height: 24,
-                  errorBuilder: (_, __, ___) {
-                    return const Text(
-                      "Made In Dubai 🇦🇪",
-                      style: TextStyle(color: Colors.white),
-                    );
-                  },
                 ),
               ),
             ),
