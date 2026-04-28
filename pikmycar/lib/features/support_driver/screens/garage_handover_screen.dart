@@ -315,7 +315,7 @@ class _GarageHandoverScreenState extends State<GarageHandoverScreen> {
           ],
         ),
         value: value,
-        activeThumbColor: colorScheme.secondary,
+        activeColor: colorScheme.secondary,
         onChanged: onChanged,
         dense: true,
       ),

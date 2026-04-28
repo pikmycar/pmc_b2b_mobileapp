@@ -37,8 +37,10 @@ class AuthApi {
 
         print("🔴 STATUS CODE: ${e.response?.statusCode}");
         print("🔴 RESPONSE DATA: $data");
-
-        if (data is Map) {
+        final statusCode = e.response?.statusCode;
+        if (statusCode != null && statusCode >= 500) {
+          message = "Server error ($statusCode). Please try again later.";
+        } else if (data is Map) {
           if (data["message"] != null) {
             message = data["message"].toString();
           } else if (data["error"] != null) {
@@ -56,7 +58,12 @@ class AuthApi {
             }
           }
         } else {
-          message = data.toString();
+          String rawResponse = data?.toString() ?? "";
+          if (rawResponse.contains("<html") || rawResponse.contains("<!DOCTYPE")) {
+            message = "Server returned an invalid response. Please try again later.";
+          } else {
+            message = rawResponse.isNotEmpty ? rawResponse : "Network error ($statusCode)";
+          }
         }
       } else {
         print("🔴 DIO ERROR: ${e.message}");
@@ -99,11 +106,18 @@ class AuthApi {
 
         print("🔴 STATUS CODE: ${e.response?.statusCode}");
         print("🔴 RESPONSE DATA: $data");
-
-        if (data is Map && data["message"] != null) {
+        final statusCode = e.response?.statusCode;
+        if (statusCode != null && statusCode >= 500) {
+          message = "Server error ($statusCode). Please try again later.";
+        } else if (data is Map && data["message"] != null) {
           message = data["message"].toString();
         } else {
-          message = data.toString();
+          String rawResponse = data?.toString() ?? "";
+          if (rawResponse.contains("<html") || rawResponse.contains("<!DOCTYPE")) {
+            message = "Server returned an invalid response. Please try again later.";
+          } else {
+            message = rawResponse.isNotEmpty ? rawResponse : "Network error ($statusCode)";
+          }
         }
       } else {
         print("🔴 DIO ERROR: ${e.message}");

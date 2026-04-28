@@ -28,7 +28,7 @@ import '../features/main_driver/transport_trip/screens/navigate_to_pickup_screen
 import '../features/main_driver/transport_trip/screens/pickup_reached_screen.dart';
 import '../features/main_driver/transport_trip/screens/in_trip_screen.dart';
 import '../features/main_driver/settings/screens/settings_screen.dart';
-import '../features/main_driver/settings/screens/profile_screen.dart';
+import '../features/main_driver/settings/screens/profile_details_screen.dart';
 import '../features/main_driver/settings/screens/documents_screen.dart';
 import '../features/main_driver/settings/screens/bank_screen.dart';
 import '../features/main_driver/settings/screens/withdraw_screen.dart';

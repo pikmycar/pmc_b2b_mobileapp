@@ -252,7 +252,7 @@ class _HandoverScreenState extends State<HandoverScreen> {
           style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         value: value,
-        activeThumbColor: AppColors.success,
+        activeColor: AppColors.success,
         onChanged: onChanged,
         dense: true,
       ),

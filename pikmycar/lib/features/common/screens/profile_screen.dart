@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/storage/secure_storage_service.dart';
+import '../../../core/network/api_client.dart';
 import '../../auth/screens/login_screen.dart';
+import '../../auth/bloc/commonScreen/profile/get_profile_bloc.dart';
+import '../../auth/bloc/commonScreen/profile/get_profile_event.dart';
+import '../../auth/bloc/commonScreen/profile/get_profile_state.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -11,26 +16,37 @@ class ProfileScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      backgroundColor: colorScheme.primary, // Themed header background
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildProfileHeader(context),
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.only(top: 12),
-                decoration: BoxDecoration(
-                  color: theme.scaffoldBackgroundColor,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(32),
+    return BlocProvider(
+      create: (context) => GetProfileBloc(
+        repository: ProfileRepository(
+          apiClient: ApiClient(context.read<SecureStorageService>()),
+        ),
+      )..add(const FetchProfileEvent()),
+      child: Builder(
+        builder: (innerContext) {
+          return Scaffold(
+            backgroundColor: colorScheme.primary, // Themed header background
+            body: SafeArea(
+              child: Column(
+                children: [
+                  _buildProfileHeader(innerContext),
+                  Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 12),
+                      decoration: BoxDecoration(
+                        color: theme.scaffoldBackgroundColor,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(32),
+                        ),
+                      ),
+                      child: _buildMenuList(innerContext),
+                    ),
                   ),
-                ),
-                child: _buildMenuList(context),
+                ],
               ),
             ),
-          ],
-        ),
+          );
+        }
       ),
     );
   }
@@ -40,98 +56,135 @@ class ProfileScreen extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          Row(
+    return BlocBuilder<GetProfileBloc, GetProfileState>(
+      builder: (context, state) {
+        if (state is GetProfileLoading || state is GetProfileInitial) {
+          return const Padding(
+            padding: EdgeInsets.all(48.0),
+            child: Center(child: CircularProgressIndicator(color: Colors.white)),
+          );
+        } else if (state is GetProfileError) {
+          return Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Center(
+              child: Text('Error loading profile: ${state.message}',
+                style: const TextStyle(color: Colors.white)),
+            ),
+          );
+        }
+
+        String name = "Guest"; 
+        String role = "Driver";
+        String trips = "0";
+        String rating = "0.0★";
+        String acceptRate = "0%";
+        
+        if (state is GetProfileSuccess) {
+          final profileData = state.profileDetails.data;
+          name = profileData?.name ?? name;
+          role = profileData?.role ?? role;
+          trips = (profileData?.totalTrips ?? 0).toString();
+          rating = "${(profileData?.rating ?? 0.0).toStringAsFixed(1)}★";
+          
+          final acceptanceNum = profileData?.driverAcceptance ?? 0;
+          acceptRate = "${acceptanceNum.toInt()}%";
+        }
+        String initials = name.isNotEmpty ? name.substring(0, 1).toUpperCase() : "U";
+
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
             children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: colorScheme.onPrimary,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: colorScheme.onPrimary.withOpacity(0.2), width: 4),
-                ),
-                child: Center(
-                  child: Text(
-                    "AR",
-                    style: textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: colorScheme.primary,
+              Row(
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: colorScheme.onPrimary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: colorScheme.onPrimary.withOpacity(0.2), width: 4),
+                    ),
+                    child: Center(
+                      child: Text(
+                        initials,
+                        style: textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          color: colorScheme.primary,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 20),
+                  const SizedBox(width: 20),
 
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Abdul Rahman",
-                      style: textTheme.headlineSmall?.copyWith(
-                        color: colorScheme.onPrimary,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Support Driver",
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onPrimary.withOpacity(0.7),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: colorScheme.secondary,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.verified,
-                              color: colorScheme.onSecondary, size: 14),
-                          const SizedBox(width: 6),
-                          Text(
-                            "VERIFIED",
-                            style: textTheme.labelSmall?.copyWith(
-                              color: colorScheme.onSecondary,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.5,
-                            ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: textTheme.headlineSmall?.copyWith(
+                            color: colorScheme.onPrimary,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          role,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onPrimary.withOpacity(0.7),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: colorScheme.secondary,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.verified,
+                                  color: colorScheme.onSecondary, size: 14),
+                              const SizedBox(width: 6),
+                              Text(
+                                "VERIFIED",
+                                style: textTheme.labelSmall?.copyWith(
+                                  color: colorScheme.onSecondary,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 32),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildStatItem(context, trips, "Total Trips"),
+                  _buildStatDivider(context),
+                  _buildStatItem(context, rating, "Rating"),
+                  _buildStatDivider(context),
+                  _buildStatItem(context, acceptRate, "Accept Rate"),
+                ],
               ),
             ],
           ),
-
-          const SizedBox(height: 32),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatItem(context, "340", "Total Trips"),
-              _buildStatDivider(context),
-              _buildStatItem(context, "4.9★", "Rating"),
-              _buildStatDivider(context),
-              _buildStatItem(context, "98%", "Accept Rate"),
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -210,8 +263,12 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.person_outline_rounded,
                 title: "Personal Profile",
                 showChevron: true,
-                onTap: () {
-                  Navigator.pushNamed(context, '/profile_details');
+                onTap: () async {
+                  final result = await Navigator.pushNamed(context, '/profile_details');
+                  // If result is true, it means profile was updated successfully
+                  if (result == true && context.mounted) {
+                    context.read<GetProfileBloc>().add(const FetchProfileEvent());
+                  }
                 },
               ),
               _divider(context),

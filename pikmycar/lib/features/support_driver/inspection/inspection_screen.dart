@@ -365,7 +365,7 @@ class _SupportDriverInspectionScreenState
         secondary: Icon(icon, color: colorScheme.onSurface.withOpacity(0.3)),
         title: Text(label, style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700)),
         value: value,
-        activeThumbColor: AppColors.success,
+        activeColor: AppColors.success,
         onChanged: onChanged,
       ),
     );

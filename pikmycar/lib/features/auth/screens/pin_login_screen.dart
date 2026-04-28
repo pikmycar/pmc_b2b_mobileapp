@@ -103,7 +103,12 @@ class _PinLoginScreenState extends State<PinLoginScreen>
 
   @override
   void dispose() {
-    _pinController.dispose();
+    try {
+      // pin_code_fields sometimes automatically disposes the controller,
+      // causing a double-dispose crash here. We catch and ignore it.
+      _pinController.dispose();
+    } catch (_) {}
+    
     _shakeController.dispose();
     super.dispose();
   }
