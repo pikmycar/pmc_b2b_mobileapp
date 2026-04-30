@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../transport_trip/bloc/trip_bloc.dart';
-import '../transport_trip/bloc/trip_event.dart';
+import '../../auth/bloc/commonScreen/driver_location/trip_bloc.dart';
+import '../../auth/bloc/commonScreen/driver_location/trip_event.dart';
 import '../../../../core/models/trip_models.dart';
 import '../../../../core/theme/app_theme.dart';
 

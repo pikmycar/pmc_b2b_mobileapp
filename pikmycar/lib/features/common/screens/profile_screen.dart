@@ -21,7 +21,7 @@ class ProfileScreen extends StatelessWidget {
         repository: ProfileRepository(
           apiClient: ApiClient(context.read<SecureStorageService>()),
         ),
-      )..add(const FetchProfileEvent()),
+      )..add( FetchProfileEvent()),
       child: Builder(
         builder: (innerContext) {
           return Scaffold(
@@ -267,7 +267,7 @@ class ProfileScreen extends StatelessWidget {
                   final result = await Navigator.pushNamed(context, '/profile_details');
                   // If result is true, it means profile was updated successfully
                   if (result == true && context.mounted) {
-                    context.read<GetProfileBloc>().add(const FetchProfileEvent());
+                    context.read<GetProfileBloc>().add( FetchProfileEvent());
                   }
                 },
               ),

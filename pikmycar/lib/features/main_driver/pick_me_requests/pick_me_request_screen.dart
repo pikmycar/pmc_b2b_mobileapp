@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../transport_trip/bloc/trip_bloc.dart';
-import '../transport_trip/bloc/trip_state.dart';
+import '../../auth/bloc/commonScreen/driver_location/trip_bloc.dart';
+import '../../auth/bloc/commonScreen/driver_location/trip_state.dart';
 import '../../../core/models/trip_models.dart';
 
 class MainDriverPickMeRequestScreen extends StatefulWidget {

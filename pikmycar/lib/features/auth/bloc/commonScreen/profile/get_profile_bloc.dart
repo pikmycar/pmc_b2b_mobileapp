@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/network/api_client.dart';
+import '../../../../../core/constants/app_constants.dart'; // ✅ ADD THIS
 import 'get_profile_event.dart';
 import 'get_profile_state.dart';
-import '../../../data/models/get_profile.dart'; // Ensure compatibility with existing model
-
+import '../../../data/models/get_profile.dart';
 
 /// Simple repository interface for fetching profile details
 class ProfileRepository {
@@ -14,8 +14,8 @@ class ProfileRepository {
 
   Future<GetProfileDetails> fetchProfile() async {
     try {
-      // ApiClient already has the base URL from AppConstants and handles tokens!
-      final response = await apiClient.dio.get('/driver/profile');
+      // ✅ Using AppConstants instead of hardcoded URL
+      final response = await apiClient.dio.get(AppConstants.profileEndpoint);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return GetProfileDetails.fromJson(response.data);
@@ -44,8 +44,6 @@ class GetProfileBloc extends Bloc<GetProfileEvent, GetProfileState> {
       final profileDetails = await repository.fetchProfile();
       emit(GetProfileSuccess(profileDetails: profileDetails));
     } catch (e) {
-      // Handle proper exception parsing based on your architecture
-      // For instance, if you have custom exception classes, catch them here
       emit(GetProfileError(message: e.toString()));
     }
   }

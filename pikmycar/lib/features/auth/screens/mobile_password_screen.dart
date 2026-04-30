@@ -78,7 +78,7 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "+91 ${widget.mobile}",
+                  " ${widget.mobile}",
                   style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 32),

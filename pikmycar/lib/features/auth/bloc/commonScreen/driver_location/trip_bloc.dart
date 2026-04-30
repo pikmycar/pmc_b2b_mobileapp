@@ -1,15 +1,24 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/models/trip_models.dart';
-import '../../../../core/services/trip_storage_service.dart';
+import 'package:dio/dio.dart';
+import 'package:geolocator/geolocator.dart';
+import '../../../../../core/models/trip_models.dart';
+import '../../../../../core/services/trip_storage_service.dart';
+import '../../../../../core/services/location_service.dart';
+import '../../../data/datasource/driver_api.dart';
 import 'trip_event.dart';
 import 'trip_state.dart';
 
 class TripBloc extends Bloc<TripEvent, TripState> {
   final TripStorageService _storageService;
+  final DriverApi _driverApi;
+  final LocationService _locationService;
+  
   Timer? _requestTimeoutTimer;
+  StreamSubscription<Position>? _locationSubscription;
+  DateTime? _lastLocationUpdate;
 
-  TripBloc(this._storageService) : super(const TripInitial()) {
+  TripBloc(this._storageService, this._driverApi, this._locationService) : super(const TripInitial()) {
     on<GoOnline>(_onGoOnline);
     on<GoOffline>(_onGoOffline);
     on<SimulateRequest>(_onSimulateRequest);
@@ -33,25 +42,111 @@ class TripBloc extends Bloc<TripEvent, TripState> {
     }
   }
 
-  void _onGoOnline(GoOnline event, Emitter<TripState> emit) {
+  Future<void> _onGoOnline(GoOnline event, Emitter<TripState> emit) async {
     if (state.status == TripStatus.offline) {
-      final newState = const TripUpdate(status: TripStatus.searching);
-      emit(newState);
-      _persistState(newState);
+      emit(TripUpdate(status: state.status, activeTrip: state.activeTrip, isLoading: true));
+      
+      try {
+        final position = await _locationService.getCurrentLocation();
+        String address = "Unknown Location";
+        if (position != null) {
+          address = await _locationService.getAddressFromCoordinates(position.latitude, position.longitude);
+        }
+
+        // Call Availability API
+        await _driverApi.updateAvailability(
+          isOnline: true,
+          isAvailable: true,
+          lat: position?.latitude ?? 0.0,
+          lng: position?.longitude ?? 0.0,
+          address: address,
+        );
+
+        final newState = const TripUpdate(status: TripStatus.searching, isLoading: false);
+        emit(newState);
+        _persistState(newState);
+
+        // Start location tracking
+        _startLocationTracking();
+
+      } catch (e) {
+        String errorMsg = "Failed to go online";
+        if (e is DioException && e.response?.statusCode == 422) {
+          errorMsg = "Validation error: Please ensure location services are fully enabled.";
+        }
+        emit(TripUpdate(status: state.status, activeTrip: state.activeTrip, error: errorMsg, isLoading: false));
+      }
     }
   }
 
-  void _onGoOffline(GoOffline event, Emitter<TripState> emit) {
-    _requestTimeoutTimer?.cancel();
-    final newState = const TripUpdate(status: TripStatus.offline);
+Future<void> _onGoOffline(GoOffline event, Emitter<TripState> emit) async {
+  _requestTimeoutTimer?.cancel();
+  _stopLocationTracking();
+
+  emit(TripUpdate(status: state.status, activeTrip: state.activeTrip, isLoading: true));
+
+  try {
+    final position = await _locationService.getCurrentLocation();
+
+    await _driverApi.updateAvailability(
+      isOnline: false,
+      isAvailable: false,
+      lat: position?.latitude ?? 0.0,   // ✅ ADD THIS
+      lng: position?.longitude ?? 0.0,  // ✅ ADD THIS
+    );
+
+    final newState = const TripUpdate(status: TripStatus.offline, isLoading: false);
     emit(newState);
     _storageService.clearTrip();
+  } catch (e) {
+    emit(TripUpdate(
+      status: state.status,
+      activeTrip: state.activeTrip,
+      error: "Failed to go offline",
+      isLoading: false,
+    ));
+  }
+}
+  void _startLocationTracking() {
+    _stopLocationTracking(); // Clean up existing
+    _locationSubscription = _locationService.getPositionStream().listen((Position position) {
+      final now = DateTime.now().toUtc();
+      
+      // Throttle updates: Call API only every 3-5 seconds or based on distanceFilter (10m defined in LocationService)
+      if (_lastLocationUpdate == null || now.difference(_lastLocationUpdate!).inSeconds >= 3) {
+        _lastLocationUpdate = now;
+        
+        // Use the current active trip ID if we are on a trip
+        String? currentTripId;
+        if (state.activeTrip != null && state.status != TripStatus.searching && state.status != TripStatus.offline) {
+          currentTripId = state.activeTrip!.tripId;
+        }
+
+        try {
+          _driverApi.updateLocation(
+            tripId: currentTripId,
+            lat: position.latitude,
+            lng: position.longitude,
+            speed: position.speed,
+            heading: position.heading,
+            timestamp: now,
+          );
+        } catch (e) {
+          print("DEBUG: [TripBloc] updateLocation API error: $e");
+        }
+      }
+    });
+  }
+
+  void _stopLocationTracking() {
+    _locationSubscription?.cancel();
+    _locationSubscription = null;
+    _lastLocationUpdate = null;
   }
 
   void _onSimulateRequest(SimulateRequest event, Emitter<TripState> emit) {
     print("DEBUG: [TripBloc] SimulateRequest received. Current Status: ${state.status}");
     
-    // Simulation allows resetting for testing purposes
     final mockDriver = const SupportDriver(
       id: 'SD-99',
       name: 'Rahul Kumar',
@@ -80,13 +175,10 @@ class TripBloc extends Bloc<TripEvent, TripState> {
       currentTargetDriverId: mockDriver.id,
     );
 
-    print("DEBUG: [TripBloc] Emitting requestReceived. ActiveTrip: ${trip.tripId}, SupportDrivers: ${trip.supportDrivers.length}");
-    
     final newState = TripUpdate(status: TripStatus.requestReceived, activeTrip: trip);
     emit(newState);
     _persistState(newState);
 
-    // Start 5-minute timeout
     _requestTimeoutTimer?.cancel();
     _requestTimeoutTimer = Timer(const Duration(minutes: 5), () {
       print("DEBUG: [TripBloc] Request timeout reached. Auto-declining.");
@@ -171,7 +263,7 @@ class TripBloc extends Bloc<TripEvent, TripState> {
   }
 
   void _onUpdateLocation(UpdateLocation event, Emitter<TripState> emit) {
-    // Logic for live location updates
+    // Legacy internal map usage if any.
   }
 
   void _persistState(TripState state) {
@@ -183,6 +275,7 @@ class TripBloc extends Bloc<TripEvent, TripState> {
   @override
   Future<void> close() {
     _requestTimeoutTimer?.cancel();
+    _stopLocationTracking();
     return super.close();
   }
 }

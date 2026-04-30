@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'bloc/trip_bloc.dart';
-import 'bloc/trip_event.dart';
-import 'bloc/trip_state.dart';
+import '../../auth/bloc/commonScreen/driver_location/trip_bloc.dart';
+import '../../auth/bloc/commonScreen/driver_location/trip_event.dart';
+import '../../auth/bloc/commonScreen/driver_location/trip_state.dart';
 
 class TripCompletionScreen extends StatelessWidget {
   const TripCompletionScreen({super.key});

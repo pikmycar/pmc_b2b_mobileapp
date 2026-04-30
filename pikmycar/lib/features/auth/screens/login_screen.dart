@@ -3,8 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'email_login_screen.dart';
 import 'mobile_password_screen.dart';
 import '../../../core/models/user_role.dart';
-import '../../../core/storage/secure_storage_service.dart';
-import 'package:provider/provider.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -36,24 +35,25 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   UserRole _selectedRole = UserRole.mainDriver;
 
-  void _onContinue() async {
-    if (_isMobileSelected && _mobileController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter your mobile number")),
-      );
-      return;
-    }
-
-    Navigator.push(
-      context, 
-      MaterialPageRoute(
-        builder: (context) => MobilePasswordScreen(
-          mobile: _isMobileSelected ? _mobileController.text : _emailController.text,
-        )
-      )
+void _onContinue() async {
+  if (_isMobileSelected && _mobileController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Please enter your mobile number")),
     );
+    return;
   }
 
+  final mobileNumber = "91${_mobileController.text.trim()}";
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => MobilePasswordScreen(
+        mobile: _isMobileSelected ? mobileNumber : _emailController.text,
+      ),
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);

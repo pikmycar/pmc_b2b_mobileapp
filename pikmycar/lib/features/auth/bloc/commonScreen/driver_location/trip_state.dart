@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../../core/models/trip_models.dart';
+import '../../../../../core/models/trip_models.dart';
 
 abstract class TripState extends Equatable {
   final TripStatus status;

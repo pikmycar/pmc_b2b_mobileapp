@@ -7,6 +7,4 @@ abstract class GetProfileEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class FetchProfileEvent extends GetProfileEvent {
-  const FetchProfileEvent();
-}
+class FetchProfileEvent extends GetProfileEvent {}

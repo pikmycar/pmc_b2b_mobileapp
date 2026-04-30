@@ -51,7 +51,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
             repository: ProfileRepository(
               apiClient: ApiClient(context.read<SecureStorageService>()),
             ),
-          )..add(const FetchProfileEvent()),
+          )..add( FetchProfileEvent()),
         ),
         BlocProvider(
           create: (context) => UpdateProfileBloc(

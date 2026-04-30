@@ -16,9 +16,11 @@ import '../core/services/theme_service.dart';
 import '../core/services/trip_storage_service.dart';
 import '../core/services/biometric_service.dart';
 import 'router.dart';
-import '../features/main_driver/transport_trip/bloc/trip_bloc.dart';
+import '../features/auth/bloc/commonScreen/driver_location/trip_bloc.dart';
 import '../features/main_driver/settings/bloc/settings_bloc.dart';
 import '../features/main_driver/settings/bloc/settings_event.dart';
+import '../features/auth/data/datasource/driver_api.dart';
+import '../core/services/location_service.dart';
 
 class PikMyCarApp extends StatelessWidget {
   const PikMyCarApp({super.key});
@@ -34,6 +36,8 @@ class PikMyCarApp extends StatelessWidget {
         RepositoryProvider(create: (_) => BiometricService()),
         RepositoryProvider(create: (_) => ThemeService()),
         RepositoryProvider(create: (_) => TripStorageService()),
+        RepositoryProvider(create: (_) => LocationService()),
+        RepositoryProvider(create: (context) => DriverApi(context.read<ApiClient>())),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -47,7 +51,11 @@ class PikMyCarApp extends StatelessWidget {
             create: (context) => ThemeCubit(context.read<ThemeService>()),
           ),
           BlocProvider(
-            create: (context) => TripBloc(context.read<TripStorageService>()),
+            create: (context) => TripBloc(
+              context.read<TripStorageService>(),
+              context.read<DriverApi>(),
+              context.read<LocationService>(),
+            ),
           ),
           BlocProvider(
             create: (context) => SettingsBloc()..add(LoadSettings()),
