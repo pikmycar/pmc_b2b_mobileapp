@@ -9,7 +9,8 @@ class AppConstants {
   static const String availabilityEndpoint = "/driver/availability";
   static const String locationEndpoint = "/driver/location";
     static const String profileEndpoint = "/driver/profile"; // ✅ ADD THIS
-static const String ratingsEndpoint = "/driver/ratings";
+  static const String ratingsEndpoint = "/driver/ratings";
+  static const String earningsEndpoint = "/driver/earnings";
 
   // Timeouts
   static const int connectTimeout = 30000;

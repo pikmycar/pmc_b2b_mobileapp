@@ -12,35 +12,43 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-
-  late AnimationController _controller;
+    with TickerProviderStateMixin {
+  late AnimationController _enterController;
+  late AnimationController _pulseController;
   late Animation<double> _fadeAnim;
   late Animation<double> _scaleAnim;
+  late Animation<double> _pulseAnim;
 
   @override
   void initState() {
     super.initState();
 
     // 🎬 Animation setup
-    _controller = AnimationController(
+    _enterController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
 
-    _fadeAnim = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeIn,
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
     );
 
-    _scaleAnim = Tween<double>(
-      begin: 0.4,
-      end: 1.0,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
+    _fadeAnim = CurvedAnimation(parent: _enterController, curve: Curves.easeIn);
+
+    _scaleAnim = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _enterController, curve: Curves.elasticOut),
     );
 
-    _controller.forward();
+    _pulseAnim = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    _enterController.forward().then((_) {
+      if (mounted) {
+        _pulseController.repeat(reverse: true);
+      }
+    });
 
     print("🚀 Splash Started");
 
@@ -89,7 +97,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
-    _controller.dispose();
+    _enterController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -97,9 +106,7 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-        ),
+        decoration: const BoxDecoration(color: Colors.white),
         child: Stack(
           children: [
             // 🌄 Background image
@@ -121,28 +128,32 @@ class _SplashScreenState extends State<SplashScreen>
                 opacity: _fadeAnim,
                 child: ScaleTransition(
                   scale: _scaleAnim,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.asset(
-                        'assets/Png/SplashLogo.png',
-                        height: 240, // Increased logo size
-                        errorBuilder: (_, __, ___) => const Icon(
-                          Icons.local_taxi,
-                          size: 100,
-                          color: Color(0xFFFFCA20),
+                  child: ScaleTransition(
+                    scale: _pulseAnim,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(
+                          'assets/Png/SplashLogo.png',
+                          height: 240, // Increased logo size
+                          errorBuilder:
+                              (_, __, ___) => const Icon(
+                                Icons.local_taxi,
+                                size: 100,
+                                color: Color(0xFFFFCA20),
+                              ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        "Made In Dubai 🇦🇪",
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                        const SizedBox(height: 16),
+                        const Text(
+                          "Made In Dubai 🇦🇪",
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

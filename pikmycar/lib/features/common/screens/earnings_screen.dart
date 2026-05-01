@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/storage/secure_storage_service.dart';
+import '../../../core/network/api_client.dart';
+import '../../auth/bloc/commonScreen/earnings/get_earnings_bloc.dart';
+import '../../auth/bloc/commonScreen/earnings/get_earnings_event.dart';
+import '../../auth/bloc/commonScreen/earnings/get_earnings_state.dart';
 import '../../../core/theme/app_theme.dart';
 
 class EarningsScreen extends StatelessWidget {
@@ -9,41 +16,75 @@ class EarningsScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      backgroundColor: colorScheme.primary, // Dark header area
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context),
+    return BlocProvider(
+      create: (context) => GetEarningsBloc(
+        repository: EarningsRepository(
+          apiClient: ApiClient(context.read<SecureStorageService>()),
+        ),
+      )..add(FetchEarningsEvent()),
+      child: Builder(
+        builder: (innerContext) {
+          return Scaffold(
+            backgroundColor: colorScheme.primary, // Dark header area
+            body: SafeArea(
+              child: BlocBuilder<GetEarningsBloc, GetEarningsState>(
+                builder: (context, state) {
+                  if (state is GetEarningsLoading || state is GetEarningsInitial) {
+                    return const Center(child: CircularProgressIndicator(color: Colors.white));
+                  } else if (state is GetEarningsError) {
+                    return Center(
+                      child: Text('Error loading earnings: ${state.message}',
+                        style: const TextStyle(color: Colors.white)),
+                    );
+                  }
 
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: theme.scaffoldBackgroundColor,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(24),
-                  ),
-                ),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
+                  double todayEarning = 0.0;
+                  double weekEarning = 0.0;
+                  double walletBalance = 0.0;
+
+                  if (state is GetEarningsSuccess) {
+                    final data = state.earnings.data;
+                    todayEarning = data?.todayEarning ?? 0.0;
+                    weekEarning = data?.weekEarning ?? 0.0;
+                    walletBalance = data?.walletBalance ?? 0.0;
+                  }
+
+                  return Column(
                     children: [
-                      _balanceCard(context),
-                      const SizedBox(height: 20),
-                      _tabs(context),
-                      const SizedBox(height: 20),
-                      _stats(context),
-                      const SizedBox(height: 20),
-                      _car(context),
-                      const SizedBox(height: 20),
-                      _payout(context),
+                      _buildHeader(innerContext),
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: theme.scaffoldBackgroundColor,
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(24),
+                            ),
+                          ),
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              children: [
+                                _balanceCard(innerContext, weekEarning),
+                                const SizedBox(height: 20),
+                                _tabs(innerContext),
+                                const SizedBox(height: 20),
+                                _stats(innerContext, todayEarning),
+                                const SizedBox(height: 20),
+                                _car(innerContext),
+                                const SizedBox(height: 20),
+                                _payout(innerContext, walletBalance),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
-                  ),
-                ),
+                  );
+                },
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -70,7 +111,7 @@ class EarningsScreen extends StatelessWidget {
     );
   }
 
-  Widget _balanceCard(BuildContext context) {
+  Widget _balanceCard(BuildContext context, double weekEarning) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final cardColor = theme.brightness == Brightness.light ? AppColors.designYellow : colorScheme.primaryContainer;
@@ -94,7 +135,7 @@ class EarningsScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "AED 1,240",
+            "AED ${weekEarning.toStringAsFixed(2)}",
             style: theme.textTheme.displaySmall?.copyWith(
               fontWeight: FontWeight.w900,
               color: onCardColor,
@@ -164,14 +205,14 @@ class EarningsScreen extends StatelessWidget {
     );
   }
 
-  Widget _stats(BuildContext context) {
+  Widget _stats(BuildContext context, double todayEarning) {
     return Row(
       children: [
         Expanded(child: _stat(context, "12", "Trips")),
         const SizedBox(width: 10),
         Expanded(child: _rating(context)),
         const SizedBox(width: 10),
-        Expanded(child: _stat(context, "AED 320", "Today", isPositive: true)),
+        Expanded(child: _stat(context, "AED ${todayEarning.toStringAsFixed(0)}", "Today", isPositive: true)),
       ],
     );
   }
@@ -263,7 +304,7 @@ class EarningsScreen extends StatelessWidget {
     );
   }
 
-  Widget _payout(BuildContext context) {
+  Widget _payout(BuildContext context, double walletBalance) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -281,7 +322,7 @@ class EarningsScreen extends StatelessWidget {
 
           Expanded(
             child: Text(
-              "Payout Available",
+              "Payout: AED ${walletBalance.toStringAsFixed(2)}",
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: AppColors.success,
                 fontWeight: FontWeight.w600,

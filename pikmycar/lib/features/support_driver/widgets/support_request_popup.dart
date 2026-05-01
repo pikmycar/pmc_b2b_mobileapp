@@ -25,10 +25,8 @@ class SupportRequestPopup extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    return Positioned(
-      left: 16,
-      right: 16,
-      bottom: 20,
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
       child: TweenAnimationBuilder(
         duration: const Duration(milliseconds: 500),
         tween: Tween(begin: 1.0, end: 0.0),
