@@ -11,6 +11,8 @@ class AppConstants {
     static const String profileEndpoint = "/driver/profile"; // ✅ ADD THIS
   static const String ratingsEndpoint = "/driver/ratings";
   static const String earningsEndpoint = "/driver/earnings";
+  static const String createBankEndpoint = "/driver/bank";
+  static const String getBankEndpoint = "/driver/bank";
 
   // Timeouts
   static const int connectTimeout = 30000;

@@ -15,17 +15,18 @@ class UpdateProfileRepository {
     String? name,
     String? email,
     String? phone,
+    String? profileImageUrl,
   }) async {
     try {
       final Map<String, dynamic> body = {};
 
       if (name != null && name.isNotEmpty) body['name'] = name;
       if (email != null && email.isNotEmpty) body['email'] = email;
-      if (phone != null && phone.isNotEmpty) {
-        body['phone_number'] = phone;
+      if (phone != null && phone.isNotEmpty) body['phoneNumber'] = phone;
+      if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
+        body['profileImageUrl'] = profileImageUrl;
       }
 
-      // ✅ USE CONSTANT (no hardcoding)
       final response = await apiClient.dio.put(
         AppConstants.profileEndpoint,
         data: body,
@@ -69,6 +70,7 @@ class UpdateProfileBloc
         name: event.name,
         email: event.email,
         phone: event.phone,
+        profileImageUrl: event.profileImageUrl,
       );
 
       if (response.success == true) {

@@ -25,17 +25,17 @@ class _MainDriverDashboardState extends State<MainDriverDashboard> {
   @override
   void initState() {
     super.initState();
-    // Auto Go Online on login
+    // Only redirect if a trip is already active (e.g. app restart mid-trip)
+    // Driver stays OFFLINE by default — they must manually toggle to go online
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final state = context.read<TripBloc>().state;
-      if (state.status == TripStatus.accepted || 
+      if (state.status == TripStatus.accepted ||
           state.status == TripStatus.navigatingToPickup ||
           state.status == TripStatus.pickupReached ||
           state.status == TripStatus.inTrip) {
         Navigator.pushReplacementNamed(context, '/main_driver_transport');
-      } else {
-        _toggleOnline(true);
       }
+      // ✅ No auto-online: driver decides when to go online
     });
   }
 

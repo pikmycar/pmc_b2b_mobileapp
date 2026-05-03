@@ -38,16 +38,18 @@ class BankModel extends Equatable {
   final String accountNumber;
   final String ifscCode;
   final String bankName;
+  final String? branchName;
 
   const BankModel({
     required this.accountHolder,
     required this.accountNumber,
     required this.ifscCode,
     required this.bankName,
+    this.branchName,
   });
 
   @override
-  List<Object?> get props => [accountHolder, accountNumber, ifscCode, bankName];
+  List<Object?> get props => [accountHolder, accountNumber, ifscCode, bankName, branchName];
 }
 
 enum DocumentStatus { verified, pending, rejected, notUploaded }

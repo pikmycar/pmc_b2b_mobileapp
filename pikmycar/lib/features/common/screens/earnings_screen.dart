@@ -6,6 +6,9 @@ import '../../../core/network/api_client.dart';
 import '../../auth/bloc/commonScreen/earnings/get_earnings_bloc.dart';
 import '../../auth/bloc/commonScreen/earnings/get_earnings_event.dart';
 import '../../auth/bloc/commonScreen/earnings/get_earnings_state.dart';
+import '../../auth/bloc/commonScreen/profile/get_profile_bloc.dart';
+import '../../auth/bloc/commonScreen/profile/get_profile_event.dart';
+import '../../auth/bloc/commonScreen/profile/get_profile_state.dart';
 import '../../../core/theme/app_theme.dart';
 
 class EarningsScreen extends StatelessWidget {
@@ -16,12 +19,23 @@ class EarningsScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return BlocProvider(
-      create: (context) => GetEarningsBloc(
-        repository: EarningsRepository(
-          apiClient: ApiClient(context.read<SecureStorageService>()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => GetEarningsBloc(
+            repository: EarningsRepository(
+              apiClient: ApiClient(context.read<SecureStorageService>()),
+            ),
+          )..add(FetchEarningsEvent()),
         ),
-      )..add(FetchEarningsEvent()),
+        BlocProvider(
+          create: (context) => GetProfileBloc(
+            repository: ProfileRepository(
+              apiClient: ApiClient(context.read<SecureStorageService>()),
+            ),
+          )..add(FetchProfileEvent()),
+        ),
+      ],
       child: Builder(
         builder: (innerContext) {
           return Scaffold(
@@ -93,21 +107,56 @@ class EarningsScreen extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-      child: Row(
-        children: [
-          Icon(Icons.account_balance_wallet, color: colorScheme.onPrimary, size: 22),
-          const SizedBox(width: 8),
-          Text(
-            "Earnings",
-            style: textTheme.titleLarge?.copyWith(
-              color: colorScheme.onPrimary,
-              fontWeight: FontWeight.w700,
-            ),
+    return BlocBuilder<GetProfileBloc, GetProfileState>(
+      builder: (context, state) {
+        final name = state is GetProfileSuccess
+            ? (state.profileDetails.data?.name ?? "Driver")
+            : "Driver";
+        final imageUrl = state is GetProfileSuccess
+            ? state.profileDetails.data?.profileImageUrl
+            : null;
+
+        return Container(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+          child: Row(
+            children: [
+              // Avatar
+              CircleAvatar(
+                radius: 20,
+                backgroundImage: imageUrl != null && imageUrl.isNotEmpty
+                    ? NetworkImage(imageUrl)
+                    : null,
+                backgroundColor: colorScheme.onPrimary.withOpacity(0.2),
+                child: imageUrl == null || imageUrl.isEmpty
+                    ? Icon(Icons.person, color: colorScheme.onPrimary, size: 22)
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Text(
+                      "Earnings Overview",
+                      style: textTheme.labelSmall?.copyWith(
+                        color: colorScheme.onPrimary.withOpacity(0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.account_balance_wallet, color: colorScheme.onPrimary, size: 22),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -206,14 +255,25 @@ class EarningsScreen extends StatelessWidget {
   }
 
   Widget _stats(BuildContext context, double todayEarning) {
-    return Row(
-      children: [
-        Expanded(child: _stat(context, "12", "Trips")),
-        const SizedBox(width: 10),
-        Expanded(child: _rating(context)),
-        const SizedBox(width: 10),
-        Expanded(child: _stat(context, "AED ${todayEarning.toStringAsFixed(0)}", "Today", isPositive: true)),
-      ],
+    return BlocBuilder<GetProfileBloc, GetProfileState>(
+      builder: (context, state) {
+        final totalTrips = state is GetProfileSuccess
+            ? (state.profileDetails.data?.totalTrips?.toString() ?? "--")
+            : "--";
+        final rating = state is GetProfileSuccess
+            ? (state.profileDetails.data?.rating?.toStringAsFixed(1) ?? "--")
+            : "--";
+
+        return Row(
+          children: [
+            Expanded(child: _stat(context, totalTrips, "Trips")),
+            const SizedBox(width: 10),
+            Expanded(child: _rating(context, rating)),
+            const SizedBox(width: 10),
+            Expanded(child: _stat(context, "AED ${todayEarning.toStringAsFixed(0)}", "Today", isPositive: true)),
+          ],
+        );
+      },
     );
   }
 
@@ -247,9 +307,8 @@ class EarningsScreen extends StatelessWidget {
     );
   }
 
-  Widget _rating(BuildContext context) {
+  Widget _rating(BuildContext context, String ratingValue) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -264,7 +323,7 @@ class EarningsScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "4.9",
+                ratingValue,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                   color: AppColors.success,

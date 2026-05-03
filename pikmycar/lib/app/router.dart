@@ -6,9 +6,7 @@ import '../features/auth/screens/create_pin_screen.dart';
 import '../features/common/widgets/splash_screen.dart';
 import '../features/common/trip_history/trip_history_screen.dart';
 import 'main_wrapper.dart';
-
 import '../features/support_driver/dashboard/support_driver_dashboard.dart';
-
 import '../features/support_driver/inspection/inspection_screen.dart';
 import '../features/support_driver/handover/handover_screen.dart';
 import '../features/support_driver/screens/drive_to_garage_screen.dart';
@@ -19,7 +17,6 @@ import '../features/support_driver/garage_delivery/garage_delivery_screen.dart';
 import '../features/support_driver/screens/driver_arrived_screen.dart';
 import '../features/support_driver/screens/ride_to_customer_screen.dart';
 import '../features/support_driver/screens/arrived_at_pickup_screen.dart';
-
 import '../features/main_driver/dashboard/main_driver_dashboard.dart';
 import '../features/main_driver/transport_trip/transport_trip_screen.dart';
 import '../features/main_driver/transport_trip/trip_completion_screen.dart';
