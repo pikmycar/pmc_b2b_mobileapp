@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import '../../../core/theme/app_theme.dart';
+import 'custom_top_header_bar.dart';
 
 class OfflineScreenBody extends StatelessWidget {
   final String tripsCount;
@@ -34,7 +35,6 @@ class OfflineScreenBody extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.warning.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.warning.withOpacity(0.3), width: 1),
               ),
               child: Row(
                 children: [
@@ -122,11 +122,7 @@ class OfflineScreenBody extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 24),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
+      decoration: AppTheme.premiumCardDecoration(context),
       child: Column(
         children: [
           Text(

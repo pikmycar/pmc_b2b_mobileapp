@@ -6,6 +6,7 @@ import 'dart:async';
 
 import '../../../core/storage/secure_storage_service.dart';
 import '../../../core/models/user_role.dart';
+import '../../../core/theme/app_theme.dart';
 import 'custom_top_header_bar.dart';
 import '../../auth/bloc/commonScreen/driver_location/trip_bloc.dart';
 import '../../auth/bloc/commonScreen/driver_location/trip_event.dart';
@@ -285,9 +286,9 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
                 ),
                 body: Column(
                   children: [
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     _buildStatsRow(),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     Expanded(child: _buildMapSection()),
                   ],
                 ),
@@ -346,39 +347,120 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          _card("₹820", "Today"),
+          _buildStatCard(
+            label: "Today's Earning",
+            value: "₹820",
+            icon: Icons.account_balance_wallet,
+            iconColor: const Color(0xFF10B981), // Emerald/Green
+            iconBgColor: const Color(0xFFDCFCE7), // Light green
+            onTap: () {
+              // Navigate to earnings
+            },
+          ),
           const SizedBox(width: 8),
-          _card("31", "Trips"),
+          _buildStatCard(
+            label: "Trips",
+            value: "31",
+            icon: Icons.directions_car,
+            iconColor: const Color(0xFF3B82F6), // Blue
+            iconBgColor: const Color(0xFFDBEAFE), // Light blue
+            onTap: () {
+              Navigator.pushNamed(context, '/trip_history');
+            },
+          ),
           const SizedBox(width: 8),
-          _card("4.9", "Rating"),
+          _buildStatCard(
+            label: "Rating",
+            value: "4.9",
+            icon: Icons.star,
+            iconColor: const Color(0xFFF59E0B), // Amber/Orange
+            iconBgColor: const Color(0xFFFEF3C7), // Light amber
+            onTap: () {
+              // Navigate to ratings
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _card(String value, String label) {
+  Widget _buildStatCard({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBgColor,
+    VoidCallback? onTap,
+  }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colorScheme.outlineVariant),
-        ),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.35 : 0.05),
+                blurRadius: 10,
+                spreadRadius: isDark ? 0.5 : 0,
+                offset: const Offset(0, 4),
               ),
-            ),
-            Text(label, style: theme.textTheme.bodyMedium),
-          ],
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: isDark ? iconColor.withOpacity(0.2) : iconBgColor,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: iconColor,
+                      size: 18,
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    color: colorScheme.onSurface.withOpacity(0.3),
+                    size: 16,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                label,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface.withOpacity(0.5),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 10.5,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                  fontSize: 18,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -392,10 +474,18 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
     const LatLng defaultLocation = LatLng(13.0827, 80.2707);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
       decoration: BoxDecoration(
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.35 : 0.06),
+            blurRadius: 15,
+            spreadRadius: isDark ? 0.5 : 0,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Stack(
         children: [
@@ -437,46 +527,123 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
               right: 15,
               child: BlocBuilder<TripBloc, TripState>(
                 builder: (context, state) {
-                  return Material(
-                    color: colorScheme.surface.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(20),
-                    elevation: 4,
-                    child: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Row(
-                        children: [
-                          ScaleTransition(
-                            scale: _pulseAnimation,
-                            child: const Text("🎯"),
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            state.status == TripStatus.searching
-                                ? "Searching for trips..."
-                                : "Trip in progress...",
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
+                  final isSearching = state.status == TripStatus.searching;
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.surface,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(isDark ? 0.35 : 0.08),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    child: Row(
+                      children: [
+                        // Pulsing Green Radar Icon
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            ScaleTransition(
+                              scale: _pulseAnimation,
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: AppColors.success.withOpacity(0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
                             ),
+                            Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: AppColors.success.withOpacity(0.3),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            Container(
+                              width: 10,
+                              height: 10,
+                              decoration: const BoxDecoration(
+                                color: AppColors.success,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(width: 14),
+                        // Text Column
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                isSearching ? "Searching for trips..." : "Trip in progress...",
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.onSurface,
+                                  fontSize: 14.5,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                isSearching
+                                    ? "We'll notify you when a new trip is available."
+                                    : "Active navigation in progress.",
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: colorScheme.onSurface.withOpacity(0.5),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Small Green Active Dot on right
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: AppColors.success,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 },
               ),
             ),
 
-
-
-          /// 🔥 MANUAL BUTTON
+          /// 🔥 MANUAL BUTTON (Floating above overlay)
           Positioned(
-            bottom: 90,
+            bottom: widget.isOnline && _role == UserRole.mainDriver ? 105 : 20,
             right: 20,
-            child: FloatingActionButton(
-              mini: true,
-              backgroundColor: Colors.white,
-              onPressed: _moveToCurrentLocation,
-              child: const Icon(Icons.my_location, color: Colors.black),
+            child: GestureDetector(
+              onTap: _moveToCurrentLocation,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.12),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.my_location, color: Colors.black87, size: 20),
+              ),
             ),
           ),
         ],

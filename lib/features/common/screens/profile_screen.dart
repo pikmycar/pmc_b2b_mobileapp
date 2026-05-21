@@ -7,6 +7,7 @@ import '../../auth/screens/login_screen.dart';
 import '../../auth/bloc/commonScreen/profile/get_profile_bloc.dart';
 import '../../auth/bloc/commonScreen/profile/get_profile_event.dart';
 import '../../auth/bloc/commonScreen/profile/get_profile_state.dart';
+import '../../../core/theme/app_theme.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -227,23 +228,11 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildMenuList(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
         Container(
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: colorScheme.outlineVariant),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.04 : 0.2),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              )
-            ],
-          ),
+          decoration: AppTheme.premiumCardDecoration(context, borderRadius: 24.0),
           child: Column(
             children: [
               _buildMenuItem(

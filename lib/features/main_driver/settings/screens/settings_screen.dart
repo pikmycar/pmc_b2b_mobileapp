@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../bloc/settings_bloc.dart';
 import '../bloc/settings_event.dart';
 import '../bloc/settings_state.dart';
@@ -49,11 +50,7 @@ class SettingsScreen extends StatelessWidget {
 
               Container(
                 margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: colorScheme.outlineVariant),
-                ),
+                decoration: AppTheme.premiumCardDecoration(context),
                 child: ListTile(
                   leading: Icon(Icons.fingerprint_rounded, color: colorScheme.primary),
                   title: Text(
@@ -76,11 +73,7 @@ class SettingsScreen extends StatelessWidget {
               _sectionTitle(context, "PREFERENCES"),
               Container(
                 margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: colorScheme.outlineVariant),
-                ),
+                decoration: AppTheme.premiumCardDecoration(context),
                 child: ListTile(
                   leading: Icon(Icons.notifications_none_rounded, color: colorScheme.primary),
                   title: Text(
@@ -123,11 +116,7 @@ class SettingsScreen extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
+      decoration: AppTheme.premiumCardDecoration(context),
       child: ListTile(
         leading: Icon(icon, color: colorScheme.primary),
         title: Text(

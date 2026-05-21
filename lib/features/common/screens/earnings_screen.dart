@@ -232,6 +232,7 @@ class EarningsScreen extends StatelessWidget {
   Widget _tab(BuildContext context, String text, bool active) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     return InkWell(
       borderRadius: BorderRadius.circular(20),
@@ -241,7 +242,20 @@ class EarningsScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: active ? colorScheme.primary : colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: active ? colorScheme.primary : colorScheme.outlineVariant),
+          boxShadow: [
+            if (active)
+              BoxShadow(
+                color: colorScheme.primary.withOpacity(0.15),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              )
+            else
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.3 : 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+          ],
         ),
         child: Text(
           text,
@@ -283,11 +297,7 @@ class EarningsScreen extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
+      decoration: AppTheme.premiumCardDecoration(context),
       child: Column(
         children: [
           Text(
@@ -309,13 +319,20 @@ class EarningsScreen extends StatelessWidget {
 
   Widget _rating(BuildContext context, String ratingValue) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: AppColors.success.withOpacity(0.1),
+        color: AppColors.success.withOpacity(isDark ? 0.15 : 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.success.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.35 : 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -344,20 +361,13 @@ class EarningsScreen extends StatelessWidget {
   }
 
   Widget _car(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
+      decoration: AppTheme.premiumCardDecoration(context, borderRadius: 30.0),
       child: Center(
         child: Text(
           "BMW • Active Vehicle",
-          style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -366,13 +376,20 @@ class EarningsScreen extends StatelessWidget {
   Widget _payout(BuildContext context, double walletBalance) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.success.withOpacity(0.1),
+        color: AppColors.success.withOpacity(isDark ? 0.15 : 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.success.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.35 : 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [

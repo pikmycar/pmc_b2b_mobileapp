@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../bloc/settings_bloc.dart';
 import '../bloc/settings_state.dart';
 import 'withdraw_screen.dart';
@@ -158,18 +159,7 @@ class EarningsScreen extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: colorScheme.outlineVariant),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.02 : 0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+        decoration: AppTheme.premiumCardDecoration(context, borderRadius: 20.0),
         child: Row(
           children: [
             Container(

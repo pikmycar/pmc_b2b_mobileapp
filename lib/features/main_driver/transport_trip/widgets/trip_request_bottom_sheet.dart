@@ -71,12 +71,11 @@ class _TripRequestBottomSheetState extends State<TripRequestBottomSheet> {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.1 : 0.4),
-            blurRadius: 40,
-            offset: const Offset(0, -10),
+            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.05 : 0.35),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
           ),
         ],
       ),

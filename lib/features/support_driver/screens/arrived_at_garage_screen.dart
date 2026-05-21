@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class ArrivedAtGarageScreen extends StatefulWidget {
   const ArrivedAtGarageScreen({super.key});
@@ -136,11 +137,7 @@ class _ArrivedAtGarageScreenState extends State<ArrivedAtGarageScreen> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
+      decoration: AppTheme.premiumCardDecoration(context, borderRadius: 16.0),
       child: Column(
         children: [
           Text(

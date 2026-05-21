@@ -226,11 +226,7 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
                   Container(
                     height: 280,
                     width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: colorScheme.outlineVariant),
-                    ),
+                    decoration: AppTheme.premiumCardDecoration(context, borderRadius: 24.0),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(24),
                       child: _currentPosition == null
@@ -306,15 +302,10 @@ class _DriverOnWayScreenState extends State<DriverOnWayScreen> {
   }
 
   Widget _buildInfoCard({required BuildContext context, required Widget child}) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
+      decoration: AppTheme.premiumCardDecoration(context, borderRadius: 16.0),
       child: child,
     );
   }

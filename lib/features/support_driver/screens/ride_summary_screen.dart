@@ -174,11 +174,7 @@ class _RideSummaryScreenState extends State<RideSummaryScreen> with SingleTicker
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
+      decoration: AppTheme.premiumCardDecoration(context, borderRadius: 16.0),
       child: Column(
         children: [
           _buildDetailRow(context, "Trip #", "#PKM-2847", isBold: true),

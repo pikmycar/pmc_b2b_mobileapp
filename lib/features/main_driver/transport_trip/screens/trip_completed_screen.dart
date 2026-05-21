@@ -53,11 +53,7 @@ class TripCompletedScreen extends StatelessWidget {
               // Summary Table
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: colorScheme.outlineVariant),
-                ),
+                decoration: AppTheme.premiumCardDecoration(context),
                 child: Column(
                   children: [
                     _summaryRow(context, "Trip Earnings", "₹250", isPrimary: true),

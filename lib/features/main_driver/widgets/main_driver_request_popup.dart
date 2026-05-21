@@ -78,7 +78,6 @@ class _MainDriverRequestPopupState extends State<MainDriverRequestPopup> {
               offset: const Offset(0, 20),
             )
           ],
-          border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.5)),
         ),
         child: Material(
           color: Colors.transparent,

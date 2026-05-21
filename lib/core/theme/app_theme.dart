@@ -81,6 +81,25 @@ class AppTheme {
   static const double _radiusLarge = 16.0;
   static const double _radiusMedium = 12.0;
 
+  static BoxDecoration premiumCardDecoration(BuildContext context, {double borderRadius = 16.0}) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    
+    return BoxDecoration(
+      color: colorScheme.surface,
+      borderRadius: BorderRadius.circular(borderRadius),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(isDark ? 0.35 : 0.05),
+          blurRadius: 10,
+          spreadRadius: isDark ? 0.5 : 0,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    );
+  }
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,

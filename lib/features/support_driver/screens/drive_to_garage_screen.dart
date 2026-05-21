@@ -204,14 +204,7 @@ class _DriveToGarageScreenState extends State<DriveToGarageScreen> with SingleTi
                     right: 20,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: colorScheme.surface,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: colorScheme.outlineVariant),
-                        boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4)),
-                        ],
-                      ),
+                      decoration: AppTheme.premiumCardDecoration(context, borderRadius: 12),
                       child: Row(
                         children: [
                           const Icon(Icons.build, size: 16, color: Colors.blueAccent),

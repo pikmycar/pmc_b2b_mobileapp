@@ -9,6 +9,7 @@ import '../../../auth/bloc/commonScreen/earnings/get_earnings_bloc.dart';
 import '../../../auth/bloc/commonScreen/earnings/get_earnings_event.dart';
 import '../../../auth/bloc/commonScreen/earnings/get_earnings_state.dart';
 import '../../../auth/data/models/get_bank.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../bloc/settings_bloc.dart';
 import '../bloc/settings_event.dart';
 
@@ -180,9 +181,18 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
                                   border: Border.all(
                                     color: isSelected
                                         ? colorScheme.primary
-                                        : colorScheme.outlineVariant,
+                                        : Colors.transparent,
                                     width: isSelected ? 2 : 1,
                                   ),
+                                  boxShadow: isSelected
+                                      ? []
+                                      : [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.04 : 0.25),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
                                 ),
                                 child: Row(
                                   children: [
@@ -279,11 +289,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
   Widget _buildNoBankCard(ColorScheme colorScheme, TextTheme textTheme) {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
+      decoration: AppTheme.premiumCardDecoration(context),
       child: Row(
         children: [
           Container(

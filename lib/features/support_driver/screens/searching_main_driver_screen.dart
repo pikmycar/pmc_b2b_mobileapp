@@ -329,11 +329,12 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: bgColor ?? colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
+      decoration: bgColor != null
+          ? BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(16),
+            )
+          : AppTheme.premiumCardDecoration(context, borderRadius: 16.0),
       child: child,
     );
   }
@@ -429,11 +430,7 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
     final textTheme = Theme.of(context).textTheme;
     return Container(
       height: 56,
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
+      decoration: AppTheme.premiumCardDecoration(context, borderRadius: 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

@@ -333,14 +333,22 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   }
 
   Widget _buildInfoCard({required BuildContext context, required Widget child, Color? bgColor}) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: bgColor ?? colorScheme.surface,
+        color: bgColor ?? theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.35 : 0.05),
+            blurRadius: 10,
+            spreadRadius: isDark ? 0.5 : 0,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: child,
     );

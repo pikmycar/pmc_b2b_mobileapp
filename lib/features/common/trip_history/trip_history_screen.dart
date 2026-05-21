@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../screens/rate_experience_screen.dart';
+import '../../../core/theme/app_theme.dart';
 
 class TripHistoryScreen extends StatefulWidget {
   const TripHistoryScreen({super.key});
@@ -154,18 +155,7 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
       padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: colorScheme.outlineVariant),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.08 : 0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          )
-        ],
-      ),
+      decoration: AppTheme.premiumCardDecoration(context, borderRadius: 30.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -263,18 +253,7 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.04 : 0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
+      decoration: AppTheme.premiumCardDecoration(context),
       child: Row(
         children: [
           Container(

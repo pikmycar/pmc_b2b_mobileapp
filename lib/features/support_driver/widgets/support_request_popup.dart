@@ -288,11 +288,7 @@ class SupportRequestPopup extends StatelessWidget {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: colorScheme.onSurface.withOpacity(0.03),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: colorScheme.outlineVariant),
-        ),
+        decoration: AppTheme.premiumCardDecoration(context, borderRadius: 12),
         child: Column(
           children: [
             Text(

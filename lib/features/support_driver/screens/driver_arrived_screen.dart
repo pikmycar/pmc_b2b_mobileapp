@@ -196,15 +196,10 @@ class _DriverArrivedScreenState extends State<DriverArrivedScreen> {
   }
 
   Widget _buildInfoCard({required BuildContext context, required Widget child}) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
+      decoration: AppTheme.premiumCardDecoration(context, borderRadius: 16.0),
       child: child,
     );
   }

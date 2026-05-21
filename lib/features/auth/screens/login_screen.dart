@@ -197,6 +197,7 @@ void _onContinue() async {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isSelected = _selectedRole == role;
+    final isDark = theme.brightness == Brightness.dark;
     
     return GestureDetector(
       onTap: () => setState(() => _selectedRole = role),
@@ -204,9 +205,23 @@ void _onContinue() async {
         height: 70,
         decoration: BoxDecoration(
           color: isSelected ? activeColor : colorScheme.surface,
-          border: Border.all(color: isSelected ? activeColor : colorScheme.outlineVariant),
+          border: Border.all(color: isSelected ? activeColor : Colors.transparent),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: isSelected ? [BoxShadow(color: activeColor.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] : [],
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: activeColor.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              )
+            else
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.35 : 0.05),
+                blurRadius: 10,
+                spreadRadius: isDark ? 0.5 : 0,
+                offset: const Offset(0, 4),
+              ),
+          ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -229,6 +244,7 @@ void _onContinue() async {
   Widget _toggleItem(String label, bool isSelected, VoidCallback onTap) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: onTap,
@@ -236,8 +252,22 @@ void _onContinue() async {
         height: 48,
         decoration: BoxDecoration(
           color: isSelected ? colorScheme.primary.withOpacity(0.1) : colorScheme.surface,
-          border: Border.all(color: isSelected ? colorScheme.primary : colorScheme.outlineVariant),
+          border: Border.all(color: isSelected ? colorScheme.primary : Colors.transparent),
           borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: colorScheme.primary.withOpacity(0.15),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              )
+            else
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+          ],
         ),
         alignment: Alignment.center,
         child: Text(

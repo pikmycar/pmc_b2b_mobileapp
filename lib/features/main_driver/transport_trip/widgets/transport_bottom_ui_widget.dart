@@ -29,10 +29,9 @@ class TransportBottomUIWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.05 : 0.2),
+            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.05 : 0.35),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -80,7 +79,6 @@ class TransportBottomUIWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: colorScheme.onSurface.withOpacity(0.03),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: colorScheme.outlineVariant),
             ),
             child: Row(
               children: [

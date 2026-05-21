@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 
 class TripRequestScreen extends StatefulWidget {
   const TripRequestScreen({super.key});
@@ -189,18 +190,7 @@ class _TripRequestScreenState extends State<TripRequestScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: colorScheme.outlineVariant),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(theme.brightness == Brightness.light ? 0.08 : 0.4),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
-          )
-        ],
-      ),
+      decoration: AppTheme.premiumCardDecoration(context, borderRadius: 24.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

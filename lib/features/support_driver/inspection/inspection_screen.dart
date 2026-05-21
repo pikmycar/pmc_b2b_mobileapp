@@ -356,11 +356,7 @@ class _SupportDriverInspectionScreenState
     final textTheme = Theme.of(context).textTheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
+      decoration: AppTheme.premiumCardDecoration(context, borderRadius: 16),
       child: SwitchListTile(
         secondary: Icon(icon, color: colorScheme.onSurface.withOpacity(0.3)),
         title: Text(label, style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700)),
@@ -411,9 +407,19 @@ class _SupportDriverInspectionScreenState
           color: hasPhoto ? AppColors.success.withOpacity(0.1) : colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: hasPhoto ? AppColors.success : colorScheme.outlineVariant,
+            color: hasPhoto ? AppColors.success : Colors.transparent,
             width: hasPhoto ? 2 : 1,
           ),
+          boxShadow: hasPhoto
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.35 : 0.05),
+                    blurRadius: 10,
+                    spreadRadius: Theme.of(context).brightness == Brightness.dark ? 0.5 : 0,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
           image: hasPhoto ? DecorationImage(image: FileImage(photo), fit: BoxFit.cover, opacity: 0.3) : null,
         ),
         child: Stack(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../bloc/settings_bloc.dart';
 import '../bloc/settings_state.dart';
 import '../models/settings_models.dart';
@@ -66,22 +67,7 @@ class DocumentsScreen extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
-
-        // ✅ FIXED shadow for dark mode
-        boxShadow: theme.brightness == Brightness.light
-            ? [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-              ]
-            : [],
-      ),
+      decoration: AppTheme.premiumCardDecoration(context),
       child: Column(
         children: [
           Row(

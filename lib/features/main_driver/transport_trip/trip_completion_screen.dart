@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../auth/bloc/commonScreen/driver_location/trip_bloc.dart';
 import '../../auth/bloc/commonScreen/driver_location/trip_event.dart';
 import '../../auth/bloc/commonScreen/driver_location/trip_state.dart';
+import '../../../core/theme/app_theme.dart';
 
 class TripCompletionScreen extends StatelessWidget {
   const TripCompletionScreen({super.key});
@@ -99,11 +100,7 @@ class TripCompletionScreen extends StatelessWidget {
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: colorScheme.outlineVariant),
-                    ),
+                    decoration: AppTheme.premiumCardDecoration(context, borderRadius: 16),
                     child: Column(
                       children: [
                         _summaryRow(context, 'Trip', '#PKM-2847'),
