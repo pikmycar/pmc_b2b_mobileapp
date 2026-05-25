@@ -38,7 +38,7 @@ class BankModel extends Equatable {
   final String accountNumber;
   final String ifscCode;
   final String bankName;
-  final String? branchName;
+  final String? branchName;//haja
 
   const BankModel({
     required this.accountHolder,
