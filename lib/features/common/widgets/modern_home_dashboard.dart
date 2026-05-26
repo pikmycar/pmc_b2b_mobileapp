@@ -252,6 +252,8 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
   Widget build(BuildContext context) {
     return BlocConsumer<TripBloc, TripState>(
       listener: (context, state) {
+        if (_role != UserRole.mainDriver) return; // 🔥 Only trigger Main Driver flows for Main Driver role
+
         if (state.status == TripStatus.accepted ||
             state.status == TripStatus.navigatingToPickup ||
             state.status == TripStatus.pickupReached ||
