@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../../core/network/api_client.dart';
+import '../../../../core/storage/secure_storage_service.dart';
+import '../../auth/data/models/cust_requests_trip.dart';
+import '../../auth/data/models/cust_request_trip_by_id.dart' as detail_model;
+import '../../auth/bloc/commonScreen/customer_request_trip_by_id/cust_request_trip_by_id_bloc.dart';
+import '../../auth/bloc/commonScreen/customer_request_trip_by_id/cust_request_trip_by_id_event.dart';
+import '../../auth/bloc/commonScreen/customer_request_trip_by_id/cust_request_trip_by_id_state.dart';
+import '../../auth/bloc/commonScreen/support_pickme_request/support_pickme_request_bloc.dart';
+import '../../auth/bloc/commonScreen/support_pickme_request/support_pickme_request_event.dart';
+import '../../auth/bloc/commonScreen/support_pickme_request/support_pickme_request_state.dart';
 import '../screens/searching_main_driver_screen.dart';
 
 class TicketDetailScreen extends StatefulWidget {
+  final Tickets? ticket;
   final String ticketId;
 
   const TicketDetailScreen({
     super.key,
+    this.ticket,
     this.ticketId = "PKM-2847",
   });
 
@@ -16,6 +29,24 @@ class TicketDetailScreen extends StatefulWidget {
 
 class _TicketDetailScreenState extends State<TicketDetailScreen> {
   bool _isSendingRequest = false;
+
+  String _formatTime(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return "N/A";
+    try {
+      final dateTime = DateTime.parse(dateStr).toLocal();
+      final hour = dateTime.hour;
+      final minute = dateTime.minute;
+      final ampm = hour >= 12 ? 'PM' : 'AM';
+      final formattedHour = hour % 12 == 0 ? 12 : hour % 12;
+      final formattedMinute = minute.toString().padLeft(2, '0');
+      return "$formattedHour:$formattedMinute $ampm";
+    } catch (_) {
+      if (dateStr.length >= 16) {
+        return dateStr.substring(11, 16);
+      }
+      return dateStr;
+    }
+  }
 
   Future<bool> _onBackPressed(BuildContext context) async {
     final result = await showDialog<bool>(
@@ -45,14 +76,26 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
     return false;
   }
 
-  Future<void> _handlePickMe() async {
-    setState(() => _isSendingRequest = true);
-    await Future.delayed(const Duration(seconds: 2));
+  Future<void> _handlePickMe(BuildContext context, detail_model.TripData? tripData) async {
+    final storage = context.read<SecureStorageService>();
+    final supportDriverId = await storage.getDriverId() ?? tripData?.drivers?.supportDriver?.id ?? "7d403d9e-354b-4645-a68a-87cab77c6b50";
+
     if (!mounted) return;
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const SearchingMainDriverScreen(),
+
+    context.read<SupportPickMeRequestBloc>().add(
+      FetchSupportPickMeRequestEvent(
+        ticketId: tripData?.ticketUuid ?? tripData?.ticketId ?? widget.ticket?.ticketId ?? widget.ticketId,
+        supportDriverId: supportDriverId,
+        pickupLocation: "Chennai",
+        pickupLatitude: -90.0,
+        pickupLongitude: -180.0,
+        pickupGoogleMapsAddress: "Chennai",
+        dropLocation: tripData?.pickup?.location ?? widget.ticket?.pickupLocation ?? "Chennai,tata",
+        dropLatitude: tripData?.pickup?.latitude ?? -90.0,
+        dropLongitude: tripData?.pickup?.longitude ?? -180.0,
+        dropGoogleMapsAddress: tripData?.pickup?.googleMapsAddress ?? widget.ticket?.pickupLocation ?? "Chennai,tata",
+        notes: "Support driver requesting Main Driver pickup",
+        sameVendorOnly: false,
       ),
     );
   }
@@ -63,7 +106,168 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
-    return PopScope(
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => CustRequestTripByIdBloc(
+            repository: CustomerRequestTripByIdRepository(
+              apiClient: context.read<ApiClient>(),
+            ),
+          )..add(
+              FetchCustRequestTripByIdEvent(
+                tripId: widget.ticketId.isNotEmpty && widget.ticketId != "PKM-2847"
+                    ? widget.ticketId
+                    : (widget.ticket?.ticketId ?? widget.ticketId),
+              ),
+            ),
+        ),
+        BlocProvider(
+          create: (context) => SupportPickMeRequestBloc(
+            repository: SupportPickMeRepository(
+              apiClient: context.read<ApiClient>(),
+            ),
+          ),
+        ),
+      ],
+      child: BlocListener<SupportPickMeRequestBloc, SupportPickMeRequestState>(
+        listener: (context, state) {
+          if (state is SupportPickMeRequestLoading) {
+            setState(() => _isSendingRequest = true);
+          } else if (state is SupportPickMeRequestSuccess) {
+            setState(() => _isSendingRequest = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.requestDetails.message ?? "Request sent successfully!"),
+                backgroundColor: AppColors.success,
+              ),
+            );
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const SearchingMainDriverScreen(),
+              ),
+            );
+          } else if (state is SupportPickMeRequestError) {
+            setState(() => _isSendingRequest = false);
+            if (state.message.startsWith("409:")) {
+              final cleanMsg = state.message.replaceFirst("409:", "").trim();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(cleanMsg.isNotEmpty ? cleanMsg : "Pickup request already active. Resuming search..."),
+                  backgroundColor: AppColors.warning,
+                ),
+              );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const SearchingMainDriverScreen(),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Error: ${state.message}"),
+                  backgroundColor: AppColors.error,
+                ),
+              );
+            }
+          }
+        },
+        child: BlocBuilder<CustRequestTripByIdBloc, CustRequestTripByIdState>(
+          builder: (context, state) {
+          if (state is CustRequestTripByIdLoading) {
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+
+          if (state is CustRequestTripByIdError) {
+            return Scaffold(
+              appBar: AppBar(
+                automaticallyImplyLeading: true,
+                title: const Text("Error Loading Details"),
+              ),
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.error.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.error_outline_rounded,
+                          color: AppColors.error,
+                          size: 48,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        "Failed to load details",
+                        style: textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        state.message,
+                        textAlign: TextAlign.center,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(200, 48),
+                        ),
+                        onPressed: () {
+                          context.read<CustRequestTripByIdBloc>().add(
+                                FetchCustRequestTripByIdEvent(
+                                  tripId: widget.ticketId.isNotEmpty && widget.ticketId != "PKM-2847"
+                                      ? widget.ticketId
+                                      : (widget.ticket?.ticketId ?? widget.ticketId),
+                                ),
+                              );
+                        },
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text("Retry"),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+
+          detail_model.TripData? tripData;
+          if (state is CustRequestTripByIdSuccess) {
+            tripData = state.tripDetails.data;
+          }
+
+          final ticket = widget.ticket;
+          final ticketNum = tripData?.ticketUuid ?? tripData?.ticketId ?? ticket?.ticketNumber ?? ticket?.ticketId ?? widget.ticketId;
+          final customerName = tripData?.customer?.name ?? ticket?.customerName ?? "Ahmed Al-Rashid";
+          final customerPhone = tripData?.customer?.contact ?? ticket?.b2bClient?.phone ?? "+971 50 123 4567";
+          final customerEmail = tripData?.customer?.email ?? ticket?.b2bClient?.email ?? "ahmed@example.ae";
+          final pickupLoc = tripData?.pickup?.location ?? ticket?.pickupLocation ?? "Dubai Marina, Tower B";
+          final dropLoc = tripData?.drop?.location ?? ticket?.dropLocation ?? "Al Quoz Auto Service";
+          final priorityStr = (tripData?.priority ?? ticket?.priority ?? "HIGH").toUpperCase();
+          final statusStr = tripData?.status ?? ticket?.ticketStatus ?? "Accepted";
+          final vehiclePlate = tripData?.vehicle?.number ?? ticket?.vehiclePlate ?? "M72528";
+          final vehicleName = tripData?.vehicle?.name ?? (ticket != null ? "Premium Vehicle" : "BMW 3 Series · Blue");
+          final vehicleSub = tripData != null ? "Plate: $vehiclePlate" : (ticket != null ? "Plate: $vehiclePlate" : "2022 · Plate: M72528");
+          final createdAt = tripData?.createdAt != null 
+              ? _formatTime(tripData!.createdAt) 
+              : (ticket?.createdAt != null ? _formatTime(ticket!.createdAt) : "10:30 AM");
+
+          return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
@@ -73,7 +277,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         appBar: AppBar(
           automaticallyImplyLeading: false,
           title: Text(
-            "Ticket #${widget.ticketId}",
+            "Ticket #$ticketNum",
             style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
           ),
           centerTitle: false,
@@ -88,13 +292,13 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                   _buildStatusBadge(
                     context: context,
                     icon: Icons.check,
-                    label: "Accepted",
+                    label: statusStr,
                     bgColor: AppColors.success,
                     textColor: Colors.white,
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    "HIGH priority",
+                    "$priorityStr priority",
                     style: textTheme.labelLarge?.copyWith(
                       color: colorScheme.onSurface.withOpacity(0.5),
                       fontWeight: FontWeight.w600,
@@ -113,15 +317,15 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       context: context,
                       icon: Icons.person,
                       iconColor: colorScheme.primary,
-                      title: "Ahmed Al-Rashid",
-                      subtitle: "+971 50 123 4567",
+                      title: customerName,
+                      subtitle: customerPhone,
                     ),
                     const Divider(height: 24),
                     _buildDetailRow(
                       context: context,
                       icon: Icons.email,
                       iconColor: colorScheme.secondary,
-                      title: "ahmed@example.ae",
+                      title: customerEmail,
                       subtitle: "",
                     ),
                   ],
@@ -138,8 +342,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       context: context,
                       icon: Icons.location_on,
                       iconColor: AppColors.error,
-                      title: "Dubai Marina, Tower B",
-                      subtitle: "Today · 10:30 AM · Ahmed Al-Rashid",
+                      title: pickupLoc,
+                      subtitle: "Assigned · $createdAt · $customerName",
                     ),
                     const SizedBox(height: 12),
                     Align(
@@ -163,8 +367,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       context: context,
                       icon: Icons.factory_outlined,
                       iconColor: colorScheme.onSurface.withOpacity(0.6),
-                      title: "Al Quoz Auto Service",
-                      subtitle: "Preferred delivery: Today by 4:00 PM",
+                      title: dropLoc,
+                      subtitle: "Preferred delivery: Today",
                     ),
                   ],
                 ),
@@ -181,12 +385,12 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "BMW 3 Series · Blue",
+                          vehicleName,
                           style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "2022 · Plate: M72528",
+                          vehicleSub,
                           style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
                         ),
                       ],
@@ -202,7 +406,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                           border: Border.all(color: colorScheme.onSurface, width: 1.5),
                         ),
                         child: Text(
-                          "M72528",
+                          vehiclePlate,
                           style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -263,7 +467,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           child: SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _isSendingRequest ? null : _handlePickMe,
+              onPressed: _isSendingRequest ? null : () => _handlePickMe(context, tripData),
               child: _isSendingRequest
                   ? Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -286,7 +490,11 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         ),
       ),
     );
-  }
+        },
+      ),
+    ),
+  );
+}
 
   Widget _buildStatusBadge({
     required BuildContext context,

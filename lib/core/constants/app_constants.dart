@@ -8,11 +8,15 @@ class AppConstants {
   // Driver
   static const String availabilityEndpoint = "/driver/availability";
   static const String locationEndpoint = "/driver/location";
-    static const String profileEndpoint = "/driver/profile"; // ✅ ADD THIS
+  static const String profileEndpoint = "/driver/profile"; // ✅ ADD THIS
   static const String ratingsEndpoint = "/driver/ratings";
   static const String earningsEndpoint = "/driver/earnings";
   static const String createBankEndpoint = "/driver/bank";
   static const String getBankEndpoint = "/driver/bank";
+  static const String fetchTicketsEndpoint = "/web/tickets/fetch";
+  static const String fetchTicketByIdEndpoint = "/web/tickets/fetch-by-id";
+  static const String sendMainDriverRequestEndpoint =
+      "/driver/send-main-driver-request";
 
   // Timeouts
   static const int connectTimeout = 30000;

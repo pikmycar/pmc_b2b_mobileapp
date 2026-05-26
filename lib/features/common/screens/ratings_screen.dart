@@ -46,6 +46,17 @@ class RatingsScreen extends StatelessWidget {
 
               return Column(
                 children: [
+                  if (Navigator.canPop(context))
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 12, top: 12),
+                        child: IconButton(
+                          icon: Icon(Icons.arrow_back, color: colorScheme.onPrimary),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ),
+                    ),
                   _buildRatingHeader(context, averageRating, totalReviews, reviews),
                   Expanded(
                     child: Container(
@@ -89,7 +100,7 @@ class RatingsScreen extends StatelessWidget {
                                     context,
                                     "User", // Map real name if backend adds it later
                                     review.review ?? "No comment",
-                                    review.rating ?? 0,
+                                    (review.rating ?? 0).toDouble(),
                                   ),
                                 );
                               },
@@ -215,7 +226,7 @@ class RatingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildReviewCard(BuildContext context, String name, String comment, int rating) {
+  Widget _buildReviewCard(BuildContext context, String name, String comment, double rating) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;

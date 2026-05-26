@@ -32,6 +32,7 @@ import '../features/main_driver/settings/screens/withdraw_screen.dart';
 import '../features/main_driver/settings/screens/support_screen.dart';
 import '../features/main_driver/settings/screens/reset_pin_screen.dart';
 import '../features/main_driver/settings/screens/notifications_screen.dart';
+import '../features/common/screens/ratings_screen.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -152,6 +153,10 @@ class AppRouter {
       case '/notifications':
         return MaterialPageRoute(
           builder: (_) => const NotificationsScreen(),
+        );
+      case '/ratings':
+        return MaterialPageRoute(
+          builder: (_) => const RatingsScreen(),
         );
       case '/main_driver_trip_completion':
       case '/trip_completed':

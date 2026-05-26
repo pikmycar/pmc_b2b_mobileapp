@@ -268,9 +268,10 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
             _role == UserRole.mainDriver &&
             state.activeTrip!.supportDrivers.isNotEmpty;
 
-        final isSupportPopupVisible = _showTripPopup &&
+        // Temporarily commented/hidden popup visibility for support driver as per requirements
+        final isSupportPopupVisible = false; /* _showTripPopup &&
             _tripData != null &&
-            _role == UserRole.supportDriver;
+            _role == UserRole.supportDriver; */
 
         final isPopupVisible = isMainDriverPopupVisible || isSupportPopupVisible;
 

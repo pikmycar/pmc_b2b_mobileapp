@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import '../../../core/models/user_role.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
+  final UserRole userRole;
   final Function(int) onTap;
 
   const CustomBottomNavigationBar({
     super.key,
     required this.currentIndex,
+    required this.userRole,
     required this.onTap,
   });
 
@@ -32,7 +35,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
         children: [
           _buildNavItem(context, 0, 'Home', Icons.home),
           _buildNavItem(context, 1, 'Earnings', Icons.account_balance_wallet),
-          _buildNavItem(context, 2, 'Ratings', Icons.star),
+          userRole == UserRole.supportDriver
+              ? _buildNavItem(context, 2, 'Assigned Trips', Icons.assignment_turned_in_rounded)
+              : _buildNavItem(context, 2, 'Ratings', Icons.star),
           _buildNavItem(context, 3, 'History', Icons.history),
           _buildNavItem(context, 4, 'Profile', Icons.person),
         ],

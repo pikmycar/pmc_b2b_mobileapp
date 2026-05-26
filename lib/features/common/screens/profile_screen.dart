@@ -228,96 +228,117 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildMenuList(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    return ListView(
-      padding: const EdgeInsets.all(24),
-      children: [
-        Container(
-          decoration: AppTheme.premiumCardDecoration(context, borderRadius: 24.0),
-          child: Column(
-            children: [
-              _buildMenuItem(
-                context,
-                icon: Icons.notifications_none_rounded,
-                title: "Notifications",
-                badge: _buildBadge(context, "3", colorScheme.error),
-                showChevron: true,
-                onTap: () {
-                  Navigator.pushNamed(context, '/notifications');
-                },
-              ),
-              _divider(context),
+    return BlocBuilder<GetProfileBloc, GetProfileState>(
+      builder: (context, state) {
+        String? role;
+        if (state is GetProfileSuccess) {
+          role = state.profileDetails.data?.role;
+        }
+        final isSupport = role == "support_driver";
 
-              _buildMenuItem(
-                context,
-                icon: Icons.person_outline_rounded,
-                title: "Personal Profile",
-                showChevron: true,
-                onTap: () async {
-                  final result = await Navigator.pushNamed(context, '/profile_details');
-                  // If result is true, it means profile was updated successfully
-                  if (result == true && context.mounted) {
-                    context.read<GetProfileBloc>().add( FetchProfileEvent());
-                  }
-                },
-              ),
-              _divider(context),
+        return ListView(
+          padding: const EdgeInsets.all(24),
+          children: [
+            Container(
+              decoration: AppTheme.premiumCardDecoration(context, borderRadius: 24.0),
+              child: Column(
+                children: [
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.notifications_none_rounded,
+                    title: "Notifications",
+                    badge: _buildBadge(context, "3", colorScheme.error),
+                    showChevron: true,
+                    onTap: () {
+                      Navigator.pushNamed(context, '/notifications');
+                    },
+                  ),
+                  _divider(context),
 
-              _buildMenuItem(
-                context,
-                icon: Icons.description_outlined,
-                title: "Driver Documents",
-                badge: _buildBadge(context, "ACTIVE", colorScheme.secondary, isText: true),
-                onTap: () {
-                  Navigator.pushNamed(context, '/documents');
-                },
-              ),
-              _divider(context),
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.person_outline_rounded,
+                    title: "Personal Profile",
+                    showChevron: true,
+                    onTap: () async {
+                      final result = await Navigator.pushNamed(context, '/profile_details');
+                      // If result is true, it means profile was updated successfully
+                      if (result == true && context.mounted) {
+                        context.read<GetProfileBloc>().add( FetchProfileEvent());
+                      }
+                    },
+                  ),
+                  _divider(context),
 
-              _buildMenuItem(
-                context,
-                icon: Icons.account_balance_outlined,
-                title: "Payout Settings",
-                showChevron: true,
-                onTap: () {
-                  Navigator.pushNamed(context, '/bank_account');
-                },
-              ),
-              _divider(context),
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.description_outlined,
+                    title: "Driver Documents",
+                    badge: _buildBadge(context, "ACTIVE", colorScheme.secondary, isText: true),
+                    onTap: () {
+                      Navigator.pushNamed(context, '/documents');
+                    },
+                  ),
+                  _divider(context),
 
-              _buildMenuItem(
-                context,
-                icon: Icons.settings_outlined,
-                title: "App Settings",
-                showChevron: true,
-                onTap: () {
-                  Navigator.pushNamed(context, '/settings');
-                },
-              ),
-              _divider(context),
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.account_balance_outlined,
+                    title: "Payout Settings",
+                    showChevron: true,
+                    onTap: () {
+                      Navigator.pushNamed(context, '/bank_account');
+                    },
+                  ),
+                  _divider(context),
 
-              _buildMenuItem(
-                context,
-                icon: Icons.headset_mic_outlined,
-                title: "Help & Support",
-                showChevron: true,
-                onTap: () {
-                  Navigator.pushNamed(context, '/support');
-                },
-              ),
-              _divider(context),
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.settings_outlined,
+                    title: "App Settings",
+                    showChevron: true,
+                    onTap: () {
+                      Navigator.pushNamed(context, '/settings');
+                    },
+                  ),
+                  _divider(context),
 
-              _buildMenuItem(
-                context,
-                icon: Icons.logout_rounded,
-                title: "Log Out",
-                textColor: colorScheme.error,
-                iconColor: colorScheme.error,
-                onTap: () => _handleLogout(context),
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.headset_mic_outlined,
+                    title: "Help & Support",
+                    showChevron: true,
+                    onTap: () {
+                      Navigator.pushNamed(context, '/support');
+                    },
+                  ),
+
+                  if (isSupport) ...[
+                    _divider(context),
+                    _buildMenuItem(
+                      context,
+                      icon: Icons.star_outline_rounded,
+                      title: "Ratings",
+                      showChevron: true,
+                      onTap: () {
+                        Navigator.pushNamed(context, '/ratings');
+                      },
+                    ),
+                  ],
+                  _divider(context),
+
+                  _buildMenuItem(
+                    context,
+                    icon: Icons.logout_rounded,
+                    title: "Log Out",
+                    textColor: colorScheme.error,
+                    iconColor: colorScheme.error,
+                    onTap: () => _handleLogout(context),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 32),
+            ),
+            const SizedBox(height: 32),
         Center(
           child: Text(
             "Version 2.4.0 (Build 2026)",
@@ -328,6 +349,8 @@ class ProfileScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+      },
     );
   }
 

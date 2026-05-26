@@ -54,13 +54,13 @@ class RatingsData {
 
 class Review {
   String? review;
-  int? rating;
+  double? rating;
 
   Review({this.review, this.rating});
 
   Review.fromJson(Map<String, dynamic> json) {
     review = json['review'];
-    rating = json['rating'];
+    rating = (json['rating'] as num?)?.toDouble();
   }
 
   Map<String, dynamic> toJson() {
