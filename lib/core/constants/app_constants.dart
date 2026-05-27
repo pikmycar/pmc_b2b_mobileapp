@@ -35,7 +35,7 @@ class AppConstants {
   /// OLD => /driver/location/update
   /// NEW => /drivers/location/update
   static const String locationEndpoint =
-      "$baseUrl/driver/location/update";
+      "$baseUrl/drivers/location/update";
 
   static const String profileEndpoint =
       "$baseUrl/driver/profile";
