@@ -37,6 +37,7 @@ class SupportPickMeRepository {
     required String dropGoogleMapsAddress,
     required String notes,
     required bool sameVendorOnly,
+    required String targetMainDriverId,
   }) async {
     try {
       final response = await apiClient.dio.post(
@@ -54,6 +55,7 @@ class SupportPickMeRepository {
           "dropGoogleMapsAddress": dropGoogleMapsAddress,
           "notes": notes,
           "sameVendorOnly": sameVendorOnly,
+          "targetMainDriverId": targetMainDriverId,
         },
       );
 
@@ -152,6 +154,7 @@ class SupportPickMeRequestBloc
         dropGoogleMapsAddress: event.dropGoogleMapsAddress,
         notes: event.notes,
         sameVendorOnly: event.sameVendorOnly,
+        targetMainDriverId: event.targetMainDriverId,
       );
       emit(SupportPickMeRequestSuccess(requestDetails: response));
     } catch (e) {

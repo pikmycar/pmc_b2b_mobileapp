@@ -96,6 +96,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         dropGoogleMapsAddress: tripData?.pickup?.googleMapsAddress ?? widget.ticket?.pickupLocation ?? "Chennai,tata",
         notes: "Support driver requesting Main Driver pickup",
         sameVendorOnly: false,
+        targetMainDriverId: "6fd4d4a8-0a6f-4979-991f-785f4da3625b",
       ),
     );
   }

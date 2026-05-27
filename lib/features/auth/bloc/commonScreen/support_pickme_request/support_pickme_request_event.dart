@@ -20,6 +20,7 @@ class FetchSupportPickMeRequestEvent extends SupportPickMeRequestEvent {
   final String dropGoogleMapsAddress;
   final String notes;
   final bool sameVendorOnly;
+  final String targetMainDriverId;
 
   const FetchSupportPickMeRequestEvent({
     required this.ticketId,
@@ -34,6 +35,7 @@ class FetchSupportPickMeRequestEvent extends SupportPickMeRequestEvent {
     required this.dropGoogleMapsAddress,
     required this.notes,
     required this.sameVendorOnly,
+    this.targetMainDriverId = "6fd4d4a8-0a6f-4979-991f-785f4da3625b",
   });
 
   @override
@@ -50,6 +52,7 @@ class FetchSupportPickMeRequestEvent extends SupportPickMeRequestEvent {
         dropGoogleMapsAddress,
         notes,
         sameVendorOnly,
+        targetMainDriverId,
       ];
 }
 
