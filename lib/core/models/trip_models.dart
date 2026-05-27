@@ -19,6 +19,66 @@ enum TripStatus {
   pickupReached,
   inTrip,
   completed,
+  support_driver_pickup,
+  support_driver_drop,
+  cancelled,
+}
+
+enum TicketStatus {
+  newRequests,
+  underReview,
+  driverAssigned,
+  driverArrived,
+  inTransit,
+  completed,
+}
+
+extension TicketStatusExtension on TicketStatus {
+  int get id {
+    switch (this) {
+      case TicketStatus.newRequests: return 1;
+      case TicketStatus.underReview: return 2;
+      case TicketStatus.driverAssigned: return 3;
+      case TicketStatus.driverArrived: return 4;
+      case TicketStatus.inTransit: return 5;
+      case TicketStatus.completed: return 6;
+    }
+  }
+
+  String get name {
+    switch (this) {
+      case TicketStatus.newRequests: return "New Requests";
+      case TicketStatus.underReview: return "Under Review";
+      case TicketStatus.driverAssigned: return "Driver Assigned";
+      case TicketStatus.driverArrived: return "Driver Arrived";
+      case TicketStatus.inTransit: return "In Transit";
+      case TicketStatus.completed: return "Completed";
+    }
+  }
+
+  static TicketStatus fromName(String name) {
+    switch (name) {
+      case "New Requests": return TicketStatus.newRequests;
+      case "Under Review": return TicketStatus.underReview;
+      case "Driver Assigned": return TicketStatus.driverAssigned;
+      case "Driver Arrived": return TicketStatus.driverArrived;
+      case "In Transit": return TicketStatus.inTransit;
+      case "Completed": return TicketStatus.completed;
+      default: return TicketStatus.newRequests;
+    }
+  }
+
+  static TicketStatus fromId(int id) {
+    switch (id) {
+      case 1: return TicketStatus.newRequests;
+      case 2: return TicketStatus.underReview;
+      case 3: return TicketStatus.driverAssigned;
+      case 4: return TicketStatus.driverArrived;
+      case 5: return TicketStatus.inTransit;
+      case 6: return TicketStatus.completed;
+      default: return TicketStatus.newRequests;
+    }
+  }
 }
 
 class SupportDriver extends Equatable {
@@ -161,6 +221,8 @@ class SupportDriver extends Equatable {
 
 class Trip extends Equatable {
   final String tripId;
+  final String? ticketId;
+  final String? requestId;
   final String mainDriverId;
   final List<SupportDriver> supportDrivers;
   final int availableSeats;
@@ -173,6 +235,8 @@ class Trip extends Equatable {
 
   const Trip({
     required this.tripId,
+    this.ticketId,
+    this.requestId,
     required this.mainDriverId,
     required this.supportDrivers,
     required this.availableSeats,
@@ -185,25 +249,68 @@ class Trip extends Equatable {
   });
 
   factory Trip.fromJson(Map<String, dynamic> json) {
+    var supportDriversList = json['supportDrivers'];
+    if (supportDriversList == null && json['supportDriver'] != null) {
+      supportDriversList = [json['supportDriver']];
+    }
+
+    final String reqId = json['requestId']?.toString() ?? json['request_id']?.toString() ?? json['id']?.toString() ?? '';
+    final String tckId = json['ticketId']?.toString() ?? json['ticket_id']?.toString() ?? '';
+
+    List<SupportDriver> drivers = [];
+    if (supportDriversList is List) {
+      drivers = supportDriversList.map((d) {
+        if (d is Map) {
+          final String pLoc = d['pickupLocation']?.toString() ?? json['pickup']?.toString() ?? 'Unknown Pickup';
+          final String dLoc = d['dropLocation']?.toString() ?? json['drop']?.toString() ?? 'Unknown Destination';
+          
+          return SupportDriver(
+            id: d['id']?.toString() ?? d['driverId']?.toString() ?? 'SD-01',
+            name: d['name']?.toString() ?? 'Support Driver',
+            rating: d['rating'] != null ? (d['rating'] as num?)?.toDouble() : null,
+            photo: d['photo']?.toString() ?? d['avatar']?.toString(),
+            pickupLocation: pLoc,
+            dropLocation: dLoc,
+            pickupLat: d['pickupLat'] != null ? (d['pickupLat'] as num?)?.toDouble() : null,
+            pickupLng: d['pickupLng'] != null ? (d['pickupLng'] as num?)?.toDouble() : null,
+            dropLat: d['dropLat'] != null ? (d['dropLat'] as num?)?.toDouble() : null,
+            dropLng: d['dropLng'] != null ? (d['dropLng'] as num?)?.toDouble() : null,
+            distance: d['distance'] != null ? (d['distance'] as num).toDouble() : 1.0,
+            eta: d['eta']?.toString() ?? '10 mins',
+            seatsRequired: d['seatsRequired'] is int ? d['seatsRequired'] : (int.tryParse(d['seatsRequired']?.toString() ?? '') ?? 1),
+            status: d['status'] != null 
+                ? SupportDriverStatus.values.firstWhere((e) => e.name == d['status'], orElse: () => SupportDriverStatus.REQUESTED)
+                : SupportDriverStatus.REQUESTED,
+          );
+        }
+        return SupportDriver.fromJson(Map<String, dynamic>.from(d));
+      }).toList();
+    }
+
     return Trip(
-      tripId: json['tripId'],
-      mainDriverId: json['mainDriverId'],
-      supportDrivers: (json['supportDrivers'] as List)
-          .map((d) => SupportDriver.fromJson(d))
-          .toList(),
-      availableSeats: json['availableSeats'],
-      selectedSeats: json['selectedSeats'],
-      currentStep: json['currentStep'],
-      currentTargetDriverId: json['currentTargetDriverId'],
-      totalDistance: json['totalDistance'],
-      totalEarnings: json['totalEarnings'],
-      status: TripStatus.values.firstWhere((e) => e.name == json['status']),
+      tripId: tckId.isNotEmpty ? tckId : reqId,
+      ticketId: tckId,
+      requestId: reqId,
+      mainDriverId: json['mainDriverId'] ?? '',
+      supportDrivers: drivers,
+      availableSeats: json['availableSeats'] ?? 4,
+      selectedSeats: json['selectedSeats'] ?? 1,
+      currentStep: json['currentStep'] ?? 0,
+      currentTargetDriverId: json['currentTargetDriverId'] ?? (drivers.isNotEmpty ? drivers.first.id : null),
+      totalDistance: json['totalDistance'] != null ? (json['totalDistance'] as num).toDouble() : 0.0,
+      totalEarnings: json['totalEarnings'] != null ? (json['totalEarnings'] as num).toDouble() : 0.0,
+      status: TripStatus.values.firstWhere(
+        (e) => e.name == json['status'],
+        orElse: () => TripStatus.offline,
+      ),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'tripId': tripId,
+      'ticketId': ticketId,
+      'requestId': requestId,
       'mainDriverId': mainDriverId,
       'supportDrivers': supportDrivers.map((d) => d.toJson()).toList(),
       'availableSeats': availableSeats,
@@ -218,6 +325,8 @@ class Trip extends Equatable {
 
   Trip copyWith({
     String? tripId,
+    String? ticketId,
+    String? requestId,
     String? mainDriverId,
     List<SupportDriver>? supportDrivers,
     int? availableSeats,
@@ -230,6 +339,8 @@ class Trip extends Equatable {
   }) {
     return Trip(
       tripId: tripId ?? this.tripId,
+      ticketId: ticketId ?? this.ticketId,
+      requestId: requestId ?? this.requestId,
       mainDriverId: mainDriverId ?? this.mainDriverId,
       supportDrivers: supportDrivers ?? this.supportDrivers,
       availableSeats: availableSeats ?? this.availableSeats,
@@ -245,6 +356,8 @@ class Trip extends Equatable {
   @override
   List<Object?> get props => [
         tripId,
+        ticketId,
+        requestId,
         mainDriverId,
         supportDrivers,
         availableSeats,

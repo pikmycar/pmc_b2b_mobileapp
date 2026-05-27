@@ -24,6 +24,7 @@ import '../features/main_driver/home/driver_home_screen.dart';
 import '../features/main_driver/transport_trip/screens/navigate_to_pickup_screen.dart';
 import '../features/main_driver/transport_trip/screens/pickup_reached_screen.dart';
 import '../features/main_driver/transport_trip/screens/in_trip_screen.dart';
+import '../features/main_driver/transport_trip/screens/main_driver_ticket_detail_screen.dart';
 import '../features/main_driver/settings/screens/settings_screen.dart';
 import '../features/main_driver/settings/screens/profile_details_screen.dart';
 import '../features/main_driver/settings/screens/documents_screen.dart';
@@ -109,6 +110,14 @@ class AppRouter {
       case '/main_driver_transport':
         return MaterialPageRoute(
           builder: (_) => const MainDriverTransportScreen(),
+        );
+      case '/main_driver_ticket_details':
+        return MaterialPageRoute(
+          builder: (context) {
+            final args = settings.arguments as Map<String, dynamic>?;
+            final reqId = args?['requestId'] as String?;
+            return MainDriverTicketDetailScreen(requestId: reqId);
+          },
         );
       case '/navigate_to_pickup':
         return MaterialPageRoute(

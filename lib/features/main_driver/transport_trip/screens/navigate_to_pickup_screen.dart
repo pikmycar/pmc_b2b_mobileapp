@@ -18,15 +18,11 @@ class NavigateToPickupScreen extends StatelessWidget {
         children: [
           // Map
           TransportMapWidget(
-            markers: {
-              const Marker(
-                markerId: MarkerId('pickup'),
-                position: pickupPos,
-                infoWindow: InfoWindow(title: 'Pickup point'),
-              ),
-            },
-            polylines: const {},
-            initialPosition: pickupPos,
+            driverPosition: null,
+            driverHeading: 0.0,
+            pickupPosition: pickupPos,
+            dropPosition: null,
+            routePoints: const [],
             onMapCreated: (controller) {},
           ),
 
@@ -50,7 +46,7 @@ class NavigateToPickupScreen extends StatelessWidget {
             child: TransportMetricsWidget(
               distance: "2.5 km",
               eta: "6 mins",
-              speed: "45 km/h",
+              arrivalTime: "12:30 PM",
             ),
           ),
 

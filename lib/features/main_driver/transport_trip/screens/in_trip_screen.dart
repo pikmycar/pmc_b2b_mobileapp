@@ -18,25 +18,14 @@ class InTripScreen extends StatelessWidget {
         children: [
           // Map
           TransportMapWidget(
-            markers: {
-              const Marker(
-                markerId: MarkerId('drop'),
-                position: endPos,
-                infoWindow: InfoWindow(title: 'Drop-off location'),
-              ),
-            },
-            polylines: {
-               Polyline(
-                polylineId: const PolylineId('route'),
-                points: const [
-                  LatLng(25.0972, 55.1744),
-                  LatLng(25.0772, 55.1344),
-                ],
-                color: colorScheme.primary,
-                width: 5,
-              ),
-            },
-            initialPosition: endPos,
+            driverPosition: null,
+            driverHeading: 0.0,
+            pickupPosition: null,
+            dropPosition: endPos,
+            routePoints: const [
+              LatLng(25.0972, 55.1744),
+              LatLng(25.0772, 55.1344),
+            ],
             onMapCreated: (controller) {},
           ),
 
@@ -60,7 +49,7 @@ class InTripScreen extends StatelessWidget {
             child: TransportMetricsWidget(
               distance: "4.8 km",
               eta: "12 mins",
-              speed: "52 km/h",
+              arrivalTime: "01:15 PM",
             ),
           ),
 

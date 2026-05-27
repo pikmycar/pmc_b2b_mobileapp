@@ -8,6 +8,8 @@ import '../../../core/models/user_role.dart';
 import '../../auth/bloc/commonScreen/profile/get_profile_bloc.dart';
 import '../../auth/bloc/commonScreen/profile/get_profile_event.dart';
 import '../../auth/bloc/commonScreen/profile/get_profile_state.dart';
+import '../../auth/bloc/commonScreen/driver_location/trip_bloc.dart';
+import '../../auth/bloc/commonScreen/driver_location/trip_event.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -214,12 +216,33 @@ class _AppDrawerContent extends StatelessWidget {
               ),
             ),
             onTap: () async {
-              final storage = context.read<SecureStorageService>();
-              await storage.logout();
-
-              if (!context.mounted) return;
-              Navigator.pushNamedAndRemoveUntil(
-                  context, '/login', (route) => false);
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (dialogContext) => AlertDialog(
+                  title: const Text("Logout"),
+                  content: const Text("Are you sure you want to logout? All local cache will be cleared."),
+                  actions: [
+                    TextButton(
+                      child: const Text("Cancel"),
+                      onPressed: () => Navigator.pop(dialogContext),
+                    ),
+                    TextButton(
+                      child: const Text("Logout", style: TextStyle(color: Colors.red)),
+                      onPressed: () async {
+                        Navigator.pop(dialogContext);
+                        final storage = context.read<SecureStorageService>();
+                        await storage.logout();
+                        if (context.mounted) {
+                          context.read<TripBloc>().add(LogoutReset());
+                          Navigator.pushNamedAndRemoveUntil(
+                              context, '/login', (route) => false);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              );
             },
           ),
           const SizedBox(height: 20),

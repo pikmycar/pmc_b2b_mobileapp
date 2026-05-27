@@ -36,8 +36,18 @@ class ReloadStoredTrip extends TripEvent {}
 class UpdateLocation extends TripEvent {
   final double lat;
   final double lng;
-  const UpdateLocation(this.lat, this.lng);
+  final double? heading;
+  const UpdateLocation(this.lat, this.lng, [this.heading]);
 
   @override
-  List<Object?> get props => [lat, lng];
+  List<Object?> get props => [lat, lng, heading];
 }
+
+class FetchPendingRequests extends TripEvent {}
+
+class NextTripStep extends TripEvent {}
+
+class CancelActiveTrip extends TripEvent {}
+
+class LogoutReset extends TripEvent {}
+

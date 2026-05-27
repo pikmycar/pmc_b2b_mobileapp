@@ -5,6 +5,8 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../../common/widgets/biometric_dialog.dart';
+import '../bloc/commonScreen/driver_location/trip_bloc.dart';
+import '../bloc/commonScreen/driver_location/trip_event.dart';
 
 class CreatePinScreen extends StatefulWidget {
   const CreatePinScreen({super.key});
@@ -78,6 +80,9 @@ class _CreatePinScreenState extends State<CreatePinScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) async {
         if (state is AuthAuthenticated) {
+          if (mounted) {
+            context.read<TripBloc>().add(LogoutReset());
+          }
           // Show biometric dialog before going home (Optional but kept as per existing flow)
           await showDialog(
             context: context,

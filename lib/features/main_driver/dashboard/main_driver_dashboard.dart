@@ -11,6 +11,7 @@ import '../../common/widgets/modern_home_dashboard.dart';
 import '../../common/widgets/custom_top_header_bar.dart';
 import '../../common/widgets/offline_screen_body.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import '../widgets/main_driver_request_popup.dart';
 
 class MainDriverDashboard extends StatefulWidget {
   const MainDriverDashboard({super.key});
@@ -19,24 +20,55 @@ class MainDriverDashboard extends StatefulWidget {
   State<MainDriverDashboard> createState() => _MainDriverDashboardState();
 }
 
-class _MainDriverDashboardState extends State<MainDriverDashboard> {
+class _MainDriverDashboardState extends State<MainDriverDashboard> with WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isPopupOpen = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Only redirect if a trip is already active (e.g. app restart mid-trip)
     // Driver stays OFFLINE by default — they must manually toggle to go online
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final state = context.read<TripBloc>().state;
-      if (state.status == TripStatus.accepted ||
-          state.status == TripStatus.navigatingToPickup ||
+      final tripBloc = context.read<TripBloc>();
+      final state = tripBloc.state;
+      if (state.status == TripStatus.accepted) {
+        Navigator.pushReplacementNamed(
+          context,
+          '/main_driver_ticket_details',
+          arguments: {'requestId': state.activeTrip?.requestId},
+        );
+      } else if (state.status == TripStatus.navigatingToPickup ||
           state.status == TripStatus.pickupReached ||
-          state.status == TripStatus.inTrip) {
+          state.status == TripStatus.inTrip ||
+          state.status == TripStatus.support_driver_pickup ||
+          state.status == TripStatus.support_driver_drop) {
         Navigator.pushReplacementNamed(context, '/main_driver_transport');
+      } else if (state.status == TripStatus.cancelled) {
+        tripBloc.add(ResetToSearching());
+      } else if (state.status == TripStatus.searching) {
+        tripBloc.add(FetchPendingRequests());
       }
       // ✅ No auto-online: driver decides when to go online
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final tripBloc = context.read<TripBloc>();
+      if (tripBloc.state.status == TripStatus.searching ||
+          tripBloc.state.status == TripStatus.requestReceived) {
+        tripBloc.add(FetchPendingRequests());
+      }
+    }
   }
 
   Future<void> _toggleOnline(bool val) async {
@@ -106,11 +138,66 @@ class _MainDriverDashboardState extends State<MainDriverDashboard> {
            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.error!)));
         }
 
+        print("========== UI LISTENER ==========");
+        print("CURRENT STATUS => ${state.status}");
+        print("ACTIVE TRIP => ${state.activeTrip?.requestId}");
+        print("================================");
+
+        if (state.status == TripStatus.requestReceived &&
+            state.activeTrip != null) {
+          if (!_isPopupOpen) {
+            print("========== POPUP CHECK ==========");
+            print("STATUS => ${state.status}");
+            print("ACTIVE TRIP => ${state.activeTrip}");
+            print("SHOWING POPUP");
+            _isPopupOpen = true;
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => MainDriverRequestPopup(
+                trip: state.activeTrip!,
+              ),
+            ).then((_) {
+              _isPopupOpen = false;
+            });
+          }
+        } else {
+          if (_isPopupOpen) {
+            Navigator.of(context).pop();
+            _isPopupOpen = false;
+          }
+        }
+
         // 🔥 REDIRECT IF TRIP ACTIVE
-        if (state.status == TripStatus.accepted || 
-            state.status == TripStatus.navigatingToPickup ||
+        if (state.status == TripStatus.cancelled) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              title: const Text("Trip Cancelled"),
+              content: const Text("This trip has been cancelled."),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    context.read<TripBloc>().add(ResetToSearching());
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
+            ),
+          );
+        } else if (state.status == TripStatus.accepted) {
+          Navigator.pushReplacementNamed(
+            context,
+            '/main_driver_ticket_details',
+            arguments: {'requestId': state.activeTrip?.requestId},
+          );
+        } else if (state.status == TripStatus.navigatingToPickup ||
             state.status == TripStatus.pickupReached ||
-            state.status == TripStatus.inTrip) {
+            state.status == TripStatus.inTrip ||
+            state.status == TripStatus.support_driver_pickup ||
+            state.status == TripStatus.support_driver_drop) {
           Navigator.pushReplacementNamed(context, '/main_driver_transport');
         }
       },
@@ -124,28 +211,43 @@ class _MainDriverDashboardState extends State<MainDriverDashboard> {
             children: [
               SafeArea(
                 bottom: false,
-                child: isOnline
-                    ? ModernHomeDashboard(
-                        isOnline: isOnline,
-                        onToggleOnline: _toggleOnline,
-                        onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
-                      )
-                    : Column(
-                        children: [
-                          CustomTopHeaderBar(
-                            isOnline: isOnline,
-                            onOnlineStatusChanged: _toggleOnline,
-                            onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+                child: Stack(
+                  children: [
+                    ModernHomeDashboard(
+                      isOnline: isOnline,
+                      onToggleOnline: _toggleOnline,
+                      onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+                    ),
+                    AnimatedOpacity(
+                      opacity: isOnline ? 0.0 : 1.0,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      child: IgnorePointer(
+                        ignoring: isOnline,
+                        child: Container(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                          child: Column(
+                            children: [
+                              CustomTopHeaderBar(
+                                isOnline: isOnline,
+                                onOnlineStatusChanged: _toggleOnline,
+                                onMenuTap: () =>
+                                    _scaffoldKey.currentState?.openDrawer(),
+                              ),
+                              Expanded(
+                                child: OfflineScreenBody(
+                                  tripsCount: "20",
+                                  rating: "4.8",
+                                  onToggleOnline: () => _toggleOnline(true),
+                                ),
+                              ),
+                            ],
                           ),
-                          Expanded(
-                            child: OfflineScreenBody(
-                              tripsCount: "20",
-                              rating: "4.8",
-                              onToggleOnline: () => _toggleOnline(true),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
+                    ),
+                  ],
+                ),
               ),
               if (state.isLoading)
                 Container(

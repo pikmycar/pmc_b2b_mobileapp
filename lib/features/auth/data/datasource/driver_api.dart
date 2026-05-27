@@ -84,4 +84,96 @@ Future<Response> updateAvailability({
     print("❌ Response: ${e.response?.data}");
     rethrow;
   }
-}}
+}
+
+  Future<Response> getPendingRequests() async {
+    try {
+      print("========== PENDING API ==========");
+      print("ONLINE DRIVER FETCHING REQUESTS");
+      final response = await apiClient.dio.get(AppConstants.pendingRequestsEndpoint);
+      print("STATUS CODE => ${response.statusCode}");
+      print("RESPONSE => ${response.data}");
+      return response;
+    } on DioException catch (e) {
+      print("STATUS CODE => ${e.response?.statusCode}");
+      print("RESPONSE => ${e.response?.data}");
+      rethrow;
+    }
+  }
+
+  Future<Response> getMainDriverTicketDetails(String requestId) async {
+    try {
+      print("========== MAIN DRIVER TICKET DETAILS ==========");
+      print("REQUEST ID => $requestId");
+      final response = await apiClient.dio.get("${AppConstants.ticketDetailsEndpoint}/$requestId/ticket-details");
+      print("STATUS CODE => ${response.statusCode}");
+      print("RESPONSE => ${response.data}");
+      return response;
+    } on DioException catch (e) {
+      print("STATUS CODE => ${e.response?.statusCode}");
+      print("RESPONSE => ${e.response?.data}");
+      rethrow;
+    }
+  }
+
+  Future<Response> acceptRequest(String requestId) async {
+    try {
+      final response = await apiClient.dio.post("${AppConstants.acceptRequestEndpoint}/$requestId/accept");
+      print("========== ACCEPT API ==========");
+      print("REQUEST ID => $requestId");
+      print("TRIP ACCEPTED");
+      print("RESPONSE => ${response.data}");
+      return response;
+    } on DioException catch (e) {
+      print("========== ACCEPT ERROR ==========");
+      print("ERROR => $e");
+      print("RESPONSE => ${e.response?.data}");
+      print("==================================");
+      rethrow;
+    }
+  }
+
+  Future<Response> rejectRequest(String requestId) async {
+    try {
+      final response = await apiClient.dio.post(
+        "${AppConstants.rejectRequestEndpoint}/$requestId/reject",
+        data: {"reject_reason": "Busy"},
+      );
+      print("========== REJECT API ==========");
+      print("REQUEST ID => $requestId");
+      print("TRIP REJECTED");
+      return response;
+    } on DioException catch (e) {
+      print("STATUS CODE => ${e.response?.statusCode}");
+      print("RESPONSE => ${e.response?.data}");
+      rethrow;
+    }
+  }
+
+  Future<Response> updateTicketDetails(String ticketId, String status) async {
+    final body = {
+      "ticketId": ticketId,
+      "status": status,
+    };
+    try {
+      final response = await apiClient.dio.post(
+        AppConstants.updateTicketEndpoint,
+        data: body,
+      );
+      print("========== UPDATE TICKET ==========");
+      print("TICKET ID => $ticketId");
+      print("STATUS => $status");
+      print("BODY => $body");
+      print("RESPONSE => ${response.data}");
+      return response;
+    } on DioException catch (e) {
+      print("========== UPDATE TICKET ERROR ==========");
+      print("TICKET ID => $ticketId");
+      print("STATUS => $status");
+      print("BODY => $body");
+      print("ERROR => $e");
+      print("RESPONSE => ${e.response?.data}");
+      rethrow;
+    }
+  }
+}

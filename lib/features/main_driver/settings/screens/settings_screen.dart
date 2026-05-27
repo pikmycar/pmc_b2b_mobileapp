@@ -12,20 +12,42 @@ import '../../../common/screens/ratings_screen.dart';
 import '../bloc/settings_bloc.dart';
 import '../bloc/settings_event.dart';
 import '../bloc/settings_state.dart';
+import '../../../auth/bloc/commonScreen/driver_location/trip_bloc.dart';
+import '../../../auth/bloc/commonScreen/driver_location/trip_event.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   void _handleLogout(BuildContext context) async {
-    final storage = context.read<SecureStorageService>();
-    await storage.logout();
-
-    if (!context.mounted) return;
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-      (route) => false,
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("Logout"),
+        content: const Text("Are you sure you want to logout? All local cache will be cleared."),
+        actions: [
+          TextButton(
+            child: const Text("Cancel"),
+            onPressed: () => Navigator.pop(dialogContext),
+          ),
+          TextButton(
+            child: const Text("Logout", style: TextStyle(color: Colors.red)),
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              final storage = context.read<SecureStorageService>();
+              await storage.logout();
+              if (context.mounted) {
+                context.read<TripBloc>().add(LogoutReset());
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 

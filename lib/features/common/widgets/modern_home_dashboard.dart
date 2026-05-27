@@ -193,6 +193,8 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
 
   void _loadSimulation() {
     if (_role == UserRole.mainDriver) {
+      // Disabled automated simulation for Main Driver to allow real pending request API integration
+      /*
       Future.delayed(const Duration(seconds: 5), () {
         if (!mounted) return;
 
@@ -202,6 +204,7 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
           context.read<TripBloc>().add(SimulateRequest());
         }
       });
+      */
     } else {
       _simulateIncomingTrip();
     }
@@ -257,7 +260,9 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
         if (state.status == TripStatus.accepted ||
             state.status == TripStatus.navigatingToPickup ||
             state.status == TripStatus.pickupReached ||
-            state.status == TripStatus.inTrip) {
+            state.status == TripStatus.inTrip ||
+            state.status == TripStatus.support_driver_pickup ||
+            state.status == TripStatus.support_driver_drop) {
           Navigator.pushReplacementNamed(
             context,
             '/main_driver_transport',
@@ -265,10 +270,7 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
         }
       },
       builder: (context, state) {
-        final isMainDriverPopupVisible = state.status == TripStatus.requestReceived &&
-            state.activeTrip != null &&
-            _role == UserRole.mainDriver &&
-            state.activeTrip!.supportDrivers.isNotEmpty;
+        final isMainDriverPopupVisible = false; // Popup shown via showDialog in dashboard listener instead
 
         // Temporarily commented/hidden popup visibility for support driver as per requirements
         final isSupportPopupVisible = false; /* _showTripPopup &&

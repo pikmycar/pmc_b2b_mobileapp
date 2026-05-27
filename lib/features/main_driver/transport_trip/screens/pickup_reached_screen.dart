@@ -18,15 +18,11 @@ class PickupReachedScreen extends StatelessWidget {
         children: [
           // Map
           TransportMapWidget(
-            markers: {
-              const Marker(
-                markerId: MarkerId('pickup'),
-                position: pickupPos,
-                infoWindow: InfoWindow(title: 'Pickup reached'),
-              ),
-            },
-            polylines: const {},
-            initialPosition: pickupPos,
+            driverPosition: null,
+            driverHeading: 0.0,
+            pickupPosition: pickupPos,
+            dropPosition: null,
+            routePoints: const [],
             onMapCreated: (controller) {},
           ),
 

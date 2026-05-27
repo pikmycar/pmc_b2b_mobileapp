@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import '../bloc/commonScreen/driver_location/trip_bloc.dart';
+import '../bloc/commonScreen/driver_location/trip_event.dart';
 
 class MobilePasswordScreen extends StatefulWidget {
   final String mobile;
@@ -37,6 +39,7 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
+          context.read<TripBloc>().add(LogoutReset());
           if (state.role == "main_driver") {
             Navigator.pushNamedAndRemoveUntil(context, '/driver_home', (route) => false);
           } else if (state.role == "support_driver") {
