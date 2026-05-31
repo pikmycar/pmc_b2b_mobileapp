@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../constants/app_constants.dart';
 import '../storage/secure_storage_service.dart';
+import 'mock_interceptor.dart';
 
 class ApiClient {
   late Dio dio;
@@ -17,6 +18,9 @@ class ApiClient {
         },
       ),
     );
+
+    // Register MockInterceptor to bypass all real API calls
+    dio.interceptors.add(MockInterceptor(storageService: storageService));
 
     dio.interceptors.add(
       InterceptorsWrapper(

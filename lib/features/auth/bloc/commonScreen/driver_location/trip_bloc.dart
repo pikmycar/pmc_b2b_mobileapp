@@ -704,123 +704,12 @@ Future<void> _onGoOffline(GoOffline event, Emitter<TripState> emit) async {
     }
   }
 
- Future<void> _connectWebSocket() async {
-  if (_isConnectingWs) {
-    debugPrint(
-      "DEBUG: [TripBloc] WS connection already in progress",
-    );
+  Future<void> _connectWebSocket() async {
+    debugPrint("DEBUG: [TripBloc] WS connection skipped (Mock Mode Active)");
     return;
   }
 
-  if (_webSocketChannel != null) {
-    debugPrint(
-      "DEBUG: [TripBloc] WS already connected",
-    );
-    return;
-  }
 
-  _isConnectingWs = true;
-
-  try {
-    final token =
-        await _driverApi.apiClient.storageService.getToken();
-
-    final driverId =
-        await _driverApi.apiClient.storageService.getDriverId();
-
-    if (token == null ||
-        token.isEmpty ||
-        driverId == null ||
-        driverId.isEmpty) {
-      debugPrint(
-        "DEBUG: [TripBloc] WS skipped => token or driverId missing",
-      );
-      return;
-    }
-
-    // Remove invalid chars if any
-    final cleanToken = token.trim().replaceAll("#", "");
-
-    /// FINAL CORRECT WS URL
-    final wsUrl =
-        "wss://api.pikmycar.com/api/v1/ws/main-driver/$driverId?token=$cleanToken";
-
-    debugPrint("========== MAIN DRIVER WS ==========");
-    debugPrint("WS URL => $wsUrl");
-
-    /// IMPORTANT
-    /// Do NOT use Uri.https()
-    /// Do NOT manually set port
-    final channel = IOWebSocketChannel.connect(
-      wsUrl,
-    );
-
-    _webSocketChannel = channel;
-
-    _webSocketChannel!.stream.listen(
-      (message) {
-        if (!_isWsConnected) {
-          _isWsConnected = true;
-
-          debugPrint(
-            "DEBUG: [TripBloc] WS CONNECTED SUCCESS",
-          );
-        }
-
-        debugPrint(
-          "DEBUG: [TripBloc] WS MESSAGE => $message",
-        );
-
-        _handleWebSocketMessage(message);
-      },
-
-      onError: (error) async {
-        debugPrint(
-          "DEBUG: [TripBloc] WS ERROR => $error",
-        );
-
-        _isWsConnected = false;
-
-        await _disconnectWebSocket();
-
-        _reconnectWebSocket();
-      },
-
-      onDone: () async {
-        debugPrint(
-          "DEBUG: [TripBloc] WS CLOSED",
-        );
-
-        _isWsConnected = false;
-
-        await _disconnectWebSocket();
-
-        _reconnectWebSocket();
-      },
-
-      cancelOnError: true,
-    );
-
-    _startPingTimer();
-
-    // Await connection completion to catch handshake errors in the try-catch block
-    await _webSocketChannel!.ready;
-
-  } catch (e) {
-    debugPrint(
-      "DEBUG: [TripBloc] WS CONNECT ERROR => $e",
-    );
-
-    _isWsConnected = false;
-
-    await _disconnectWebSocket();
-
-    _reconnectWebSocket();
-
-  } finally {
-    _isConnectingWs = false;
-  }
-}
   void _reconnectWebSocket() {
     _wsReconnectTimer?.cancel();
     if (state.status == TripStatus.offline) return;
