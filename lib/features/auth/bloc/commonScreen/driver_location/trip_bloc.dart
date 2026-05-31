@@ -13,6 +13,7 @@ import '../../../../../core/models/trip_models.dart';
 import '../../../../../core/services/trip_storage_service.dart';
 import '../../../../../core/services/location_service.dart';
 import '../../../../../core/services/map_navigation_service.dart';
+import '../../../../../core/storage/secure_storage_service.dart';
 import '../../../data/datasource/driver_api.dart';
 import 'trip_event.dart';
 import 'trip_state.dart';
@@ -714,8 +715,9 @@ Future<void> _onGoOffline(GoOffline event, Emitter<TripState> emit) async {
     _isConnectingWs = true;
 
     try {
-      final token = await _storageService.getToken();
-      final driverId = await _storageService.getDriverId();
+      final secureStorage = SecureStorageService();
+      final token = await secureStorage.getToken();
+      final driverId = await secureStorage.getDriverId();
       
       if (token == null || driverId == null) {
         _isConnectingWs = false;
