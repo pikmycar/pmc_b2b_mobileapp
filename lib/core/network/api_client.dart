@@ -19,8 +19,10 @@ class ApiClient {
       ),
     );
 
-    // Register MockInterceptor to bypass all real API calls
-    dio.interceptors.add(MockInterceptor(storageService: storageService));
+    // Register MockInterceptor to bypass all real API calls only in mock mode
+    if (AppConstants.isMockMode) {
+      dio.interceptors.add(MockInterceptor(storageService: storageService));
+    }
 
     dio.interceptors.add(
       InterceptorsWrapper(

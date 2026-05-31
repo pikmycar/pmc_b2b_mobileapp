@@ -705,8 +705,56 @@ Future<void> _onGoOffline(GoOffline event, Emitter<TripState> emit) async {
   }
 
   Future<void> _connectWebSocket() async {
-    debugPrint("DEBUG: [TripBloc] WS connection skipped (Mock Mode Active)");
-    return;
+    if (AppConstants.isMockMode) {
+      debugPrint("DEBUG: [TripBloc] WS connection skipped (Mock Mode Active)");
+      return;
+    }
+
+    if (_isConnectingWs || _webSocketChannel != null) return;
+    _isConnectingWs = true;
+
+    try {
+      final token = await _storageService.getToken();
+      final driverId = await _storageService.getDriverId();
+      
+      if (token == null || driverId == null) {
+        _isConnectingWs = false;
+        return;
+      }
+
+      final wsUrl = "${AppConstants.mainDriverWsEndpoint}/$driverId?token=$token";
+      debugPrint("DEBUG: [TripBloc] Connecting to WS: $wsUrl");
+      
+      _webSocketChannel = IOWebSocketChannel.connect(Uri.parse(wsUrl));
+      
+      _isWsConnected = true;
+      _isConnectingWs = false;
+      
+      _startPingTimer();
+
+      _webSocketChannel!.stream.listen(
+        (message) {
+          _handleWebSocketMessage(message);
+        },
+        onError: (error) {
+          debugPrint("DEBUG: [TripBloc] WS Error: $error");
+          _isWsConnected = false;
+          _webSocketChannel = null;
+          _reconnectWebSocket();
+        },
+        onDone: () {
+          debugPrint("DEBUG: [TripBloc] WS Connection Closed");
+          _isWsConnected = false;
+          _webSocketChannel = null;
+          _reconnectWebSocket();
+        },
+      );
+    } catch (e) {
+      debugPrint("DEBUG: [TripBloc] WS connection error: $e");
+      _isWsConnected = false;
+      _isConnectingWs = false;
+      _reconnectWebSocket();
+    }
   }
 
 

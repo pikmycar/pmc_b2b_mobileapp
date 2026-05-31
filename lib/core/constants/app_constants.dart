@@ -2,6 +2,13 @@ class AppConstants {
   AppConstants._();
 
   // =========================
+  // APP MODE
+  // =========================
+  // Set to true for 100% offline static UI mockup testing / demo purposes.
+  // Set to false to connect directly to the live backend APIs and WebSockets.
+  static const bool isMockMode = true; 
+
+  // =========================
   // BASE URLS
   // =========================
 
