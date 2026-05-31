@@ -43,17 +43,10 @@ class SupportPickMeRepository {
       final response = await apiClient.dio.post(
         AppConstants.sendMainDriverRequestEndpoint,
         data: {
-          "ticket_id": ticketId,
-          "priority": "medium",
-          "expires_in_seconds": 590, // Hardcoded 590 as requested
-          "pickup_location": pickupLocation,
-          "pickup_lat": pickupLatitude,
-          "pickup_lng": pickupLongitude,
-          "drop_location": dropLocation,
-          "drop_lat": dropLatitude,
-          "drop_lng": dropLongitude,
-          "google_maps_address": pickupGoogleMapsAddress.isNotEmpty ? pickupGoogleMapsAddress : "Chennai",
-          "target_main_driver_ids": [targetMainDriverId],
+          "ticketId": ticketId,
+          "latitude": pickupLatitude,
+          "longitude": pickupLongitude,
+          "address": pickupGoogleMapsAddress.isNotEmpty ? pickupGoogleMapsAddress : "Chennai",
         },
       );
 

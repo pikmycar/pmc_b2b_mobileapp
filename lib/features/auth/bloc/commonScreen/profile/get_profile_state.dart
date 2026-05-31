@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../data/models/get_profile.dart'; // Ensure compatibility with existing model
+import '../../../data/models/get_profile.dart';
 
 abstract class GetProfileState extends Equatable {
   const GetProfileState();
@@ -17,12 +17,12 @@ class GetProfileLoading extends GetProfileState {
 }
 
 class GetProfileSuccess extends GetProfileState {
-  final GetProfileDetails profileDetails;
+  final GetProfile profile;
 
-  const GetProfileSuccess({required this.profileDetails});
+  const GetProfileSuccess({required this.profile});
 
   @override
-  List<Object?> get props => [profileDetails];
+  List<Object?> get props => [profile];
 }
 
 class GetProfileError extends GetProfileState {

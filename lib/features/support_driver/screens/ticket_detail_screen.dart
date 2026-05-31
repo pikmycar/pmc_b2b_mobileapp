@@ -11,10 +11,11 @@ import '../../auth/bloc/commonScreen/customer_request_trip_by_id/cust_request_tr
 import '../../auth/bloc/commonScreen/support_pickme_request/support_pickme_request_bloc.dart';
 import '../../auth/bloc/commonScreen/support_pickme_request/support_pickme_request_event.dart';
 import '../../auth/bloc/commonScreen/support_pickme_request/support_pickme_request_state.dart';
+import 'package:geolocator/geolocator.dart';
 import '../screens/searching_main_driver_screen.dart';
 
 class TicketDetailScreen extends StatefulWidget {
-  final Tickets? ticket;
+  final TripData? ticket;
   final String ticketId;
 
   const TicketDetailScreen({
@@ -78,18 +79,48 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
   Future<void> _handlePickMe(BuildContext context, detail_model.TripData? tripData) async {
     final storage = context.read<SecureStorageService>();
-    final supportDriverId = await storage.getDriverId() ?? tripData?.drivers?.supportDriver?.id ?? "7d403d9e-354b-4645-a68a-87cab77c6b50";
+    final supportDriverId = await storage.getDriverId() ?? tripData?.drivers?.raw?['supportDriver']?['id']?.toString() ?? "7d403d9e-354b-4645-a68a-87cab77c6b50";
 
     if (!mounted) return;
 
+    double pickupLat = tripData?.pickup?.latitude ?? 105222.2223;
+    double pickupLng = tripData?.pickup?.longitude ?? 12555.666;
+    final String pickupAddress = tripData?.pickup?.googleMapsAddress ?? widget.ticket?.pickupLocation ?? "Chennai";
+
+    try {
+      final isServiceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (isServiceEnabled) {
+        var permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.denied) {
+          permission = await Geolocator.requestPermission();
+        }
+        if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+          // Attempt to retrieve last known cached position first for instant speed
+          Position? position = await Geolocator.getLastKnownPosition();
+          
+          // If no cached position is found, poll the GPS hardware with medium accuracy
+          position ??= await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.medium,
+            timeLimit: const Duration(seconds: 4),
+          );
+          
+          pickupLat = position.latitude;
+          pickupLng = position.longitude;
+          debugPrint("📍 Dynamic GPS Location Resolved: $pickupLat, $pickupLng");
+        }
+      }
+    } catch (e) {
+      debugPrint("⚠️ Geolocator Error, using fallback coordinates: $e");
+    }
+
     context.read<SupportPickMeRequestBloc>().add(
       FetchSupportPickMeRequestEvent(
-        ticketId: tripData?.ticketUuid ?? tripData?.ticketId ?? widget.ticket?.ticketId ?? widget.ticketId,
+        ticketId: tripData?.ticketId ?? widget.ticket?.ticketId ?? widget.ticketId,
         supportDriverId: supportDriverId,
-        pickupLocation: "Chennai",
-        pickupLatitude: -90.0,
-        pickupLongitude: -180.0,
-        pickupGoogleMapsAddress: "Chennai",
+        pickupLocation: pickupAddress,
+        pickupLatitude: pickupLat,
+        pickupLongitude: pickupLng,
+        pickupGoogleMapsAddress: pickupAddress,
         dropLocation: tripData?.pickup?.location ?? widget.ticket?.pickupLocation ?? "Chennai,tata",
         dropLatitude: tripData?.pickup?.latitude ?? -90.0,
         dropLongitude: tripData?.pickup?.longitude ?? -180.0,
@@ -132,6 +163,10 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
       ],
       child: BlocListener<SupportPickMeRequestBloc, SupportPickMeRequestState>(
         listener: (context, state) {
+          final resolvedTicketId = widget.ticketId.isNotEmpty && widget.ticketId != "PKM-2847"
+              ? widget.ticketId
+              : (widget.ticket?.ticketId ?? widget.ticketId);
+
           if (state is SupportPickMeRequestLoading) {
             setState(() => _isSendingRequest = true);
           } else if (state is SupportPickMeRequestSuccess) {
@@ -145,7 +180,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => const SearchingMainDriverScreen(),
+                builder: (_) => SearchingMainDriverScreen(ticketId: resolvedTicketId),
               ),
             );
           } else if (state is SupportPickMeRequestError) {
@@ -161,7 +196,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const SearchingMainDriverScreen(),
+                  builder: (_) => SearchingMainDriverScreen(ticketId: resolvedTicketId),
                 ),
               );
             } else {
@@ -253,20 +288,21 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
           }
 
           final ticket = widget.ticket;
-          final ticketNum = tripData?.ticketUuid ?? tripData?.ticketId ?? ticket?.ticketNumber ?? ticket?.ticketId ?? widget.ticketId;
+          final ticketNum = tripData?.ticketNumber ?? tripData?.ticketId ?? ticket?.ticketNumber ?? ticket?.ticketId ?? widget.ticketId;
           final customerName = tripData?.customer?.name ?? ticket?.customerName ?? "Ahmed Al-Rashid";
-          final customerPhone = tripData?.customer?.contact ?? ticket?.b2bClient?.phone ?? "+971 50 123 4567";
-          final customerEmail = tripData?.customer?.email ?? ticket?.b2bClient?.email ?? "ahmed@example.ae";
+          final customerPhone = tripData?.customer?.contact ?? ticket?.customerPhone ?? "+971 50 123 4567";
+          final customerEmail = tripData?.customer?.email ?? "ahmed@example.ae";
           final pickupLoc = tripData?.pickup?.location ?? ticket?.pickupLocation ?? "Dubai Marina, Tower B";
           final dropLoc = tripData?.drop?.location ?? ticket?.dropLocation ?? "Al Quoz Auto Service";
           final priorityStr = (tripData?.priority ?? ticket?.priority ?? "HIGH").toUpperCase();
-          final statusStr = tripData?.status ?? ticket?.ticketStatus ?? "Accepted";
+          final statusStr = tripData?.status ?? ticket?.status ?? "Accepted";
           final vehiclePlate = tripData?.vehicle?.number ?? ticket?.vehiclePlate ?? "M72528";
-          final vehicleName = tripData?.vehicle?.name ?? (ticket != null ? "Premium Vehicle" : "BMW 3 Series · Blue");
+          final vehicleName = tripData?.vehicle?.name ?? ticket?.vehicle ?? (ticket != null ? "Premium Vehicle" : "BMW 3 Series · Blue");
           final vehicleSub = tripData != null ? "Plate: $vehiclePlate" : (ticket != null ? "Plate: $vehiclePlate" : "2022 · Plate: M72528");
           final createdAt = tripData?.createdAt != null 
               ? _formatTime(tripData!.createdAt) 
-              : (ticket?.createdAt != null ? _formatTime(ticket!.createdAt) : "10:30 AM");
+              : (ticket?.assignedAt != null ? _formatTime(ticket!.assignedAt) : "10:30 AM");
+
 
           return PopScope(
       canPop: false,

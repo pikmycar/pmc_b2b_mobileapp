@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/network/api_client.dart';
-import '../../../../../core/constants/app_constants.dart'; // ✅ ADD THIS
+import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/storage/secure_storage_service.dart';
 import 'get_profile_event.dart';
 import 'get_profile_state.dart';
 import '../../../data/models/get_profile.dart';
@@ -9,16 +10,25 @@ import '../../../data/models/get_profile.dart';
 /// Simple repository interface for fetching profile details
 class ProfileRepository {
   final ApiClient apiClient;
+  final SecureStorageService storage;
 
-  ProfileRepository({required this.apiClient});
+  ProfileRepository({required this.apiClient, required this.storage});
 
-  Future<GetProfileDetails> fetchProfile() async {
+  Future<GetProfile> fetchProfile() async {
     try {
-      // ✅ Using AppConstants instead of hardcoded URL
-      final response = await apiClient.dio.get(AppConstants.profileEndpoint);
+      // Read driverId from secure storage — required as ?id= query param
+      final driverId = await storage.getDriverId();
+      if (driverId == null || driverId.isEmpty) {
+        throw Exception('Driver ID not found. Please log in again.');
+      }
+
+      final response = await apiClient.dio.get(
+        AppConstants.profileEndpoint,
+        queryParameters: {'id': driverId},
+      );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return GetProfileDetails.fromJson(response.data);
+        return GetProfile.fromJson(response.data);
       } else {
         throw Exception('Failed to fetch profile (Status: ${response.statusCode})');
       }
@@ -42,7 +52,7 @@ class GetProfileBloc extends Bloc<GetProfileEvent, GetProfileState> {
     emit(const GetProfileLoading());
     try {
       final profileDetails = await repository.fetchProfile();
-      emit(GetProfileSuccess(profileDetails: profileDetails));
+      emit(GetProfileSuccess(profile: profileDetails));
     } catch (e) {
       emit(GetProfileError(message: e.toString()));
     }

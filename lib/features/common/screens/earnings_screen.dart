@@ -32,6 +32,7 @@ class EarningsScreen extends StatelessWidget {
           create: (context) => GetProfileBloc(
             repository: ProfileRepository(
               apiClient: ApiClient(context.read<SecureStorageService>()),
+              storage: context.read<SecureStorageService>(),
             ),
           )..add(FetchProfileEvent()),
         ),
@@ -110,10 +111,10 @@ class EarningsScreen extends StatelessWidget {
     return BlocBuilder<GetProfileBloc, GetProfileState>(
       builder: (context, state) {
         final name = state is GetProfileSuccess
-            ? (state.profileDetails.data?.name ?? "Driver")
+            ? (state.profile.data?.name ?? "Driver")
             : "Driver";
         final imageUrl = state is GetProfileSuccess
-            ? state.profileDetails.data?.profileImageUrl
+            ? state.profile.data?.profileImage
             : null;
 
         return Container(
@@ -272,10 +273,10 @@ class EarningsScreen extends StatelessWidget {
     return BlocBuilder<GetProfileBloc, GetProfileState>(
       builder: (context, state) {
         final totalTrips = state is GetProfileSuccess
-            ? (state.profileDetails.data?.totalTrips?.toString() ?? "--")
+            ? (state.profile.data?.trips?.toString() ?? "--")
             : "--";
         final rating = state is GetProfileSuccess
-            ? (state.profileDetails.data?.rating?.toStringAsFixed(1) ?? "--")
+            ? (state.profile.data?.rating?.toString() ?? "--")
             : "--";
 
         return Row(

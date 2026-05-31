@@ -23,6 +23,7 @@ class ProfileScreen extends StatelessWidget {
       create: (context) => GetProfileBloc(
         repository: ProfileRepository(
           apiClient: ApiClient(context.read<SecureStorageService>()),
+          storage: context.read<SecureStorageService>(),
         ),
       )..add( FetchProfileEvent()),
       child: Builder(
@@ -83,14 +84,14 @@ class ProfileScreen extends StatelessWidget {
         String acceptRate = "0%";
         
         if (state is GetProfileSuccess) {
-          final profileData = state.profileDetails.data;
+          final profileData = state.profile.data;
           name = profileData?.name ?? name;
-          role = profileData?.role ?? role;
-          trips = (profileData?.totalTrips ?? 0).toString();
-          rating = "${(profileData?.rating ?? 0.0).toStringAsFixed(1)}★";
+          role = profileData?.driverType ?? role;
+          trips = (profileData?.trips ?? 0).toString();
+          rating = "${(profileData?.rating ?? 0)}★";
           
-          final acceptanceNum = profileData?.driverAcceptance ?? 0;
-          acceptRate = "${acceptanceNum.toInt()}%";
+          final acceptanceNum = profileData?.acceptanceRate ?? 0;
+          acceptRate = "$acceptanceNum%";
         }
         String initials = name.isNotEmpty ? name.substring(0, 1).toUpperCase() : "U";
 
@@ -234,9 +235,9 @@ class ProfileScreen extends StatelessWidget {
       builder: (context, state) {
         String? role;
         if (state is GetProfileSuccess) {
-          role = state.profileDetails.data?.role;
+          role = state.profile.data?.driverType;
         }
-        final isSupport = role == "support_driver";
+        final isSupport = (role ?? "").toLowerCase().contains("support");
 
         return ListView(
           padding: const EdgeInsets.all(24),

@@ -10,16 +10,16 @@ abstract class UpdateProfileEvent extends Equatable {
 class SubmitUpdateProfileEvent extends UpdateProfileEvent {
   final String? name;
   final String? email;
-  final String? phone;
-  final String? profileImageUrl;
+  final String? contact;
+  final String? profileImage;
 
   const SubmitUpdateProfileEvent({
     this.name,
     this.email,
-    this.phone,
-    this.profileImageUrl,
+    this.contact,
+    this.profileImage,
   });
 
   @override
-  List<Object?> get props => [name, email, phone, profileImageUrl];
+  List<Object?> get props => [name, email, contact, profileImage];
 }

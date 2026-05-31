@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../../../core/theme/app_theme.dart';
+import '../../auth/data/models/getTrip_mainDriver_status.dart';
 import 'driver_on_way_screen.dart';
 
 class DriverAcceptedScreen extends StatefulWidget {
-  const DriverAcceptedScreen({super.key});
+  final GetTripMainDriverStatus? statusDetails;
+
+  const DriverAcceptedScreen({
+    super.key,
+    this.statusDetails,
+  });
 
   @override
   State<DriverAcceptedScreen> createState() => _DriverAcceptedScreenState();
@@ -67,6 +73,23 @@ class _DriverAcceptedScreenState extends State<DriverAcceptedScreen> {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
 
+    // Resolve driver details from status API response or use fallback defaults
+    final info = GetTripMainDriverStatusHelper.resolveDriverInfo(widget.statusDetails);
+
+    final String driverName = info['name'];
+    final String driverPhone = info['phone'];
+    final String driverAvatar = info['avatar'];
+    final String driverRating = info['rating'];
+    final String vehicleType = info['vehicleType'];
+    final String vehicleNumber = info['vehicleNumber'];
+    final String eta = info['eta'];
+    final String pickupLocation = info['pickupLocation'];
+    final String tripStatus = info['status'];
+
+    final String displayInitial = driverName.isNotEmpty 
+        ? (driverName.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase())
+        : "KA";
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
@@ -90,7 +113,7 @@ class _DriverAcceptedScreenState extends State<DriverAcceptedScreen> {
               // Status Badge
               _buildStatusBadge(
                 context, 
-                "🚕 Main Driver Accepted!", 
+                "🚕 Driver: ${tripStatus.replaceAll('_', ' ').toUpperCase()}", 
                 AppColors.success, 
                 textColor: Colors.white,
               ),
@@ -104,22 +127,19 @@ class _DriverAcceptedScreenState extends State<DriverAcceptedScreen> {
                   children: [
                     Row(
                       children: [
-                        Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              "KA",
-                              style: textTheme.headlineSmall?.copyWith(
-                                color: colorScheme.onPrimary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
+                        CircleAvatar(
+                          radius: 35,
+                          backgroundImage: driverAvatar.isNotEmpty ? NetworkImage(driverAvatar) : null,
+                          backgroundColor: colorScheme.primary,
+                          child: driverAvatar.isEmpty
+                              ? Text(
+                                  displayInitial,
+                                  style: textTheme.headlineSmall?.copyWith(
+                                    color: colorScheme.onPrimary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              : null,
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -127,7 +147,7 @@ class _DriverAcceptedScreenState extends State<DriverAcceptedScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Khalid Al-Ameri',
+                                driverName,
                                 style: textTheme.titleLarge?.copyWith(
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: -0.5,
@@ -138,13 +158,13 @@ class _DriverAcceptedScreenState extends State<DriverAcceptedScreen> {
                                 children: [
                                   const Icon(Icons.star, color: Colors.amber, size: 16),
                                   Text(
-                                    ' 4.9 · Main Driver · 620 trips', 
+                                    ' $driverRating · Main Driver · $driverPhone', 
                                     style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
                                   ),
                                 ],
                               ),
                               Text(
-                                '2020 Toyota Camry · White',
+                                '$vehicleType · $vehicleNumber',
                                 style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
                               ),
                             ],
@@ -171,11 +191,11 @@ class _DriverAcceptedScreenState extends State<DriverAcceptedScreen> {
                 context: context,
                 child: Column(
                   children: [
-                     _buildLocationRow(context, Icons.location_on, AppColors.error, "Dubai Marina, Tower B", "Pickup Location"),
+                     _buildLocationRow(context, Icons.location_on, AppColors.error, pickupLocation, "Pickup Location"),
                      const Divider(height: 32),
                      _buildLocationRow(context, Icons.factory_outlined, colorScheme.onSurface.withOpacity(0.5), "Al Quoz Auto Service", "Drop Location"),
                      const Divider(height: 32),
-                     _buildLocationRow(context, Icons.access_time_filled, AppColors.success, "4 Minutes", "Estimated Arrival (ETA)"),
+                     _buildLocationRow(context, Icons.access_time_filled, AppColors.success, eta, "Estimated Arrival (ETA)"),
                   ],
                 ),
               ),
@@ -252,12 +272,19 @@ class _DriverAcceptedScreenState extends State<DriverAcceptedScreen> {
       children: [
         Icon(icon, color: color, size: 24),
         const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
-            Text(subtitle, style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5))),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title, 
+                style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(subtitle, style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5))),
+            ],
+          ),
         ),
       ],
     );

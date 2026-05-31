@@ -6,17 +6,17 @@ class AppConstants {
   // =========================
   // Set to true for 100% offline static UI mockup testing / demo purposes.
   // Set to false to connect directly to the live backend APIs and WebSockets.
-  static const bool isMockMode = true; 
+  static const bool isMockMode = false; 
 
   // =========================
   // BASE URLS
   // =========================
 
-  static const String baseUrl = "https://api.pikmycar.com/api/v1";
+  static const String baseUrl = "https://pmcapi.pikmycar.com/api";
 
   // Secure WebSocket
   static const String wsBaseUrl =
-      "wss://api.pikmycar.com";
+      "wss://pmcapi.pikmycar.com";
   // Google Maps
   static const String googleMapsApiKey =
       "AIzaSyDxV3x0-Ra1FsFY2m2wPPwEbGAPNDbSSEQ";
@@ -26,7 +26,7 @@ class AppConstants {
   // =========================
 
   static const String loginEndpoint =
-      "$baseUrl/driver/auth/login";
+      "$baseUrl/Auth/login";
 
   static const String refreshEndpoint =
       "$baseUrl/auth/refresh-token";
@@ -44,8 +44,13 @@ class AppConstants {
   static const String locationEndpoint =
       "$baseUrl/drivers/location/update";
 
+  /// Usage: "$profileEndpoint?id={driverId}"
   static const String profileEndpoint =
-      "$baseUrl/driver/profile";
+      "$baseUrl/Master/get-driver";
+
+  /// Usage: "$updateProfileEndpoint/{driverId}"
+  static const String updateProfileEndpoint =
+      "$baseUrl/Master/update-driver";
 
   static const String ratingsEndpoint =
       "$baseUrl/driver/ratings";
@@ -68,10 +73,10 @@ class AppConstants {
   // =========================
 
   static const String fetchTicketsEndpoint =
-      "$baseUrl/web/tickets/fetch";
+      "$baseUrl/SupportDriverFlow/get-assigned-tickets";
 
   static const String fetchTicketByIdEndpoint =
-      "$baseUrl/web/tickets/fetch-by-id";
+      "$baseUrl/SupportDriverFlow/get-ticket-details";
 
   static const String updateTicketEndpoint =
       "$baseUrl/web/tickets/update";
@@ -81,7 +86,10 @@ class AppConstants {
   // =========================
 
   static const String sendMainDriverRequestEndpoint =
-      "$baseUrl/driver/send-main-driver-request";
+      "$baseUrl/SupportDriverFlow/request-main-driver";
+
+  static const String getTripMainDriverStatusEndpoint =
+      "$baseUrl/SupportDriverFlow/get-main-driver-status";
 
   static const String pendingRequestsEndpoint =
       "$baseUrl/main-driver-requests/pending";

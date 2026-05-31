@@ -11,12 +11,12 @@ class AuthApi {
   Future<Response> login(String mobile, String password) async {
     try {
       print("🟡 API CALL: LOGIN");
-      print("📤 Payload: {emailOrPhone: $mobile, password: $password}");
+      print("📤 Payload: {emailOrMobile: $mobile, password: $password}");
 
       final response = await client.dio.post(
         AppConstants.loginEndpoint,
         data: {
-          "emailOrPhone": mobile,
+          "emailOrMobile": mobile,
           "password": password,
         },
         options: Options(

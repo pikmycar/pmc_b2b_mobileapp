@@ -86,15 +86,16 @@ class SettingsScreen extends StatelessWidget {
               create: (context) => GetProfileBloc(
                 repository: ProfileRepository(
                   apiClient: context.read<ApiClient>(),
+                  storage: context.read<SecureStorageService>(),
                 ),
               )..add(FetchProfileEvent()),
               child: BlocBuilder<GetProfileBloc, GetProfileState>(
                 builder: (context, state) {
                   String ratingSubtitle = "";
                   if (state is GetProfileSuccess) {
-                    final ratingVal = state.profileDetails.data?.rating;
+                    final ratingVal = state.profile.data?.rating;
                     if (ratingVal != null) {
-                      ratingSubtitle = "${ratingVal.toStringAsFixed(1)} ★";
+                      ratingSubtitle = "$ratingVal ★";
                     }
                   }
 

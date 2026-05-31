@@ -57,12 +57,11 @@ class _PinLoginScreenState extends State<PinLoginScreen>
 
     if (success) {
       final role = await storage.getUserRole();
+      final isSupport = role == "support_driver" || role == UserRole.supportDriver.toString();
 
       Navigator.pushReplacementNamed(
         context,
-        role == UserRole.supportDriver.toString()
-            ? '/support_driver_dashboard'
-            : '/main_driver_dashboard',
+        isSupport ? '/support_driver_dashboard' : '/main_driver_dashboard',
       );
     }
   }
@@ -81,12 +80,11 @@ class _PinLoginScreenState extends State<PinLoginScreen>
 
     if (_pin == savedPin) {
       final role = await storage.getUserRole();
+      final isSupport = role == "support_driver" || role == UserRole.supportDriver.toString();
 
       Navigator.pushReplacementNamed(
         context,
-        role == UserRole.supportDriver.toString()
-            ? '/support_driver_dashboard'
-            : '/main_driver_dashboard',
+        isSupport ? '/support_driver_dashboard' : '/main_driver_dashboard',
       );
     } else {
       /// ❌ SHAKE EFFECT

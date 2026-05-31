@@ -20,6 +20,7 @@ class AppDrawer extends StatelessWidget {
       create: (context) => GetProfileBloc(
         repository: ProfileRepository(
           apiClient: ApiClient(context.read<SecureStorageService>()),
+          storage: context.read<SecureStorageService>(),
         ),
       )..add(FetchProfileEvent()),
       child: const _AppDrawerContent(),
@@ -44,16 +45,16 @@ class _AppDrawerContent extends StatelessWidget {
           BlocBuilder<GetProfileBloc, GetProfileState>(
             builder: (context, state) {
               final name = state is GetProfileSuccess
-                  ? (state.profileDetails.data?.name ?? 'Driver')
+                  ? (state.profile.data?.name ?? 'Driver')
                   : 'Driver';
               final email = state is GetProfileSuccess
-                  ? (state.profileDetails.data?.email ?? '')
+                  ? (state.profile.data?.email ?? '')
                   : '';
               final rating = state is GetProfileSuccess
-                  ? (state.profileDetails.data?.rating?.toStringAsFixed(1) ?? '—')
+                  ? (state.profile.data?.rating?.toString() ?? '—')
                   : '—';
               final imageUrl = state is GetProfileSuccess
-                  ? state.profileDetails.data?.profileImageUrl
+                  ? state.profile.data?.profileImage
                   : null;
 
               return DrawerHeader(

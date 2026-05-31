@@ -288,6 +288,7 @@ class _ModernHomeDashboardState extends State<ModernHomeDashboard>
                   isOnline: widget.isOnline,
                   onMenuTap: widget.onMenuTap,
                   onOnlineStatusChanged: widget.onToggleOnline,
+                  showToggle: _role != UserRole.supportDriver,
                 ),
                 body: Column(
                   children: [

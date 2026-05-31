@@ -1,21 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
 import '../../../core/theme/app_theme.dart';
+import '../../auth/bloc/commonScreen/get_trip_main_driver_status/get_trip_main_driver_status_bloc.dart';
+import '../../auth/bloc/commonScreen/get_trip_main_driver_status/get_trip_main_driver_status_event.dart';
+import '../../auth/bloc/commonScreen/get_trip_main_driver_status/get_trip_main_driver_status_state.dart';
+import '../../auth/data/models/getTrip_mainDriver_status.dart';
+import '../../../../core/network/api_client.dart';
 import 'driver_accepted_screen.dart';
 
-class SearchingMainDriverScreen extends StatefulWidget {
-  const SearchingMainDriverScreen({super.key});
+class SearchingMainDriverScreen extends StatelessWidget {
+  final String ticketId;
+
+  const SearchingMainDriverScreen({
+    super.key,
+    this.ticketId = "ca530305-0c67-40b8-a654-5f1885dc25ca",
+  });
 
   @override
-  State<SearchingMainDriverScreen> createState() => _SearchingMainDriverScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider<GetTripMainDriverStatusBloc>(
+      create: (context) => GetTripMainDriverStatusBloc(
+        repository: GetTripMainDriverStatusRepository(
+          apiClient: context.read<ApiClient>(),
+        ),
+      ),
+      child: SearchingMainDriverContent(ticketId: ticketId),
+    );
+  }
 }
 
-class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
+class SearchingMainDriverContent extends StatefulWidget {
+  final String ticketId;
+
+  const SearchingMainDriverContent({
+    super.key,
+    required this.ticketId,
+  });
+
+  @override
+  State<SearchingMainDriverContent> createState() => _SearchingMainDriverContentState();
+}
+
+class _SearchingMainDriverContentState extends State<SearchingMainDriverContent>
     with TickerProviderStateMixin {
   late AnimationController _radarController;
-  Timer? _searchTimer;
+  Timer? _pollingTimer;
   GoogleMapController? _mapController;
   Position? _currentPosition;
   final Set<Marker> _markers = {};
@@ -31,22 +63,33 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
 
     _initLocationTracking();
 
-    _searchTimer = Timer(const Duration(seconds: 8), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const DriverAcceptedScreen()),
-        );
-      }
+    // Start polling immediately and then every 5 seconds
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startPolling();
     });
   }
 
   @override
   void dispose() {
     _radarController.dispose();
-    _searchTimer?.cancel();
+    _pollingTimer?.cancel();
     _mapController?.dispose();
     super.dispose();
+  }
+
+  void _startPolling() {
+    _pollingTimer?.cancel();
+    _fetchStatus();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _fetchStatus();
+    });
+  }
+
+  void _fetchStatus() {
+    if (!mounted) return;
+    context.read<GetTripMainDriverStatusBloc>().add(
+      FetchTripMainDriverStatusEvent(ticketId: widget.ticketId),
+    );
   }
 
   Future<bool> _onBackPressed(BuildContext context) async {
@@ -71,6 +114,7 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
 
     if (result == true) {
       if (!mounted) return true;
+      _pollingTimer?.cancel();
       Navigator.pushNamedAndRemoveUntil(context, '/support_driver_dashboard', (route) => false);
       return true;
     }
@@ -78,34 +122,37 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
   }
 
   Future<void> _initLocationTracking() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return;
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return;
+      }
 
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) return;
-    }
+      if (permission == LocationPermission.deniedForever) return;
 
-    if (permission == LocationPermission.deniedForever) return;
-
-    final position = await Geolocator.getCurrentPosition();
-    if (!mounted) return;
-
-    setState(() {
-      _currentPosition = position;
-      _markers.clear();
-      _markers.add(
-        Marker(
-          markerId: const MarkerId('user_location'),
-          position: LatLng(position.latitude, position.longitude),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow),
-        ),
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+        timeLimit: const Duration(seconds: 4),
       );
-    });
+      
+      if (!mounted) return;
+
+      setState(() {
+        _currentPosition = position;
+        _markers.clear();
+        _markers.add(
+          Marker(
+            markerId: const MarkerId('user_location'),
+            position: LatLng(position.latitude, position.longitude),
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow),
+          ),
+        );
+      });
+    } catch (_) {}
   }
 
   @override
@@ -120,178 +167,215 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
         if (didPop) return;
         await _onBackPressed(context);
       },
-      child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Text(
-            'Searching for Driver...',
-            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
-          ),
-          centerTitle: false,
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Radar Section
-              Container(
-                height: 350,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: colorScheme.onSurface.withOpacity(0.05),
-                  border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // LIVE MAP BACKGROUND
-                    if (_currentPosition != null)
-                      GoogleMap(
-                        initialCameraPosition: CameraPosition(
-                          target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                          zoom: 15,
-                        ),
-                        markers: _markers,
-                        onMapCreated: (controller) => _mapController = controller,
-                        myLocationEnabled: true,
-                        zoomControlsEnabled: false,
-                        mapToolbarEnabled: false,
-                        myLocationButtonEnabled: false,
-                      )
-                    else
-                      Center(child: CircularProgressIndicator(color: colorScheme.primary)),
-
-                    // RADAR RIPPLE OVERLAY
-                    IgnorePointer(
-                      child: Container(
-                        color: Colors.black.withOpacity(0.1),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            ...List.generate(3, (index) {
-                              return AnimatedBuilder(
-                                animation: _radarController,
-                                builder: (context, child) {
-                                  double progress = (_radarController.value + index / 3) % 1.0;
-                                  return Container(
-                                    width: progress * 600,
-                                    height: progress * 600,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: colorScheme.primary.withOpacity((1 - progress) * 0.5),
-                                        width: 2,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            }),
-                          ],
-                        ),
-                      ),
-                    ),
-                    
-                    // Pulse Center
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withOpacity(0.3),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: colorScheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Icons.my_location, color: colorScheme.onPrimary, size: 24),
-                      ),
-                    ),
-                  ],
-                ),
+      child: BlocConsumer<GetTripMainDriverStatusBloc, GetTripMainDriverStatusState>(
+        listener: (context, state) {
+          if (state is GetTripMainDriverStatusAssigned) {
+            _pollingTimer?.cancel();
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => DriverAcceptedScreen(statusDetails: state.statusDetails),
               ),
+            );
+          }
+        },
+        builder: (context, state) {
+          String statusBadgeText = "Searching...";
+          Color statusBadgeColor = AppColors.warning;
+          String statusTitleText = "Searching for Main Driver...";
+          String statusSubtitleText = "Connecting you with a nearby driver for your pickup.";
+          String statusBoxText = "Pick Me request sent! Waiting for a Main Driver to confirm and pick you up from your location.";
 
-              // Details Content
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildStatusBadge(context, "Pickup Accepted", AppColors.success),
-                    const SizedBox(height: 16),
-                    Text(
-                      "Searching for Main Driver...",
-                      style: textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                      ),
+          if (state is GetTripMainDriverStatusSearching) {
+            final rawStatus = state.statusDetails.data?.status ?? 'searching';
+            statusBadgeText = rawStatus.replaceAll('_', ' ').toUpperCase();
+            statusBoxText = state.statusDetails.message ?? statusBoxText;
+            
+            if (rawStatus == 'searching') {
+              statusTitleText = "Searching for Main Driver...";
+            } else if (rawStatus == 'pending') {
+              statusTitleText = "Request Pending...";
+            } else if (rawStatus == 'waiting_for_main_driver') {
+              statusTitleText = "Waiting for Main Driver...";
+            }
+          } else if (state is GetTripMainDriverStatusError) {
+            statusBoxText = "⚠️ Error fetching status: ${state.message}";
+          }
+
+          return Scaffold(
+            appBar: AppBar(
+              automaticallyImplyLeading: false,
+              title: Text(
+                'Searching for Driver...',
+                style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+              ),
+              centerTitle: false,
+            ),
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Radar Section
+                  Container(
+                    height: 350,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: colorScheme.onSurface.withOpacity(0.05),
+                      border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Connecting you with a nearby driver for your pickup.",
-                      style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
-                    ),
-                    const SizedBox(height: 24),
-                    _buildSectionTitle(context, "TRIP DETAILS"),
-                    const SizedBox(height: 12),
-                    _buildInfoCard(
-                      context: context,
-                      child: Column(
-                        children: [
-                          _buildDetailRow(context, Icons.my_location, colorScheme.primary, "Your Location", "Support Driver Location"),
-                          const Divider(height: 24),
-                          _buildDetailRow(context, Icons.person, colorScheme.secondary, "Ahmed Al-Rashid", "Customer · +971 50 123 4567"),
-                          const Divider(height: 24),
-                          _buildLocationRow(context, Icons.location_on, AppColors.error, "Dubai Marina, Tower B", "Pickup · Today 10:30 AM"),
-                          const SizedBox(height: 12),
-                          _buildLocationRow(context, Icons.factory_outlined, colorScheme.onSurface.withOpacity(0.5), "Al Quoz Auto Service", "Drop-off"),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    _buildSectionTitle(context, "CAR DETAILS"),
-                    const SizedBox(height: 12),
-                    _buildInfoCard(
-                      context: context,
-                      bgColor: colorScheme.primary.withOpacity(0.05),
-                      child: Row(
-                        children: [
-                          Icon(Icons.directions_car, color: AppColors.error, size: 36),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // LIVE MAP BACKGROUND
+                        if (_currentPosition != null)
+                          GoogleMap(
+                            initialCameraPosition: CameraPosition(
+                              target: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                              zoom: 15,
+                            ),
+                            markers: _markers,
+                            onMapCreated: (controller) => _mapController = controller,
+                            myLocationEnabled: true,
+                            zoomControlsEnabled: false,
+                            mapToolbarEnabled: false,
+                            myLocationButtonEnabled: false,
+                          )
+                        else
+                          Center(child: CircularProgressIndicator(color: colorScheme.primary)),
+
+                        // RADAR RIPPLE OVERLAY
+                        IgnorePointer(
+                          child: Container(
+                            color: Colors.black.withOpacity(0.1),
+                            child: Stack(
+                              alignment: Alignment.center,
                               children: [
-                                Text("BMW 3 Series · Blue", style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                                Text("M72528 · 2022", style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5))),
+                                ...List.generate(3, (index) {
+                                  return AnimatedBuilder(
+                                    animation: _radarController,
+                                    builder: (context, child) {
+                                      double progress = (_radarController.value + index / 3) % 1.0;
+                                      return Container(
+                                        width: progress * 600,
+                                        height: progress * 600,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: colorScheme.primary.withOpacity((1 - progress) * 0.5),
+                                            width: 2,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                }),
                               ],
                             ),
                           ),
-                          _buildPlateBox(context, "M72528"),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    _buildStatusBox(
-                      context: context,
-                      emoji: "⏳",
-                      text: "Pick Me request sent! Waiting for a Main Driver to confirm and pick you up from your location",
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        Expanded(child: _buildActionButton(context, "Call Customer", Icons.phone)),
-                        const SizedBox(width: 12),
-                        Expanded(child: _buildActionButton(context, "Message", Icons.message)),
+                        ),
+                        
+                        // Pulse Center
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withOpacity(0.3),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.my_location, color: colorScheme.onPrimary, size: 24),
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 40),
-                  ],
-                ),
+                  ),
+
+                  // Details Content
+                  Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildStatusBadge(context, statusBadgeText, statusBadgeColor),
+                        const SizedBox(height: 16),
+                        Text(
+                          statusTitleText,
+                          style: textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          statusSubtitleText,
+                          style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.6)),
+                        ),
+                        const SizedBox(height: 24),
+                        _buildSectionTitle(context, "TRIP DETAILS"),
+                        const SizedBox(height: 12),
+                        _buildInfoCard(
+                          context: context,
+                          child: Column(
+                            children: [
+                              _buildDetailRow(context, Icons.my_location, colorScheme.primary, "Your Location", "Support Driver Location"),
+                              const Divider(height: 24),
+                              _buildDetailRow(context, Icons.person, colorScheme.secondary, "Ahmed Al-Rashid", "Customer · +971 50 123 4567"),
+                              const Divider(height: 24),
+                              _buildLocationRow(context, Icons.location_on, AppColors.error, "Dubai Marina, Tower B", "Pickup · Today 10:30 AM"),
+                              const SizedBox(height: 12),
+                              _buildLocationRow(context, Icons.factory_outlined, colorScheme.onSurface.withOpacity(0.5), "Al Quoz Auto Service", "Drop-off"),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        _buildSectionTitle(context, "CAR DETAILS"),
+                        const SizedBox(height: 12),
+                        _buildInfoCard(
+                          context: context,
+                          bgColor: colorScheme.primary.withOpacity(0.05),
+                          child: Row(
+                            children: [
+                              Icon(Icons.directions_car, color: AppColors.error, size: 36),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("BMW 3 Series · Blue", style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                                    Text("M72528 · 2022", style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5))),
+                                  ],
+                                ),
+                              ),
+                              _buildPlateBox(context, "M72528"),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        _buildStatusBox(
+                          context: context,
+                          emoji: "⏳",
+                          text: statusBoxText,
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            Expanded(child: _buildActionButton(context, "Call Customer", Icons.phone)),
+                            const SizedBox(width: 12),
+                            Expanded(child: _buildActionButton(context, "Message", Icons.message)),
+                          ],
+                        ),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -325,7 +409,6 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
   }
 
   Widget _buildInfoCard({required BuildContext context, required Widget child, Color? bgColor}) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -354,7 +437,7 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title, style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
-            if (subtitle.isNotEmpty) 
+            if (subtitle.isNotEmpty)
               Text(subtitle, style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5))),
           ],
         ),
@@ -373,7 +456,7 @@ class _SearchingMainDriverScreenState extends State<SearchingMainDriverScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(title, style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
-            if (subtitle.isNotEmpty) 
+            if (subtitle.isNotEmpty)
               Text(subtitle, style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withOpacity(0.5))),
           ],
         ),

@@ -116,6 +116,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
           create: (context) => GetProfileBloc(
             repository: ProfileRepository(
               apiClient: ApiClient(context.read<SecureStorageService>()),
+              storage: context.read<SecureStorageService>(),
             ),
           )..add(FetchProfileEvent()),
         ),
@@ -123,6 +124,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
           create: (context) => UpdateProfileBloc(
             repository: UpdateProfileRepository(
               apiClient: ApiClient(context.read<SecureStorageService>()),
+              storage: context.read<SecureStorageService>(),
             ),
           ),
         ),
@@ -134,12 +136,12 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
               BlocListener<GetProfileBloc, GetProfileState>(
                 listener: (context, state) {
                   if (state is GetProfileSuccess) {
-                    final data = state.profileDetails.data;
+                    final data = state.profile.data;
                     _nameController.text = data?.name ?? "";
                     _emailController.text = data?.email ?? "";
                     setState(() {
-                      _phone = data?.phoneNumber ?? "";
-                      _profilePicture = data?.profileImageUrl ?? "";
+                      _phone = data?.contact ?? "";
+                      _profilePicture = data?.profileImage ?? "";
                     });
                   }
                 },
@@ -280,7 +282,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                                   SubmitUpdateProfileEvent(
                                                     name: _nameController.text,
                                                     email: _emailController.text,
-                                                    profileImageUrl: imageUrl,
+                                                    profileImage: imageUrl,
                                                   ),
                                                 );
                                               }

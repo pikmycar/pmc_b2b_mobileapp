@@ -46,21 +46,41 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final res = await authRepository.login(event.mobile, event.password);
 
+      final data = res.data;
+      if (data == null) {
+        throw Exception("Invalid server response: empty data.");
+      }
+
+      final token = data.accessToken ?? "";
+      final refreshToken = data.refreshToken ?? "";
+      final driverId = data.driverId ?? "";
+      final userName = data.name ?? "";
+
+      // Normalize role to internal string: "support_driver" or "main_driver"
+      // API returns roleName like "Support Driver" and roleCode like "R008".
+      // We must NOT save the raw roleCode — all app checks use "support_driver".
+      final rawRoleName = (data.role?.roleName ?? "").toLowerCase();
+      final role = rawRoleName.contains("support") ? "support_driver" : "main_driver";
+
+      print("🎭 Role from API → roleName: '${data.role?.roleName}', roleCode: '${data.role?.roleCode}' → normalized: '$role'");
+
+      final isVerified = (data.status == "active" || data.status == "verified").toString();
+
       // SAVE DATA
-      await storage.saveToken(res.token);
-      await storage.saveRefreshToken(res.refreshToken);
-      await storage.saveDriverId(res.driverId);
-      await storage.saveUserName(res.userName);
-      await storage.saveRole(res.role);
-      await storage.write("is_verified", res.isDocumentVerified.toString());
+      await storage.saveToken(token);
+      await storage.saveRefreshToken(refreshToken);
+      await storage.saveDriverId(driverId);
+      await storage.saveUserName(userName);
+      await storage.saveRole(role);
+      await storage.write("is_verified", isVerified);
       await storage.setLoggedIn(true);
 
       // Check PIN after login
       final String? existingPin = await storage.getPin();
       if (existingPin == null || existingPin.isEmpty) {
-        emit(AuthPinRequired(res.role));
+        emit(AuthPinRequired(role));
       } else {
-        emit(AuthAuthenticated(res.role));
+        emit(AuthAuthenticated(role));
       }
     } catch (e) {
       emit(AuthError(e.toString().replaceAll("Exception: ", "")));

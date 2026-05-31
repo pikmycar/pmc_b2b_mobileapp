@@ -1,7 +1,8 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import '../constants/app_constants.dart';
 import '../storage/secure_storage_service.dart';
-import 'mock_interceptor.dart';
 
 class ApiClient {
   late Dio dio;
@@ -19,10 +20,12 @@ class ApiClient {
       ),
     );
 
-    // Register MockInterceptor to bypass all real API calls only in mock mode
-    if (AppConstants.isMockMode) {
-      dio.interceptors.add(MockInterceptor(storageService: storageService));
-    }
+    // Bypass SSL Certificate Verification for staging/unverified domain certificates
+    (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+      final client = HttpClient();
+      client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+      return client;
+    };
 
     dio.interceptors.add(
       InterceptorsWrapper(

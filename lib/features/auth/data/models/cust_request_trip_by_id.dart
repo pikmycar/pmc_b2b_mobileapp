@@ -5,57 +5,55 @@ class CustRequestTripById {
 
   CustRequestTripById({this.status, this.message, this.data});
 
-  factory CustRequestTripById.fromJson(Map<String, dynamic> json) {
-    return CustRequestTripById(
-      status: json['status'],
-      message: json['message'],
-      data: json['data'] != null ? TripData.fromJson(json['data']) : null,
-    );
+  CustRequestTripById.fromJson(Map<String, dynamic> json) {
+    status = json['status'];
+    message = json['message'];
+    data = json['data'] != null ? TripData.fromJson(json['data']) : null;
   }
 
-  Map<String, dynamic> toJson() {
-    return {'status': status, 'message': message, 'data': data?.toJson()};
-  }
+  Map<String, dynamic> toJson() => {
+    'status': status,
+    'message': message,
+    'data': data?.toJson(),
+  };
 }
 
 class TripData {
   String? ticketId;
-  String? ticketUuid;
+  String? ticketNumber;
   String? priority;
+  B2BClient? b2BClient;
   Customer? customer;
   VehicleInfo? vehicle;
   String? createdAt;
-  String? createBy;
+  String? createdBy;
   dynamic reviewAt;
   dynamic pickupLocationArrivedAt;
   dynamic completedAt;
   String? status;
-  String? driverStatus;
   Drivers? drivers;
-  dynamic travel;
-  dynamic arrival;
-  dynamic inspection;
-  dynamic garage;
+  Arrival? arrival;
+  Inspection? inspection;
+  Garage? garage;
   Pickup? pickup;
-  Drop? drop;
-  dynamic pricing;
+  Pickup? drop;
+  Pricing? pricing;
   CustomerFeedback? customerFeedback;
 
   TripData({
     this.ticketId,
-    this.ticketUuid,
+    this.ticketNumber,
     this.priority,
+    this.b2BClient,
     this.customer,
     this.vehicle,
     this.createdAt,
-    this.createBy,
+    this.createdBy,
     this.reviewAt,
     this.pickupLocationArrivedAt,
     this.completedAt,
     this.status,
-    this.driverStatus,
     this.drivers,
-    this.travel,
     this.arrival,
     this.inspection,
     this.garage,
@@ -65,65 +63,90 @@ class TripData {
     this.customerFeedback,
   });
 
-  factory TripData.fromJson(Map<String, dynamic> json) {
-    return TripData(
-      ticketId: json['ticketId'],
-      ticketUuid: json['ticketUuid'],
-      priority: json['priority'],
-      customer:
-          json['customer'] != null ? Customer.fromJson(json['customer']) : null,
-      vehicle:
-          json['vehicle'] != null
-              ? VehicleInfo.fromJson(json['vehicle'])
-              : null,
-      createdAt: json['createdAt'],
-      createBy: json['createBy'],
-      reviewAt: json['reviewAt'],
-      pickupLocationArrivedAt: json['pickupLocationArrivedAt'],
-      completedAt: json['completedAt'],
-      status: json['status'],
-      driverStatus: json['driverStatus'],
-      drivers:
-          json['drivers'] != null ? Drivers.fromJson(json['drivers']) : null,
-      travel: json['travel'],
-      arrival: json['arrival'],
-      inspection: json['inspection'],
-      garage: json['garage'],
-      pickup: json['pickup'] != null ? Pickup.fromJson(json['pickup']) : null,
-      drop: json['drop'] != null ? Drop.fromJson(json['drop']) : null,
-      pricing: json['pricing'],
-      customerFeedback:
-          json['customerFeedback'] != null
-              ? CustomerFeedback.fromJson(json['customerFeedback'])
-              : null,
-    );
+  TripData.fromJson(Map<String, dynamic> json) {
+    ticketId = json['ticketId']?.toString() ?? json['ticketid']?.toString();
+    ticketNumber = json['ticketNumber']?.toString() ?? json['ticketnumber']?.toString();
+    priority = json['priority']?.toString();
+
+    b2BClient =
+        json['b2BClient'] != null
+            ? B2BClient.fromJson(json['b2BClient'])
+            : (json['b2bclient'] != null ? B2BClient.fromJson(json['b2bclient']) : null);
+
+    customer =
+        json['customer'] != null 
+            ? Customer.fromJson(json['customer']) 
+            : (json['customername'] != null || json['customerphone'] != null
+                ? Customer(name: json['customername']?.toString(), contact: json['customerphone']?.toString())
+                : null);
+
+    vehicle =
+        json['vehicle'] != null 
+            ? VehicleInfo.fromJson(json['vehicle']) 
+            : (json['vehicleplate'] != null || json['vehicle'] != null
+                ? VehicleInfo(name: json['vehicle']?.toString(), number: json['vehicleplate']?.toString())
+                : null);
+
+    createdAt = json['createdAt']?.toString() ?? json['createdat']?.toString() ?? json['assignedat']?.toString() ?? json['assignedAt']?.toString();
+    createdBy = json['createdBy']?.toString() ?? json['createdby']?.toString();
+    reviewAt = json['reviewAt'] ?? json['reviewat'];
+    pickupLocationArrivedAt = json['pickupLocationArrivedAt'] ?? json['pickuplocationarrivedat'];
+
+    completedAt = json['completedAt'] ?? json['completedat'];
+    status = json['status']?.toString();
+
+    drivers =
+        json['drivers'] != null ? Drivers.fromJson(json['drivers']) : null;
+
+    arrival =
+        json['arrival'] != null ? Arrival.fromJson(json['arrival']) : null;
+
+    inspection =
+        json['inspection'] != null
+            ? Inspection.fromJson(json['inspection'])
+            : null;
+
+    garage = json['garage'] != null ? Garage.fromJson(json['garage']) : null;
+
+    pickup = json['pickup'] != null 
+        ? Pickup.fromJson(json['pickup']) 
+        : (json['pickuplocation'] != null ? Pickup(location: json['pickuplocation']?.toString()) : null);
+
+    drop = json['drop'] != null 
+        ? Pickup.fromJson(json['drop']) 
+        : (json['droplocation'] != null ? Pickup(location: json['droplocation']?.toString()) : null);
+
+    pricing =
+        json['pricing'] != null ? Pricing.fromJson(json['pricing']) : null;
+
+    customerFeedback =
+        json['customerFeedback'] != null
+            ? CustomerFeedback.fromJson(json['customerFeedback'])
+            : null;
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'ticketId': ticketId,
-      'ticketUuid': ticketUuid,
-      'priority': priority,
-      'customer': customer?.toJson(),
-      'vehicle': vehicle?.toJson(),
-      'createdAt': createdAt,
-      'createBy': createBy,
-      'reviewAt': reviewAt,
-      'pickupLocationArrivedAt': pickupLocationArrivedAt,
-      'completedAt': completedAt,
-      'status': status,
-      'driverStatus': driverStatus,
-      'drivers': drivers?.toJson(),
-      'travel': travel,
-      'arrival': arrival,
-      'inspection': inspection,
-      'garage': garage,
-      'pickup': pickup?.toJson(),
-      'drop': drop?.toJson(),
-      'pricing': pricing,
-      'customerFeedback': customerFeedback?.toJson(),
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'ticketId': ticketId,
+    'ticketNumber': ticketNumber,
+    'priority': priority,
+    'b2BClient': b2BClient?.toJson(),
+    'customer': customer?.toJson(),
+    'vehicle': vehicle?.toJson(),
+    'createdAt': createdAt,
+    'createdBy': createdBy,
+    'reviewAt': reviewAt,
+    'pickupLocationArrivedAt': pickupLocationArrivedAt,
+    'completedAt': completedAt,
+    'status': status,
+    'drivers': drivers?.toJson(),
+    'arrival': arrival?.toJson(),
+    'inspection': inspection?.toJson(),
+    'garage': garage?.toJson(),
+    'pickup': pickup?.toJson(),
+    'drop': drop?.toJson(),
+    'pricing': pricing?.toJson(),
+    'customerFeedback': customerFeedback?.toJson(),
+  };
 }
 
 class Customer {
@@ -135,222 +158,41 @@ class Customer {
 
   Customer({this.name, this.contact, this.email, this.vip, this.customerType});
 
-  factory Customer.fromJson(Map<String, dynamic> json) {
-    return Customer(
-      name: json['name'],
-      contact: json['contact'],
-      email: json['email'],
-      vip: json['vip'],
-      customerType: json['customerType'],
-    );
+  Customer.fromJson(Map<String, dynamic> json) {
+    name = json['name'];
+    contact = json['contact'];
+    email = json['email'];
+    vip = json['vip'];
+    customerType = json['customerType'];
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'contact': contact,
-      'email': email,
-      'vip': vip,
-      'customerType': customerType,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'contact': contact,
+    'email': email,
+    'vip': vip,
+    'customerType': customerType,
+  };
 }
 
 class VehicleInfo {
   String? name;
   String? number;
+  String? color;
 
-  VehicleInfo({this.name, this.number});
+  VehicleInfo({this.name, this.number, this.color});
 
-  factory VehicleInfo.fromJson(Map<String, dynamic> json) {
-    return VehicleInfo(name: json['name'], number: json['number']);
+  VehicleInfo.fromJson(Map<String, dynamic> json) {
+    name = json['name'];
+    number = json['number'];
+    color = json['color'];
   }
 
-  Map<String, dynamic> toJson() {
-    return {'name': name, 'number': number};
-  }
-}
-
-class Drivers {
-  dynamic mainDriver;
-  SupportDriver? supportDriver;
-
-  Drivers({this.mainDriver, this.supportDriver});
-
-  factory Drivers.fromJson(Map<String, dynamic> json) {
-    return Drivers(
-      mainDriver: json['mainDriver'],
-      supportDriver:
-          json['supportDriver'] != null
-              ? SupportDriver.fromJson(json['supportDriver'])
-              : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {'mainDriver': mainDriver, 'supportDriver': supportDriver?.toJson()};
-  }
-}
-
-class SupportDriver {
-  String? id;
-  String? name;
-  bool? assignmentStatus;
-  double? rating;
-  String? status;
-  String? assignmentAt;
-  Contact? contact;
-  Vendor? vendor;
-  DriverVehicle? vehicle;
-  List<LocationTracking>? locationTracking;
-
-  SupportDriver({
-    this.id,
-    this.name,
-    this.assignmentStatus,
-    this.rating,
-    this.status,
-    this.assignmentAt,
-    this.contact,
-    this.vendor,
-    this.vehicle,
-    this.locationTracking,
-  });
-
-  factory SupportDriver.fromJson(Map<String, dynamic> json) {
-    return SupportDriver(
-      id: json['id'],
-      name: json['name'],
-      assignmentStatus: json['assignmentStatus'],
-      rating: (json['rating'] as num?)?.toDouble(),
-      status: json['status'],
-      assignmentAt: json['assignmentAt'],
-      contact:
-          json['contact'] != null ? Contact.fromJson(json['contact']) : null,
-      vendor: json['vendor'] != null ? Vendor.fromJson(json['vendor']) : null,
-      vehicle:
-          json['vehicle'] != null
-              ? DriverVehicle.fromJson(json['vehicle'])
-              : null,
-      locationTracking:
-          json['locationTracking'] != null
-              ? (json['locationTracking'] as List)
-                  .map((e) => LocationTracking.fromJson(e))
-                  .toList()
-              : [],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'assignmentStatus': assignmentStatus,
-      'rating': rating,
-      'status': status,
-      'assignmentAt': assignmentAt,
-      'contact': contact?.toJson(),
-      'vendor': vendor?.toJson(),
-      'vehicle': vehicle?.toJson(),
-      'locationTracking': locationTracking?.map((e) => e.toJson()).toList(),
-    };
-  }
-}
-
-class Contact {
-  String? phone;
-  String? email;
-
-  Contact({this.phone, this.email});
-
-  factory Contact.fromJson(Map<String, dynamic> json) {
-    return Contact(phone: json['phone'], email: json['email']);
-  }
-
-  Map<String, dynamic> toJson() {
-    return {'phone': phone, 'email': email};
-  }
-}
-
-class Vendor {
-  String? name;
-  String? contact;
-  String? email;
-  String? address;
-
-  Vendor({this.name, this.contact, this.email, this.address});
-
-  factory Vendor.fromJson(Map<String, dynamic> json) {
-    return Vendor(
-      name: json['name'],
-      contact: json['contact'],
-      email: json['email'],
-      address: json['address'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'contact': contact,
-      'email': email,
-      'address': address,
-    };
-  }
-}
-
-class DriverVehicle {
-  String? type;
-  String? model;
-  String? plateNumber;
-  int? seatingCount;
-
-  DriverVehicle({this.type, this.model, this.plateNumber, this.seatingCount});
-
-  factory DriverVehicle.fromJson(Map<String, dynamic> json) {
-    return DriverVehicle(
-      type: json['type'],
-      model: json['model'],
-      plateNumber: json['plateNumber'],
-      seatingCount: json['seatingCount'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'type': type,
-      'model': model,
-      'plateNumber': plateNumber,
-      'seatingCount': seatingCount,
-    };
-  }
-}
-
-class LocationTracking {
-  String? time;
-  String? date;
-  double? latitude;
-  double? longitude;
-
-  LocationTracking({this.time, this.date, this.latitude, this.longitude});
-
-  factory LocationTracking.fromJson(Map<String, dynamic> json) {
-    return LocationTracking(
-      time: json['time'],
-      date: json['date'],
-      latitude: json['latitude']?.toDouble(),
-      longitude: json['longitude']?.toDouble(),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'time': time,
-      'date': date,
-      'latitude': latitude,
-      'longitude': longitude,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'number': number,
+    'color': color,
+  };
 }
 
 class Pickup {
@@ -358,7 +200,7 @@ class Pickup {
   double? latitude;
   double? longitude;
   String? googleMapsAddress;
-  String? estTime;
+  dynamic estTime;
   dynamic actualTime;
 
   Pickup({
@@ -370,85 +212,109 @@ class Pickup {
     this.actualTime,
   });
 
-  factory Pickup.fromJson(Map<String, dynamic> json) {
-    return Pickup(
-      location: json['location'],
-      latitude: json['latitude']?.toDouble(),
-      longitude: json['longitude']?.toDouble(),
-      googleMapsAddress: json['googleMapsAddress'],
-      estTime: json['estTime'],
-      actualTime: json['actualTime'],
-    );
+  Pickup.fromJson(Map<String, dynamic> json) {
+    location = json['location'];
+
+    latitude = (json['latitude'] as num?)?.toDouble();
+
+    longitude = (json['longitude'] as num?)?.toDouble();
+
+    googleMapsAddress = json['googleMapsAddress'];
+
+    estTime = json['estTime'];
+    actualTime = json['actualTime'];
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'location': location,
-      'latitude': latitude,
-      'longitude': longitude,
-      'googleMapsAddress': googleMapsAddress,
-      'estTime': estTime,
-      'actualTime': actualTime,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'location': location,
+    'latitude': latitude,
+    'longitude': longitude,
+    'googleMapsAddress': googleMapsAddress,
+    'estTime': estTime,
+    'actualTime': actualTime,
+  };
 }
 
-class Drop {
-  String? location;
-  double? latitude;
-  double? longitude;
-  String? googleMapsAddress;
-  String? time;
-  dynamic actualTime;
+class B2BClient {
+  Map<String, dynamic>? raw;
 
-  Drop({
-    this.location,
-    this.latitude,
-    this.longitude,
-    this.googleMapsAddress,
-    this.time,
-    this.actualTime,
-  });
+  B2BClient({this.raw});
 
-  factory Drop.fromJson(Map<String, dynamic> json) {
-    return Drop(
-      location: json['location'],
-      latitude: json['latitude']?.toDouble(),
-      longitude: json['longitude']?.toDouble(),
-      googleMapsAddress: json['googleMapsAddress'],
-      time: json['time'],
-      actualTime: json['actualTime'],
-    );
+  B2BClient.fromJson(Map<String, dynamic> json) {
+    raw = json;
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'location': location,
-      'latitude': latitude,
-      'longitude': longitude,
-      'googleMapsAddress': googleMapsAddress,
-      'time': time,
-      'actualTime': actualTime,
-    };
+  Map<String, dynamic> toJson() => raw ?? {};
+}
+
+class Drivers {
+  Map<String, dynamic>? raw;
+
+  Drivers({this.raw});
+
+  Drivers.fromJson(Map<String, dynamic> json) {
+    raw = json;
   }
+
+  Map<String, dynamic> toJson() => raw ?? {};
+}
+
+class Arrival {
+  Map<String, dynamic>? raw;
+
+  Arrival({this.raw});
+
+  Arrival.fromJson(Map<String, dynamic> json) {
+    raw = json;
+  }
+
+  Map<String, dynamic> toJson() => raw ?? {};
+}
+
+class Inspection {
+  Map<String, dynamic>? raw;
+
+  Inspection({this.raw});
+
+  Inspection.fromJson(Map<String, dynamic> json) {
+    raw = json;
+  }
+
+  Map<String, dynamic> toJson() => raw ?? {};
+}
+
+class Garage {
+  Map<String, dynamic>? raw;
+
+  Garage({this.raw});
+
+  Garage.fromJson(Map<String, dynamic> json) {
+    raw = json;
+  }
+
+  Map<String, dynamic> toJson() => raw ?? {};
+}
+
+class Pricing {
+  Map<String, dynamic>? raw;
+
+  Pricing({this.raw});
+
+  Pricing.fromJson(Map<String, dynamic> json) {
+    raw = json;
+  }
+
+  Map<String, dynamic> toJson() => raw ?? {};
 }
 
 class CustomerFeedback {
-  dynamic rating;
-  bool? status;
-  dynamic comments;
+  Map<String, dynamic>? raw;
 
-  CustomerFeedback({this.rating, this.status, this.comments});
+  CustomerFeedback({this.raw});
 
-  factory CustomerFeedback.fromJson(Map<String, dynamic> json) {
-    return CustomerFeedback(
-      rating: json['rating'],
-      status: json['status'],
-      comments: json['comments'],
-    );
+  CustomerFeedback.fromJson(Map<String, dynamic> json) {
+    raw = json;
   }
 
-  Map<String, dynamic> toJson() {
-    return {'rating': rating, 'status': status, 'comments': comments};
-  }
+  Map<String, dynamic> toJson() => raw ?? {};
 }

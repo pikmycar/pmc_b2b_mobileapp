@@ -17,7 +17,7 @@ class UpdateProfileLoading extends UpdateProfileState {
 }
 
 class UpdateProfileSuccess extends UpdateProfileState {
-  final UpdateProfileResponse response;
+  final UpdateProfile response;
 
   const UpdateProfileSuccess({required this.response});
 

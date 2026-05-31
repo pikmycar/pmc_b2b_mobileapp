@@ -7,6 +7,7 @@ class CustomTopHeaderBar extends StatelessWidget
   final ValueChanged<bool>? onOnlineStatusChanged;
   final bool isOnline;
   final bool canGoOffline;
+  final bool showToggle;
 
   const CustomTopHeaderBar({
     super.key,
@@ -14,6 +15,7 @@ class CustomTopHeaderBar extends StatelessWidget
     this.onOnlineStatusChanged,
     required this.isOnline,
     this.canGoOffline = true,
+    this.showToggle = true,
   });
 
   @override
@@ -57,16 +59,25 @@ class CustomTopHeaderBar extends StatelessWidget
         onPressed: onMenuTap,
       ),
       centerTitle: true,
-      title: GestureDetector(
-        onTap: () async {
-          if (canGoOffline || !isOnline) {
-            await _toggleOnlineStatus(context);
-          } else {
-            _showOfflineSnackBar(context);
-          }
-        },
-        child: _buildStatusToggle(context),
-      ),
+      title: showToggle
+          ? GestureDetector(
+              onTap: () async {
+                if (canGoOffline || !isOnline) {
+                  await _toggleOnlineStatus(context);
+                } else {
+                  _showOfflineSnackBar(context);
+                }
+              },
+              child: _buildStatusToggle(context),
+            )
+          : Text(
+              "Support Driver",
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: foregroundColor,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+              ),
+            ),
       actions: [
         IconButton(
           icon: Icon(Icons.notifications_none, color: foregroundColor),

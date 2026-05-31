@@ -15,11 +15,8 @@ class CustomerRequestTripByIdRepository {
   /// Fetch customer requested trip details by ID
   Future<CustRequestTripById> fetchTripById(String tripId) async {
     try {
-      final response = await apiClient.dio.post(
-        AppConstants.fetchTicketByIdEndpoint,
-        data: {
-          "ticketId": tripId,
-        },
+      final response = await apiClient.dio.get(
+        "${AppConstants.fetchTicketByIdEndpoint}/$tripId",
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return CustRequestTripById.fromJson(response.data);

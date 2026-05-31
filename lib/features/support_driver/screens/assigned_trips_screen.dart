@@ -126,7 +126,7 @@ class AssignedTripsScreen extends StatelessWidget {
             }
 
             if (state is CustRequestsTripSuccess) {
-              final tickets = state.tripData.data?.tickets ?? [];
+              final tickets = state.tripData.data ?? [];
 
               if (tickets.isEmpty) {
                 return RefreshIndicator(
@@ -203,7 +203,7 @@ class AssignedTripsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTripCard(BuildContext context, Tickets ticket) {
+  Widget _buildTripCard(BuildContext context, TripData ticket) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
@@ -225,7 +225,7 @@ class AssignedTripsScreen extends StatelessWidget {
     // Get color for Status
     Color statusBgColor;
     Color statusTextColor;
-    final statusStr = (ticket.ticketStatus ?? "ASSIGNED").toLowerCase();
+    final statusStr = (ticket.status ?? "ASSIGNED").toLowerCase();
     switch (statusStr) {
       case "accepted":
       case "active":
@@ -304,7 +304,7 @@ class AssignedTripsScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          (ticket.ticketStatus ?? 'ASSIGNED').toUpperCase(),
+                          (ticket.status ?? 'ASSIGNED').toUpperCase(),
                           style: textTheme.labelSmall?.copyWith(
                             color: statusTextColor,
                             fontWeight: FontWeight.w900,
@@ -346,7 +346,7 @@ class AssignedTripsScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              ticket.b2bClient?.phone ?? 'No contact',
+                              ticket.customerPhone ?? 'No contact',
                               style: textTheme.bodySmall?.copyWith(
                                 color: colorScheme.onSurface.withOpacity(0.5),
                               ),
@@ -447,7 +447,7 @@ class AssignedTripsScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            "Assigned at ${_formatTime(ticket.createdAt)}",
+                            "Assigned at ${_formatTime(ticket.assignedAt)}",
                             style: textTheme.bodySmall?.copyWith(
                               color: colorScheme.onSurface.withOpacity(0.5),
                               fontWeight: FontWeight.w500,

@@ -1,84 +1,291 @@
-class GetProfileDetails {
-  bool? success;
+class GetProfile {
+  String? status;
   String? message;
   ProfileData? data;
 
-  GetProfileDetails({this.success, this.message, this.data});
+  GetProfile({this.status, this.message, this.data});
 
-  GetProfileDetails.fromJson(Map<String, dynamic> json) {
-    success = json['success'];
-    message = json['message'];
-    data = json['data'] != null ? ProfileData.fromJson(json['data']) : null;
+  factory GetProfile.fromJson(Map<String, dynamic> json) {
+    return GetProfile(
+      status: json['status'],
+      message: json['message'],
+      data: json['data'] != null ? ProfileData.fromJson(json['data']) : null,
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
-    data['success'] = success;
-    data['message'] = message;
-    if (this.data != null) {
-      data['data'] = this.data!.toJson();
-    }
-    return data;
+    return {'status': status, 'message': message, 'data': data?.toJson()};
   }
 }
 
 class ProfileData {
   String? driverId;
+  String? userId;
+  String? driverCode;
   String? name;
-  String? phoneNumber;
+  String? contact;
   String? email;
-  String? profileImageUrl;
-  String? role;
-  bool? isActive;
-  bool? isDocumentVerified;
-  double? rating;
-  int? totalTrips;
-  double? driverAcceptance;
+  Login? login;
+  String? driverType;
+  String? availability;
+  int? rating;
+  int? trips;
+  bool? isRtaEligible;
+  String? rtaNumber;
+  String? licenseNumber;
+  String? emiratesId;
+  String? licenseExpiry;
+  String? profileImage;
+  String? vehicleNumber;
+
+  String? vehicle;
+  List<String>? assignedZones;
+
+  bool? isVerified;
+  String? status;
+  int? acceptanceRate;
+  int? totalEarnings;
+
+  dynamic lastActivityAt;
+
+  Vendor? vendor;
+  Tracking? tracking;
+
+  List<dynamic>? currentTickets;
+
+  Timeline? timeline;
 
   ProfileData({
     this.driverId,
+    this.userId,
+    this.driverCode,
     this.name,
-    this.phoneNumber,
+    this.contact,
     this.email,
-    this.profileImageUrl,
-    this.role,
-    this.isActive,
-    this.isDocumentVerified,
+    this.login,
+    this.driverType,
+    this.availability,
     this.rating,
-    this.totalTrips,
-    this.driverAcceptance,
+    this.trips,
+    this.isRtaEligible,
+    this.rtaNumber,
+    this.licenseNumber,
+    this.emiratesId,
+    this.licenseExpiry,
+    this.profileImage,
+    this.vehicleNumber,
+    this.vehicle,
+    this.assignedZones,
+    this.isVerified,
+    this.status,
+    this.acceptanceRate,
+    this.totalEarnings,
+    this.lastActivityAt,
+    this.vendor,
+    this.tracking,
+    this.currentTickets,
+    this.timeline,
   });
 
-  ProfileData.fromJson(Map<String, dynamic> json) {
-    driverId = json['driver_id'] ?? json['driverId'];
-    name = json['name'] ?? json['user_name'];
-    phoneNumber = json['phone_number'] ?? json['phoneNumber'];
-    email = json['email'];
-    profileImageUrl = json['profile_image_url'] ?? json['profileImageUrl'];
-    role = json['role'];
-    isActive = json['is_active'] ?? json['isActive'];
-    isDocumentVerified =
-        json['is_document_verified'] ?? json['isDocumentVerified'];
-    rating = (json['rating'] as num?)?.toDouble();
-    totalTrips = (json['total_trips'] ?? json['totalTrips'] as num?)?.toInt();
-    driverAcceptance =
-        (json['driver_acceptance'] ?? json['driverAcceptance'] as num?)
-            ?.toDouble();
+  factory ProfileData.fromJson(Map<String, dynamic> json) {
+    return ProfileData(
+      driverId: json['driverId'],
+      userId: json['userId'],
+      driverCode: json['driverCode'],
+      name: json['name'],
+      contact: json['contact'],
+      email: json['email'],
+      login: json['login'] != null ? Login.fromJson(json['login']) : null,
+      driverType: json['driverType'],
+      availability: json['availability'],
+      rating: json['rating'],
+      trips: json['trips'],
+      isRtaEligible: json['isRtaEligible'],
+      rtaNumber: json['rtaNumber'],
+      licenseNumber: json['licenseNumber'],
+      emiratesId: json['emiratesId'],
+      licenseExpiry: json['licenseExpiry'],
+      profileImage: json['profileImage'],
+      vehicleNumber: json['vehicleNumber'],
+      vehicle: json['vehicle'] is List
+          ? (json['vehicle'] as List).join(', ')
+          : json['vehicle']?.toString(),
+      assignedZones: json['assignedZones'] is List
+          ? List<String>.from((json['assignedZones'] as List).map((x) => x.toString()))
+          : [],
+      isVerified: json['isVerified'],
+      status: json['status'],
+      acceptanceRate: json['acceptanceRate'],
+      totalEarnings: json['totalEarnings'],
+      lastActivityAt: json['lastActivityAt'],
+      vendor: json['vendor'] != null ? Vendor.fromJson(json['vendor']) : null,
+      tracking:
+          json['tracking'] != null ? Tracking.fromJson(json['tracking']) : null,
+      currentTickets: json['currentTickets'] is List
+          ? List<dynamic>.from(json['currentTickets'])
+          : [],
+      timeline:
+          json['timeline'] != null ? Timeline.fromJson(json['timeline']) : null,
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
-    data['driver_id'] = driverId;
-    data['name'] = name;
-    data['phone_number'] = phoneNumber;
-    data['email'] = email;
-    data['profile_image_url'] = profileImageUrl;
-    data['role'] = role;
-    data['is_active'] = isActive;
-    data['is_document_verified'] = isDocumentVerified;
-    data['rating'] = rating;
-    data['total_trips'] = totalTrips;
-    data['driver_acceptance'] = driverAcceptance;
-    return data;
+    return {
+      'driverId': driverId,
+      'userId': userId,
+      'driverCode': driverCode,
+      'name': name,
+      'contact': contact,
+      'email': email,
+      'login': login?.toJson(),
+      'driverType': driverType,
+      'availability': availability,
+      'rating': rating,
+      'trips': trips,
+      'isRtaEligible': isRtaEligible,
+      'rtaNumber': rtaNumber,
+      'licenseNumber': licenseNumber,
+      'emiratesId': emiratesId,
+      'licenseExpiry': licenseExpiry,
+      'profileImage': profileImage,
+      'vehicleNumber': vehicleNumber,
+      'vehicle': vehicle,
+      'assignedZones': assignedZones,
+      'isVerified': isVerified,
+      'status': status,
+      'acceptanceRate': acceptanceRate,
+      'totalEarnings': totalEarnings,
+      'lastActivityAt': lastActivityAt,
+      'vendor': vendor?.toJson(),
+      'tracking': tracking?.toJson(),
+      'currentTickets': currentTickets,
+      'timeline': timeline?.toJson(),
+    };
   }
+}
+
+class Login {
+  String? userId;
+  String? email;
+  String? roleCode;
+
+  Login({this.userId, this.email, this.roleCode});
+
+  factory Login.fromJson(Map<String, dynamic> json) {
+    return Login(
+      userId: json['userId'],
+      email: json['email'],
+      roleCode: json['roleCode'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'userId': userId,
+    'email': email,
+    'roleCode': roleCode,
+  };
+}
+
+class Vendor {
+  String? vendorId;
+  String? vendorName;
+  String? contactPerson;
+  String? email;
+  String? mobileNumber;
+  String? address;
+  String? city;
+  String? state;
+  String? status;
+
+  Vendor({
+    this.vendorId,
+    this.vendorName,
+    this.contactPerson,
+    this.email,
+    this.mobileNumber,
+    this.address,
+    this.city,
+    this.state,
+    this.status,
+  });
+
+  factory Vendor.fromJson(Map<String, dynamic> json) {
+    return Vendor(
+      vendorId: json['vendorId'],
+      vendorName: json['vendorName'],
+      contactPerson: json['contactPerson'],
+      email: json['email'],
+      mobileNumber: json['mobileNumber'],
+      address: json['address'],
+      city: json['city'],
+      state: json['state'],
+      status: json['status'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'vendorId': vendorId,
+    'vendorName': vendorName,
+    'contactPerson': contactPerson,
+    'email': email,
+    'mobileNumber': mobileNumber,
+    'address': address,
+    'city': city,
+    'state': state,
+    'status': status,
+  };
+}
+
+class Tracking {
+  double? latitude;
+  double? longitude;
+  int? totalSeats;
+  int? availableSeats;
+  int? currentPassengers;
+  String? updatedAt;
+
+  Tracking({
+    this.latitude,
+    this.longitude,
+    this.totalSeats,
+    this.availableSeats,
+    this.currentPassengers,
+    this.updatedAt,
+  });
+
+  factory Tracking.fromJson(Map<String, dynamic> json) {
+    return Tracking(
+      latitude: json['latitude']?.toDouble(),
+      longitude: json['longitude']?.toDouble(),
+      totalSeats: json['totalSeats'],
+      availableSeats: json['availableSeats'],
+      currentPassengers: json['currentPassengers'],
+      updatedAt: json['updatedAt'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'latitude': latitude,
+    'longitude': longitude,
+    'totalSeats': totalSeats,
+    'availableSeats': availableSeats,
+    'currentPassengers': currentPassengers,
+    'updatedAt': updatedAt,
+  };
+}
+
+class Timeline {
+  String? createdAt;
+  String? updatedAt;
+
+  Timeline({this.createdAt, this.updatedAt});
+
+  factory Timeline.fromJson(Map<String, dynamic> json) {
+    return Timeline(createdAt: json['createdAt'], updatedAt: json['updatedAt']);
+  }
+
+  Map<String, dynamic> toJson() => {
+    'createdAt': createdAt,
+    'updatedAt': updatedAt,
+  };
 }

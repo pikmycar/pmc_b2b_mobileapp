@@ -76,14 +76,21 @@ class TripBloc extends Bloc<TripEvent, TripState> {
           address = await _locationService.getAddressFromCoordinates(position.latitude, position.longitude);
         }
 
-        // Call Availability API
-        await _driverApi.updateAvailability(
-          isOnline: true,
-          isAvailable: true,
-          lat: position?.latitude ?? 0.0,
-          lng: position?.longitude ?? 0.0,
-          address: address,
-        );
+        // Support driver role doesn't have update availability endpoint. Skip it.
+        final secureStorage = SecureStorageService();
+        final role = await secureStorage.getUserRole();
+        final isSupport = role == "support_driver";
+
+        if (!isSupport) {
+          // Call Availability API
+          await _driverApi.updateAvailability(
+            isOnline: true,
+            isAvailable: true,
+            lat: position?.latitude ?? 0.0,
+            lng: position?.longitude ?? 0.0,
+            address: address,
+          );
+        }
 
         final newState = const TripUpdate(status: TripStatus.searching, isLoading: false);
         emit(newState);
@@ -118,12 +125,18 @@ Future<void> _onGoOffline(GoOffline event, Emitter<TripState> emit) async {
   try {
     final position = await _locationService.getCurrentLocation();
 
-    await _driverApi.updateAvailability(
-      isOnline: false,
-      isAvailable: false,
-      lat: position?.latitude ?? 0.0,   // ✅ ADD THIS
-      lng: position?.longitude ?? 0.0,  // ✅ ADD THIS
-    );
+    final secureStorage = SecureStorageService();
+    final role = await secureStorage.getUserRole();
+    final isSupport = role == "support_driver";
+
+    if (!isSupport) {
+      await _driverApi.updateAvailability(
+        isOnline: false,
+        isAvailable: false,
+        lat: position?.latitude ?? 0.0,
+        lng: position?.longitude ?? 0.0,
+      );
+    }
 
     final newState = const TripUpdate(status: TripStatus.offline, isLoading: false);
     emit(newState);
@@ -139,7 +152,7 @@ Future<void> _onGoOffline(GoOffline event, Emitter<TripState> emit) async {
 }
   void _startLocationTracking() {
     _stopLocationTracking(); // Clean up existing
-    _locationSubscription = _locationService.getPositionStream().listen((Position position) {
+    _locationSubscription = _locationService.getPositionStream().listen((Position position) async {
       // 1. Dispatch locally to update UI immediately
       add(UpdateLocation(position.latitude, position.longitude, position.heading));
 
@@ -155,17 +168,24 @@ Future<void> _onGoOffline(GoOffline event, Emitter<TripState> emit) async {
           currentTripId = state.activeTrip!.tripId;
         }
 
-        try {
-          _driverApi.updateLocation(
-            tripId: currentTripId,
-            lat: position.latitude,
-            lng: position.longitude,
-            speed: position.speed,
-            heading: position.heading,
-            timestamp: now,
-          );
-        } catch (e) {
-          print("DEBUG: [TripBloc] updateLocation API error: $e");
+        // Support driver role doesn't have update location endpoint. Skip it.
+        final secureStorage = SecureStorageService();
+        final role = await secureStorage.getUserRole();
+        final isSupport = role == "support_driver";
+
+        if (!isSupport) {
+          try {
+            _driverApi.updateLocation(
+              tripId: currentTripId,
+              lat: position.latitude,
+              lng: position.longitude,
+              speed: position.speed,
+              heading: position.heading,
+              timestamp: now,
+            );
+          } catch (e) {
+            print("DEBUG: [TripBloc] updateLocation API error: $e");
+          }
         }
       }
     });
@@ -421,6 +441,15 @@ Future<void> _onGoOffline(GoOffline event, Emitter<TripState> emit) async {
   }
 
   Future<void> _onFetchPendingRequests(FetchPendingRequests event, Emitter<TripState> emit) async {
+    final secureStorage = SecureStorageService();
+    final role = await secureStorage.getUserRole();
+    final isSupport = role == "support_driver";
+
+    if (isSupport) {
+      debugPrint("DEBUG: [TripBloc] FetchPendingRequests skipped (Support Driver role doesn't use pending requests)");
+      return;
+    }
+
     if (state.status != TripStatus.searching && state.status != TripStatus.requestReceived) {
       return;
     }
@@ -716,6 +745,15 @@ Future<void> _onGoOffline(GoOffline event, Emitter<TripState> emit) async {
 
     try {
       final secureStorage = SecureStorageService();
+      final role = await secureStorage.getUserRole();
+      final isSupport = role == "support_driver";
+
+      if (isSupport) {
+        debugPrint("DEBUG: [TripBloc] WS connection skipped (Support Driver role doesn't use WebSocket)");
+        _isConnectingWs = false;
+        return;
+      }
+
       final token = await secureStorage.getToken();
       final driverId = await secureStorage.getDriverId();
       
@@ -727,7 +765,10 @@ Future<void> _onGoOffline(GoOffline event, Emitter<TripState> emit) async {
       final wsUrl = "${AppConstants.mainDriverWsEndpoint}/$driverId?token=$token";
       debugPrint("DEBUG: [TripBloc] Connecting to WS: $wsUrl");
       
-      _webSocketChannel = IOWebSocketChannel.connect(Uri.parse(wsUrl));
+      final client = HttpClient()
+        ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+      final webSocket = await WebSocket.connect(wsUrl, customClient: client);
+      _webSocketChannel = IOWebSocketChannel(webSocket);
       
       _isWsConnected = true;
       _isConnectingWs = false;

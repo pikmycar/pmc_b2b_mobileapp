@@ -1,7 +1,12 @@
+import 'dart:async';
+import 'dart:io';
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:web_socket_channel/io.dart';
 import '../../../../../core/network/api_client.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/storage/secure_storage_service.dart';
 import '../../../data/models/cust_requests_trip.dart';
 import 'cust_requests_trip_event.dart';
 import 'cust_requests_trip_state.dart';
@@ -15,14 +20,8 @@ class CustomerRequestsTripRepository {
   /// Fetch customer requested trips from server
   Future<CustRequestTrip> fetchTrips() async {
     try {
-      final driverId = await apiClient.storageService.getDriverId();
-      final response = await apiClient.dio.post(
+      final response = await apiClient.dio.get(
         AppConstants.fetchTicketsEndpoint,
-        data: {
-          "userId": driverId,
-          "pageNumber": 1,
-          "pageSize": 20,
-        },
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return CustRequestTrip.fromJson(response.data);
@@ -91,6 +90,9 @@ class CustomerRequestsTripRepository {
 class CustRequestsTripBloc
     extends Bloc<CustRequestsTripEvent, CustRequestsTripState> {
   final CustomerRequestsTripRepository repository;
+  IOWebSocketChannel? _webSocketChannel;
+  Timer? _reconnectTimer;
+  bool _isConnecting = false;
 
   CustRequestsTripBloc({required this.repository})
       : super(const CustRequestsTripInitial()) {
@@ -98,6 +100,96 @@ class CustRequestsTripBloc
     on<AcceptCustRequestsTripEvent>(_onAcceptTrip);
     on<DeclineCustRequestsTripEvent>(_onDeclineTrip);
     on<CompleteCustRequestsTripEvent>(_onCompleteTrip);
+
+    // Establish WebSocket connection to SignalR KanbanHub for live updates
+    _connectSignalR();
+  }
+
+  Future<void> _connectSignalR() async {
+    if (_isConnecting || _webSocketChannel != null) return;
+    _isConnecting = true;
+
+    try {
+      final secureStorage = SecureStorageService();
+      final token = await secureStorage.getToken();
+      final driverId = await secureStorage.getDriverId();
+
+      if (token == null || driverId == null) {
+        _isConnecting = false;
+        return;
+      }
+
+      // Format standard SignalR WebSocket endpoint connection URL
+      final wsUrl = "wss://pmcapi.pikmycar.com/kanbanHub?access_token=$token";
+      
+      final client = HttpClient()
+        ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+      final webSocket = await WebSocket.connect(wsUrl, customClient: client);
+      _webSocketChannel = IOWebSocketChannel(webSocket);
+      _isConnecting = false;
+
+      // 1. Send SignalR Handshake message (terminated by ASCII 30)
+      final handshake = jsonEncode({"protocol": "json", "version": 1}) + String.fromCharCode(30);
+      _webSocketChannel!.sink.add(handshake);
+
+      _webSocketChannel!.stream.listen(
+        (message) {
+          final dataStr = message.toString();
+          final records = dataStr.split(String.fromCharCode(30));
+          for (var record in records) {
+            if (record.isEmpty) continue;
+            try {
+              final Map<String, dynamic> json = jsonDecode(record);
+
+              // On handshake success response (empty map), join the support driver group
+              if (json.isEmpty) {
+                final joinMsg = jsonEncode({
+                  "type": 1,
+                  "target": "JoinKanbanGroup",
+                  "arguments": ["R008", driverId]
+                }) + String.fromCharCode(30);
+                _webSocketChannel!.sink.add(joinMsg);
+              }
+
+              // On receiving the assignment broadcast from Hub
+              if (json['type'] == 1 && json['target'] == "SupportDriverAssigned") {
+                print("🔔 [SignalR] Received assignment update broadcast!");
+                // Trigger auto-refresh of requested trips
+                add(const FetchCustRequestsTripEvent());
+              }
+            } catch (_) {}
+          }
+        },
+        onError: (err) {
+          _handleDisconnect();
+        },
+        onDone: () {
+          _handleDisconnect();
+        },
+      );
+    } catch (e) {
+      _isConnecting = false;
+      _handleDisconnect();
+    }
+  }
+
+  void _handleDisconnect() {
+    _webSocketChannel = null;
+    _reconnectSignalR();
+  }
+
+  void _reconnectSignalR() {
+    _reconnectTimer?.cancel();
+    _reconnectTimer = Timer(const Duration(seconds: 5), () {
+      _connectSignalR();
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _webSocketChannel?.sink.close();
+    _reconnectTimer?.cancel();
+    return super.close();
   }
 
   /// Handles fetching customer trips

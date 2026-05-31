@@ -1,93 +1,40 @@
 class SupportPickmeRequest {
-  bool? success;
-  String? message;
-  RequestData? data;
-
-  SupportPickmeRequest({this.success, this.message, this.data});
-
-  factory SupportPickmeRequest.fromJson(Map<String, dynamic> json) {
-    return SupportPickmeRequest(
-      success: json['success'],
-      message: json['message'],
-      data: json['data'] != null ? RequestData.fromJson(json['data']) : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {'success': success, 'message': message, 'data': data?.toJson()};
-  }
-}
-
-class RequestData {
-  String? requestId;
-  String? ticketId;
   String? status;
-  String? priority;
-  String? expiresAt;
-  int? recipientCount;
-  List<String>? recipients;
-  NextStep? nextStep;
+  String? message;
+  SupportPickmeData? data;
 
-  RequestData({
-    this.requestId,
-    this.ticketId,
-    this.status,
-    this.priority,
-    this.expiresAt,
-    this.recipientCount,
-    this.recipients,
-    this.nextStep,
-  });
+  SupportPickmeRequest({this.status, this.message, this.data});
 
-  factory RequestData.fromJson(Map<String, dynamic> json) {
-    return RequestData(
-      requestId: json['request_id'],
-      ticketId: json['ticket_id'],
-      status: json['status'],
-      priority: json['priority'],
-      expiresAt: json['expires_at'],
-      recipientCount: json['recipient_count'],
-      recipients:
-          json['recipients'] != null
-              ? List<String>.from(json['recipients'])
-              : [],
-      nextStep:
-          json['next_step'] != null
-              ? NextStep.fromJson(json['next_step'])
-              : null,
-    );
+  SupportPickmeRequest.fromJson(Map<String, dynamic> json) {
+    status = json['status']?.toString();
+    message = json['message']?.toString();
+    data =
+        json['data'] != null ? SupportPickmeData.fromJson(json['data']) : null;
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'request_id': requestId,
-      'ticket_id': ticketId,
-      'status': status,
-      'priority': priority,
-      'expires_at': expiresAt,
-      'recipient_count': recipientCount,
-      'recipients': recipients,
-      'next_step': nextStep?.toJson(),
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'status': status,
+    'message': message,
+    'data': data?.toJson(),
+  };
 }
 
-class NextStep {
-  String? name;
-  String? method;
-  String? path;
+class SupportPickmeData {
+  String? requestId;
+  String? driverId;
+  String? driverName;
 
-  NextStep({this.name, this.method, this.path});
+  SupportPickmeData({this.requestId, this.driverId, this.driverName});
 
-  factory NextStep.fromJson(Map<String, dynamic> json) {
-    return NextStep(
-      name: json['name'],
-      method: json['method'],
-      path: json['path'],
-    );
+  SupportPickmeData.fromJson(Map<String, dynamic> json) {
+    requestId = (json['requestId'] ?? json['requestid'] ?? json['request_id'] ?? json['id'])?.toString();
+    driverId = (json['driverId'] ?? json['driverid'] ?? json['driver_id'])?.toString();
+    driverName = (json['driverName'] ?? json['drivername'] ?? json['driver_name'])?.toString();
   }
 
-  Map<String, dynamic> toJson() {
-    return {'name': name, 'method': method, 'path': path};
-  }
+  Map<String, dynamic> toJson() => {
+    'requestId': requestId,
+    'driverId': driverId,
+    'driverName': driverName,
+  };
 }

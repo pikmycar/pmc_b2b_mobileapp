@@ -32,15 +32,11 @@ class _SupportDriverDashboardState extends State<SupportDriverDashboard> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // 🔥 Sync with Bloc state
-      final state = context.read<TripBloc>().state;
-      _isOnline = state.status != TripStatus.offline;
-
-      MainWrapper.isOnlineNotifier.value = _isOnline;
-
-      if (_isOnline) {
-        _startPopupTimer();
-      }
+      // Support driver is always online by default. Trigger GoOnline immediately.
+      context.read<TripBloc>().add(GoOnline());
+      _isOnline = true;
+      MainWrapper.isOnlineNotifier.value = true;
+      _startPopupTimer();
     });
   }
 
@@ -59,38 +55,17 @@ class _SupportDriverDashboardState extends State<SupportDriverDashboard> {
     super.dispose();
   }
 
-  // 🔥 UPDATED (IMPORTANT)
   void _toggleOnline(bool val) {
-    setState(() {
-      _isOnline = val;
-      if (!val) _showRequestPopup = false;
-    });
-
-    MainWrapper.isOnlineNotifier.value = val;
-
-    // 🔥 CALL BLOC (this is the missing part)
-    if (val) {
-      context.read<TripBloc>().add(GoOnline());
-      _startPopupTimer();
-    } else {
-      context.read<TripBloc>().add(GoOffline());
-    }
+    // Toggle is disabled for Support Driver role
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<TripBloc, TripState>(
       listener: (context, state) {
-        // 🔥 Keep UI synced with Bloc
-        final isOnline = state.status != TripStatus.offline;
-
-        if (_isOnline != isOnline) {
-          setState(() {
-            _isOnline = isOnline;
-          });
-        }
-
-        MainWrapper.isOnlineNotifier.value = isOnline;
+        // Keep Support Driver always online
+        _isOnline = true;
+        MainWrapper.isOnlineNotifier.value = true;
 
         if (state.error != null && state.error!.isNotEmpty) {
           ScaffoldMessenger.of(context)
@@ -103,30 +78,12 @@ class _SupportDriverDashboardState extends State<SupportDriverDashboard> {
         drawer: const AppDrawer(),
         body: SafeArea(
           bottom: false,
-          child: _isOnline
-              ? ModernHomeDashboard(
-                  isOnline: _isOnline,
-                  onToggleOnline: _toggleOnline,
-                  onMenuTap: () =>
-                      _scaffoldKey.currentState?.openDrawer(),
-                )
-              : Column(
-                  children: [
-                    CustomTopHeaderBar(
-                      isOnline: _isOnline,
-                      onOnlineStatusChanged: _toggleOnline,
-                      onMenuTap: () =>
-                          _scaffoldKey.currentState?.openDrawer(),
-                    ),
-                    Expanded(
-                      child: OfflineScreenBody(
-                        tripsCount: "15",
-                        rating: "4.9",
-                        onToggleOnline: () => _toggleOnline(true),
-                      ),
-                    ),
-                  ],
-                ),
+          child: ModernHomeDashboard(
+            isOnline: true,
+            onToggleOnline: _toggleOnline,
+            onMenuTap: () =>
+                _scaffoldKey.currentState?.openDrawer(),
+          ),
         ),
       ),
     );
